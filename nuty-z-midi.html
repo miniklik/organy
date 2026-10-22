@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nuty z MIDI</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ten sam wygląd co Organy Alicji: drewno, złoto, kremowa kartka */
+  :root { --drewno1: #4a2a17; --drewno2: #2e190d; --kosc: #f3ead6; --zloto: #d8b46a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: radial-gradient(ellipse at 50% 0%, #2a2238, #0d0b14 70%); color: #f3ead6; font-family: 'Outfit', system-ui, sans-serif;
+         display: grid; place-items: center; padding: 24px 16px; }
+  .stol { width: min(980px, 100%); padding: 22px 26px 26px; border-radius: 16px;
+          background: linear-gradient(90deg, rgba(0,0,0,.25), transparent 6%, transparent 94%, rgba(0,0,0,.25)),
+                      repeating-linear-gradient(92deg, rgba(255,255,255,.025) 0 3px, transparent 3px 11px),
+                      linear-gradient(180deg, var(--drewno1), var(--drewno2));
+          box-shadow: 0 30px 80px rgba(0,0,0,.7), inset 0 2px 0 rgba(255,255,255,.08); border: 1px solid #1a0e07; }
+  body.upusc .stol { outline: 3px dashed var(--zloto); outline-offset: 6px; }
+  h1 { margin: 0; text-align: center; font: 700 26px 'Cinzel', serif; letter-spacing: .12em; color: var(--zloto); }
+  .pod { text-align: center; font-size: 12px; letter-spacing: .25em; color: #b59f78; text-transform: uppercase; margin: 2px 0 16px; }
+  /* panel jak środkowa konsola organów */
+  .konsola { border-radius: 10px; padding: 14px 18px 16px; background: linear-gradient(180deg, #1c120b, #2b1a0e); box-shadow: inset 0 2px 10px rgba(0,0,0,.7); }
+  .napis { font: 700 14px 'Cinzel', serif; letter-spacing: .14em; color: var(--zloto); text-align: center; padding: 2px 0 10px; }
+  /* kartka: dokładnie proporcje Strony tytułowej w organach (434 × 227) */
+  .kartka { width: 100%; aspect-ratio: 434 / 227; border-radius: 8px; overflow: hidden; background: var(--kosc); border: 1px solid #3d2a18;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,.25); display: grid; place-items: center; user-select: none; }
+  .kartka svg { display: block; width: 100%; height: 100%; cursor: pointer; touch-action: none; }
+  .pusto { color: #8d7a5c; font-size: 16px; text-align: center; line-height: 1.6; padding: 20px; }
+  .pasek { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 12px; padding: 10px 12px; border-radius: 10px;
+           background: linear-gradient(180deg, #1c120b, #2b1a0e); box-shadow: inset 0 2px 10px rgba(0,0,0,.7); }
+  button, select, input { font: 600 13px 'Outfit', sans-serif; color: #f3ead6; border-radius: 999px; padding: 8px 12px;
+           background: rgba(255,255,255,.07); border: 1px solid rgba(216,180,106,.45); }
+  button { cursor: pointer; white-space: nowrap; }
+  select { cursor: pointer; } select option { background: #2b1a0e; }
+  input[type=number] { width: 74px; padding: 7px 10px; }
+  input[type=text] { flex: 1; min-width: 160px; padding: 7px 12px; }
+  button:hover:not(:disabled) { background: rgba(255,255,255,.15); }
+  button:disabled, select:disabled, input:disabled { opacity: .35; cursor: default; }
+  button.zloty { background: linear-gradient(180deg, #f0d79a, #c9a35a); color: #2a1608; border-color: transparent; }
+  button.zloty:hover:not(:disabled) { background: linear-gradient(180deg, #f6e2b0, #d4b06a); }
+  button.gra { background: #3f7a3a; border-color: #6fbf66; }
+  label { font-size: 12px; color: #b59f78; display: flex; align-items: center; gap: 6px; }
+  .info { flex: 1; min-width: 200px; font-size: 13px; color: #d9c9a8; line-height: 1.45; }
+  .info b { color: var(--zloto); }
+  .blad { color: #ff9b8f; }
+  .edycja[hidden] { display: none; }
+  .strony { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: #d9c9a8; }
+  .strony button { padding: 5px 12px; }
+  .strony #fBtn i { font-family: Georgia, serif; margin-right: 3px; }
+  .strony #fBtn.wl { background: linear-gradient(180deg, #f0d79a, #c9a35a); color: #2a1608; border-color: transparent; }
+  .strony #strNr, .strony #strIle { min-width: 96px; text-align: center; }
+  /* okienko z czystym taktem — stoi nad poprawianym taktem */
+  .stol { position: relative; }
+  .okno { position: absolute; z-index: 5; width: 410px; padding: 10px 12px 12px; border-radius: 12px; background: linear-gradient(180deg, #2b1a0e, #1c120b);
+          border: 2px solid #d8b46a; box-shadow: 0 0 0 4px rgba(216,180,106,.25), 0 18px 40px rgba(0,0,0,.6); }
+  .okno[hidden] { display: none; }
+  .kMenu { position: absolute; z-index: 6; padding: 5px; border-radius: 999px; background: #1c120b; border: 2px solid #3fa34d; box-shadow: 0 10px 26px rgba(0,0,0,.55); }
+  .kMenu[hidden] { display: none; }
+  .kMenu button { background: linear-gradient(180deg, #4fb35c, #2f8a3b); border-color: transparent; color: #fff; }
+  .kMenu button:hover { background: linear-gradient(180deg, #5cc46a, #379a45); }
+  .oGlowa { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #d9c9a8; margin-bottom: 6px; }
+  .oGlowa b { color: var(--zloto); }
+  .oGlowa .oTytul { margin: 0; padding: 0; background: none; color: #d9c9a8; font-weight: 400; }
+  .oGlowa span#oknoLicz { margin-left: auto; font-weight: 600; color: #ffe2a8; padding: 2px 10px; border-radius: 999px; background: rgba(255,255,255,.06); }
+  .oTryb button.usun { color: #ffb4a8; border-color: rgba(220,90,70,.6); }
+  .oTryb button.usun:hover, .oTryb button.usun.pyta { background: #b8392a; color: #fff; border-color: #ff8a75; }
+  .oTryb { margin: 0 0 6px; gap: 4px; } #okno .oTryb button { flex: 1 1 0; min-width: 0; font-size: 12px; padding: 4px 4px; white-space: nowrap; }
+  .oGlowa span.pelno { animation: pelno .5s 2; }
+  @keyframes pelno { 50% { background: #a8322a; color: #fff; } }
+  .oTakt { border-radius: 8px; overflow: hidden; border: 2px solid #c27a00; box-shadow: 0 0 12px rgba(216,170,60,.45); }
+  .oTakt svg { display: block; width: 100%; height: auto; }
+  .oRzad { display: flex; align-items: center; gap: 4px; margin-top: 7px; }
+  .oRzad button { padding: 4px 8px; font-size: 14px; }
+  .oRzad button small { font-size: 10px; color: #b59f78; }
+  .oRzad button.wyb { background: rgba(216,180,106,.35); border-color: #f0d79a; }
+  .oOkt { font-size: 12px; color: #d9c9a8; min-width: 90px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="stol">
+    <div class="kMenu" id="kMenu" hidden><button id="kBtn">↵ Koniec linijki</button></div>
+    <div class="okno" id="okno" hidden>
+      <div class="oGlowa"><span class="oTytul" id="oknoTytul">Takt 1 — zagraj go od nowa</span><span id="oknoLicz">zajęte 0 z 16</span></div>
+      <div class="oRzad oTryb"><button data-t="przed" title="nowy takt przed tym">◀ Nowy przed</button><button data-t="podmien" title="zagraj ten takt od nowa">⟲ Podmień</button><button data-t="za" title="nowy takt za tym">Nowy za ▶</button><button id="oUsun" class="usun" title="Delete — dwa razy">🗑 Usuń takt</button></div>
+      <div class="oTakt" id="oknoTakt"></div>
+      <div class="oRzad">
+        <button data-w="1" title="1">𝅘𝅥𝅯 <small>1</small></button><button data-w="2" title="2">♪ <small>2</small></button><button data-w="4" title="3">♩ <small>3</small></button><button data-w="8" title="4">𝅗𝅥 <small>4</small></button><button data-w="16" title="5">𝅝 <small>5</small></button>
+        <button id="oKropka" title="kropka (.)">• <small>.</small></button><button id="oPauza" title="pauza (0 albo spacja)">pauza <small>0</small></button><button id="oCofnij" title="zabierz ostatnią (Backspace)">⌫</button>
+      </div>
+      <div class="oRzad">
+        <button id="oDol" title="oktawa niżej (↓)">↓</button><span class="oOkt" id="oOkt"></span><button id="oGora" title="oktawa wyżej (↑)">↑</button>
+        <span style="flex:1"></span><button id="oNie" title="Esc">✖ Anuluj</button><button class="zloty" id="oOk" title="Enter">✔ Potwierdź</button>
+      </div>
+    </div>
+  <h1>Nuty z MIDI</h1>
+  <div class="pod">Nuty do Organów Alicji</div>
+  <div class="konsola">
+    <div class="napis" id="napis">&nbsp;</div>
+    <div class="kartka" id="kartka"><div class="pusto">Przeciągnij tutaj plik <b>.mid</b><br>albo kliknij „Wczytaj MIDI” na dole</div></div>
+    <div class="strony edycja" id="strony" hidden>
+      <button id="strPop" title="poprzednia strona">◀</button><span id="strNr">Strona 1 z 1</span><button id="strNast" title="następna strona">▶</button>
+      <span style="flex:1"></span><button id="fBtn" title="funkcje nad nutami"><i>Am</i> Funkcje</button><span style="flex:1"></span>
+      <button id="strMniej" title="mniej stron">➖</button><span id="strIle">Stron: 1</span><button id="strWiecej" title="podziel na więcej stron">➕</button>
+    </div>
+  </div>
+  <div class="pasek">
+    <button id="wczytaj">🎵 Wczytaj MIDI</button>
+    <div class="info" id="info">Wczytaj plik MIDI — nuty pojawią się na pięciolinii i możesz je poprawiać.</div>
+    <input type="file" id="plik" accept=".mid,.midi" hidden>
+  </div>
+  <div class="pasek edycja" id="edycja" hidden>
+    <label>Metrum <select id="metrum"><option>2/4</option><option>3/4</option><option>4/4</option><option>6/8</option><option>3/8</option></select></label>
+    <label>Tonacja <select id="tonacja"></select></label>
+    <label>Tempo <input type="number" id="tempo" min="30" max="240" value="100"></label>
+    <button id="graj">▶ Odsłuchaj</button>
+    <button id="cofnij" title="Cofnij (Ctrl+Z)" disabled>↶ Cofnij</button>
+    <button id="zapiszMidi">💾 Zapisz MIDI</button>
+    <button class="zloty" id="zapisz">💾 Zapisz PNG</button>
+  </div>
+  <div class="pasek edycja" id="edycja2" hidden>
+    <label>Podpis</label><input type="text" id="podpis" placeholder="np. mel. Roman Dwornik (widać go na kartce)" maxlength="80">
+    <label>Tytuł</label><input type="text" id="tytul" placeholder="nazwa pliku" maxlength="80">
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   NUTY Z MIDI — plik MIDI → nuty na pięciolinii, które można poprawiać, a na koniec PNG do Organów Alicji
+   Klucz wiolinowy, jeden głos (najwyższy), siatka szesnastek. Dalej to jest MIDI: można je odsłuchać i zapisać.
+   Nuty są trzymane jako ciąg: nuta albo pauza i jej długość w szesnastkach.
+   Zmiana długości przesuwa dalsze nuty (nic nie ginie), takty układają się same.
+   Kartka ma proporcje 434 × 227 (jak w organach); PNG zapisuje się 3× większy, żeby był ostry.
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const W = 434, H = 227, SKALA_PNG = 3;
+let ciag = null;                 // [{ n: numer MIDI albo null (pauza), d: długość w szesnastkach }]
+let ust = null;                  // { gora, dol, k (tonacja), tempo }
+let zazn = -1, historia = [], linie = [], taktyGeo = [], taktWyb = -1;
+let funkcje = [], trybF = false, fEd = null;   // funkcje nad nutami: [{ t: miejsce w szesnastkach, tekst }]; fEd — właśnie wpisywana
+let konce = new Set(), kreski = [], kreskaMenu = -1;   // ręczne końce linijek: numery taktów, po których linijka się kończy
+let stron = 1, strona = 0, uklad = { naLinie: 4, lpp: 4, ileStron: 1 };   // podział na strony: ile stron, która widoczna
+
+// ===== czytanie pliku MIDI =====
+function czytajMidi(dane) {
+  const u8 = new Uint8Array(dane), dv = new DataView(dane), txt = (o, n) => String.fromCharCode(...u8.slice(o, o + n));
+  if (txt(0, 4) !== 'MThd') throw new Error('To nie jest plik MIDI.');
+  const dlNag = dv.getUint32(4), ileSciezek = dv.getUint16(10), tpq = dv.getUint16(12);
+  if (tpq & 0x8000) throw new Error('Ten plik MIDI liczy czas w klatkach filmu (SMPTE) — tego nie obsługuję.');
+  const dekoder = new TextDecoder('windows-1250');
+  const wynik = { tpq, nuty: [], funkcje: [], metrum: null, metra: [], tonacja: null, tempo: null, teksty: {} };
+  let o = 8 + dlNag;
+  for (let s = 0; s < ileSciezek && o + 8 <= u8.length; s++) {
+    if (txt(o, 4) !== 'MTrk') break;
+    const koniec = o + 8 + dv.getUint32(o + 4); let p = o + 8, tick = 0, status = 0, ostatni = 0;
+    const wcis = {};
+    const vlq = () => { let v = 0, b; do { b = u8[p++]; v = (v << 7) | (b & 0x7f); } while (b & 0x80 && p < koniec); return v; };
+    while (p < koniec) {
+      tick += vlq();
+      const b = u8[p];
+      if (b & 0x80) { status = b; p++; if (b < 0xf0) ostatni = b; } else if (ostatni) status = ostatni; else break;
+      const typ = status & 0xf0, kanal = status & 0x0f;
+      if (status === 0xff) {
+        const meta = u8[p++], n = vlq(), d = u8.slice(p, p + n);
+        if (meta === 0x58) { const m = { gora: d[0], dol: 2 ** d[1], tick }; wynik.metra.push(m); if (!wynik.metrum) wynik.metrum = m; }
+        else if (meta === 0x59 && wynik.tonacja == null) wynik.tonacja = (d[0] << 24) >> 24;     // liczba krzyżyków (+) albo bemoli (−)
+        else if (meta === 0x51 && !wynik.tempo) wynik.tempo = Math.round(60000000 / ((d[0] << 16) | (d[1] << 8) | d[2]));
+        else if (meta === 0x06) { const tx = dekoder.decode(d).replace(/\0/g, '').trim(); if (tx) wynik.funkcje.push({ tick, tekst: tx }); }   // znacznik = funkcja nad nutą
+        else if (meta >= 0x01 && meta <= 0x0f && !wynik.teksty[meta]) wynik.teksty[meta] = dekoder.decode(d).replace(/\0/g, '').trim();
+        p += n;
+      } else if (status === 0xf0 || status === 0xf7) { p += vlq(); }
+      else if (typ === 0x90 || typ === 0x80) {
+        const n = u8[p++], v = u8[p++];
+        if (kanal === 9) continue;                                   // perkusja
+        if (typ === 0x90 && v > 0) wcis[n] = tick;
+        else if (wcis[n] != null) { wynik.nuty.push({ n, a: wcis[n], b: tick }); delete wcis[n]; }
+      } else if (typ === 0xc0 || typ === 0xd0) p += 1;
+      else p += 2;
+    }
+    o = koniec;
+  }
+  if (!wynik.nuty.length) throw new Error('W tym pliku nie ma nut.');
+  return wynik;
+}
+
+// ===== MIDI → ciąg nut i pauz w szesnastkach: jeden głos (najwyższy), legato =====
+function ciagZMidi(M) {
+  const s16 = M.tpq / 4;
+  const q = M.nuty.map(x => { const s = Math.round(x.a / s16); return { n: x.n, s, k: Math.max(s + 1, Math.round(x.b / s16)) }; })
+                  .sort((a, b) => a.s - b.s || b.n - a.n);
+  const jeden = [];
+  for (const x of q) { if (jeden.length && jeden[jeden.length - 1].s === x.s) continue; jeden.push(x); }   // akord → najwyższy dźwięk
+  const wynik = []; let t = 0;
+  jeden.forEach((x, i) => {
+    const nast = i + 1 < jeden.length ? jeden[i + 1].s : Infinity;
+    let k = Math.min(x.k, nast);
+    if (nast !== Infinity && nast - k <= 1) k = nast;              // szczelina na szesnastkę to puszczenie klawisza, nie pauza
+    if (x.s > t) wynik.push({ n: null, d: x.s - t });              // pauza przed nutą (np. przedtakt)
+    wynik.push({ n: x.n, d: Math.max(1, k - x.s) }); t = x.s + Math.max(1, k - x.s);
+  });
+  return wynik;
+}
+
+// ===== ciąg → takty: każdy znak pamięta, z którego elementu ciągu pochodzi (src) =====
+const WARTOSCI = [16, 12, 8, 6, 4, 3, 2, 1];
+const rozloz = (d, lista) => { const w = []; for (const v of lista) while (d >= v) { w.push(v); d -= v; } return w; };
+function takty(ciag, T) {
+  const suma = ciag.reduce((s, e) => s + e.d, 0), ile = Math.max(1, Math.ceil(suma / T)), tk = Array.from({ length: ile }, () => []);
+  let t = 0;
+  ciag.forEach((e, i) => {
+    let reszta = e.d, pos = t;
+    while (reszta > 0) {
+      const b = Math.floor(pos / T), miejsce = (b + 1) * T - pos, ile2 = Math.min(reszta, miejsce);
+      if (e.n == null && pos === b * T && ile2 === T) tk[b].push({ typ: 'p', d: T, cala: true, src: i });
+      else {
+        const cz = rozloz(ile2, e.n == null ? [8, 4, 2, 1] : WARTOSCI.filter(v => v <= T));
+        cz.forEach((v, j) => tk[b].push(e.n == null ? { typ: 'p', d: v, src: i }
+          : { typ: 'n', n: e.n, d: v, src: i, luk: j < cz.length - 1 || reszta - ile2 > 0, ciag: pos > t || j > 0 }));
+      }
+      pos += ile2; reszta -= ile2;
+    }
+    t += e.d;
+  });
+  const ost = ile * T - suma;                                         // dopełnienie ostatniego taktu pauzami
+  if (ost > 0) rozloz(ost, [8, 4, 2, 1]).forEach(v => tk[ile - 1].push({ typ: 'p', d: v, src: -1 }));
+  return tk;
+}
+
+// ===== pisownia dźwięku w tonacji =====
+const LITERY = 'CDEFGAB', KRZ = ['F', 'C', 'G', 'D', 'A', 'E', 'B'], BEM = ['B', 'E', 'A', 'D', 'G', 'C', 'F'];
+const POZ_KRZ = { F: 8, C: 5, G: 9, D: 6, A: 3, E: 7, B: 4 }, POZ_BEM = { B: 4, E: 7, A: 3, D: 6, G: 2, C: 5, F: 1 };
+function pisownia(n, k) {
+  const z = k >= 0 ? ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] : ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+  const nz = z[n % 12], lit = nz[0], okt = Math.floor(n / 12) - 1;
+  return { lit, okt, znak: nz[1] === '#' ? 1 : nz[1] === 'b' ? -1 : 0, poz: okt * 7 + LITERY.indexOf(lit) - (4 * 7 + 2) };   // poz 0 = e¹ (dolna linia)
+}
+function znakiTonacji(k) { const m = {}; LITERY.split('').forEach(l => m[l] = 0); (k > 0 ? KRZ.slice(0, k) : BEM.slice(0, -k)).forEach(l => m[l] = k > 0 ? 1 : -1); return m; }
+// ===== pauzy w skali pięciolinii =====
+function pauza(z, x, y0, g) {
+  if (z.cala || z.d >= 16) return `<rect x="${x - g * .65}" y="${y0 + g}" width="${g * 1.3}" height="${g / 2}" stroke="none"/>`;
+  if (z.d >= 8) return `<rect x="${x - g * .65}" y="${y0 + 1.5 * g}" width="${g * 1.3}" height="${g / 2}" stroke="none"/>`;
+  if (z.d >= 4) return `<path d="M${x - g * .25} ${y0 + g * .55} l ${g * .55} ${g * .75} l ${-g * .55} ${g * .65} l ${g * .6} ${g * .75} q ${-g * .85} ${-g * .3} ${-g * .4} ${g * .75}" fill="none" stroke-width="${g * .26}" stroke-linejoin="round"/>`;
+  const kk = yy => `<circle cx="${x - g * .1}" cy="${yy}" r="${g * .26}" stroke="none"/><path d="M${x - g * .1} ${yy + g * .1} q ${g * .4} ${g * .2} ${g * .75} ${-g * .2}" fill="none" stroke-width="${g * .15}"/>`;
+  if (z.d >= 2) return kk(y0 + 1.5 * g) + `<line x1="${x + g * .65}" x2="${x + g * .1}" y1="${y0 + 1.35 * g}" y2="${y0 + 3.2 * g}" stroke-width="${g * .16}"/>`;
+  return kk(y0 + 1.5 * g) + kk(y0 + 2.5 * g) + `<line x1="${x + g * .65}" x2="${x}" y1="${y0 + 1.35 * g}" y2="${y0 + 3.8 * g}" stroke-width="${g * .16}"/>`;
+}
+
+// ===== rysowanie Strony tytułowej (SVG 434 × 227); zaznaczona nuta na złoto (tylko na ekranie, nie w PNG) =====
+// op: { ciag, W, H, naLinie, podpis, png (bez podświetleń), slabeDopelnienie, bezKonca }
+function rysujStrone(doPng, op = {}) {
+  const { gora: mGora, dol: mDol, k } = ust, glowna = !op.ciag;
+  const C = op.ciag || ciag, SW = op.W || W, SH = op.H || H, podpis = op.podpis != null ? op.podpis : $('podpis').value.trim();
+  const T = mGora * 16 / mDol;                                     // długość taktu w szesnastkach (4/4 → 16, 3/4 → 12, 6/8 → 12)
+  const tk = takty(C, T);
+  // podział na strony (tylko główna kartka): każda strona dostaje tyle samo linijek, zawsze całe linijki
+  const N = glowna ? stron : 1, nrStr = op.strona != null ? op.strona : glowna ? strona : 0;
+  const naStronie = Math.ceil(tk.length / N);
+  // ile taktów w linijce: 4 jak w śpiewniku; dłuższe pieśni — więcej, żeby strona zmieściła się na kartce
+  let naLinie = op.naLinie || 4; if (!op.naLinie) while (naLinie < 8 && Math.ceil(naStronie / naLinie) > 4) naLinie++;
+  // linijki: koniec po naLinie taktach albo tam, gdzie postawiono ręczny koniec linijki (tylko na głównej kartce)
+  const linieT = []; let bież = [];
+  tk.forEach((_, ti) => { bież.push(ti); if (bież.length === naLinie || (glowna && konce.has(ti) && ti < tk.length - 1)) { linieT.push(bież); bież = []; } });
+  if (bież.length) linieT.push(bież);
+  const wszLinii = linieT.length, lpp = Math.min(glowna ? 4 : wszLinii, Math.ceil(wszLinii / N)), ileStron = Math.ceil(wszLinii / lpp);   // najwyżej 4 linijki na stronie
+  const l0 = Math.min(nrStr, ileStron - 1) * lpp, l1 = Math.min(wszLinii, l0 + lpp);
+  if (glowna) uklad = { naLinie, lpp, ileStron };
+  const gGora = podpis ? (glowna && (funkcje.length || (trybF && fEd)) ? 19 : 13) : 4, /* z funkcjami podpis potrzebuje więcej miejsca nad pierwszą linijką */ wysSys = (SH - gGora - 4) / lpp, g = Math.min(op.gMax || 5.2, wysSys / 10);
+  const zt = znakiTonacji(k), ile = Math.abs(k), ZLOTO = '#c27a00';
+  if (glowna && !doPng) { linie = []; taktyGeo = []; kreski = []; }
+  let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${SW}" height="${SH}" viewBox="0 0 ${SW} ${SH}" font-family="'Segoe UI Symbol','Noto Music','Bravura','FreeSerif','Apple Symbols',serif" fill="#2a1a0e" stroke="#2a1a0e">`;
+  o += `<rect width="${SW}" height="${SH}" fill="#f3ead6" stroke="none"/>`;
+  if (podpis && l0 === 0) o += `<text x="${SW - 8}" y="10" font-size="8.5" font-style="italic" text-anchor="end" stroke="none" font-family="Georgia,'Times New Roman',serif">${esc(podpis)}</text>`;
+  const stan = {}; let lukOd = null;
+  for (let li = l0; li < l1; li++) {
+    const ids = linieT[li], lw = li - l0, recznie = glowna && konce.has(ids[ids.length - 1]) && li < wszLinii - 1;
+    const y0 = gGora + lw * wysSys + (wysSys - 4 * g) / 2 - g * 0.6, Y = poz => y0 + 4 * g - poz * g / 2;
+    let x = 6;
+    o += `<text x="${x}" y="${y0 + 4 * g + g * 0.7}" font-size="${g * 5.2}" stroke="none">𝄞</text>`; x += g * 3.3;
+    (k > 0 ? KRZ : BEM).slice(0, ile).forEach(l => { o += `<text x="${x}" y="${Y((k > 0 ? POZ_KRZ : POZ_BEM)[l]) + g * 0.55}" font-size="${g * 2}" stroke="none">${k > 0 ? '♯' : '♭'}</text>`; x += g * 1.05; });
+    if (li === 0) {
+      o += `<g font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="${g * 2.3}" stroke="none" text-anchor="middle"><text x="${x + g}" y="${y0 + 2 * g - 0.5}">${mGora}</text><text x="${x + g}" y="${y0 + 4 * g - 0.5}">${mDol}</text></g>`;
+      x += g * 2.6;
+    } else x += g * 0.6;
+    const xp = x, szerTaktu = (SW - 6 - xp) / (recznie ? ids.length : naLinie);   // linijka skończona ręcznie — takty rozciągają się na całą szerokość
+    if (glowna && !doPng) linie.push({ y0, g, gora: gGora + lw * wysSys, dol: gGora + (lw + 1) * wysSys });
+    ids.forEach((ti, j) => {
+      Object.keys(stan).forEach(kk => delete stan[kk]);              // znaki przygodne ważne do końca taktu
+      const bx = xp + j * szerTaktu, padL = g * 2.2, padR = g * 1.2, wew = szerTaktu - padL - padR; let geo = null;
+      if (glowna && !doPng) {
+        taktyGeo.push(geo = { ti, li, x0: bx, x1: bx + szerTaktu, gora: y0 - 3 * g, dol: y0 + 7 * g, xn: bx + padL + g * 0.6, wew, T, starty: [] });
+        if (ti === taktWyb) {
+          const tr = nowy ? nowy.tryb : 'podmien', ym = y0 + 2 * g, r = 4.6;
+          o += `<rect x="${bx + 1}" y="${y0 - 3.2 * g}" width="${szerTaktu - 2}" height="${10.4 * g}" rx="3" fill="rgba(216,170,60,${tr === 'podmien' ? .28 : .1})" stroke="#c27a00" stroke-width="1"${tr === 'podmien' ? '' : ' stroke-dasharray="3 2"'}/>`;
+          if (tr !== 'podmien') { const xl = tr === 'przed' ? bx : bx + szerTaktu; o += `<rect x="${xl - 1.6}" y="${y0 - 3.2 * g}" width="3.2" height="${10.4 * g}" fill="#c27a00" stroke="none"/>`; }
+          // strzałki: ◀ nowy takt przed tym, ▶ nowy takt za nim
+          [['przed', bx + r + 1, -1], ['za', bx + szerTaktu - r - 1, 1]].forEach(([t, cxs, kier]) => {
+            const wl = tr === t;
+            o += `<circle cx="${cxs}" cy="${ym}" r="${r}" fill="${wl ? '#c27a00' : '#f3ead6'}" stroke="#c27a00" stroke-width="1"/>`
+               + `<path d="M${cxs + kier * 2.2} ${ym} L${cxs - kier * 1.6} ${ym - 2.4} L${cxs - kier * 1.6} ${ym + 2.4} Z" fill="${wl ? '#fff' : '#c27a00'}" stroke="none"/>`;
+          });
+          taktyGeo.strzalki = { y: ym, przed: bx + r + 1, za: bx + szerTaktu - r - 1, li };
+        }
+      }
+      // belki: ósemki i szesnastki w jednej grupie (6/8, 3/8, 9/8, 12/8 — po trzy ósemki; poza tym w obrębie ćwierćnuty);
+      // pauza, dłuższa nuta albo granica grupy przerywa belkę
+      const GR = mDol === 8 && mGora % 3 === 0 ? 6 : 4, el = []; let p0 = 0;
+      tk[ti].forEach(z => { el.push({ z, pos: p0 }); p0 += z.d; });
+      if (geo) geo.starty = el.map(e => e.pos);
+      const grupy = []; let gr = null;
+      el.forEach((e, i) => {
+        const nr = Math.floor(e.pos / GR), ok = e.z.typ === 'n' && e.z.d <= 3 && Math.floor((e.pos + e.z.d - 1) / GR) === nr;
+        if (ok && gr && gr.nr === nr && gr.kon === e.pos) { gr.ix.push(i); gr.kon = e.pos + e.z.d; }
+        else { gr = ok ? { nr, ix: [i], kon: e.pos + e.z.d } : null; if (gr) grupy.push(gr); }
+      });
+      const wBelce = {};
+      grupy.filter(q => q.ix.length > 1).forEach(q => {
+        const pz = q.ix.map(i => pisownia(el[i].z.n, k).poz);
+        q.wGore = pz.reduce((a, b) => a + b, 0) / pz.length < 4;            // trzonki w jedną stronę, jak wypada średnio
+        q.ix.forEach(i => wBelce[i] = q);
+      });
+      let pos = 0;
+      tk[ti].forEach((z, iz) => {
+        const cx = bx + padL + (pos / T) * wew + g * 0.6;            // odstępy według czasu
+        const zl = glowna && !doPng && z.src === zazn && zazn >= 0;  // nuta grana właśnie przy odsłuchu
+        const slaba = op.slabeDopelnienie && z.src === -1;
+        if (z.typ === 'p') { const r = pauza(z, z.cala ? bx + szerTaktu / 2 : cx, y0, g);
+          o += zl ? `<g fill="${ZLOTO}" stroke="${ZLOTO}">${r}</g>` : slaba ? `<g opacity=".25">${r}</g>` : r; pos += z.d; return; }
+        const P = pisownia(z.n, k), cy = Y(P.poz), kl = P.lit + P.okt;
+        let n = '';
+        for (let q = -2; q >= P.poz; q -= 2) o += `<line x1="${cx - g * 1.1}" x2="${cx + g * 1.1}" y1="${Y(q)}" y2="${Y(q)}" stroke-width="0.9"/>`;
+        for (let q = 10; q <= P.poz; q += 2) o += `<line x1="${cx - g * 1.1}" x2="${cx + g * 1.1}" y1="${Y(q)}" y2="${Y(q)}" stroke-width="0.9"/>`;
+        const ob = kl in stan ? stan[kl] : zt[P.lit];
+        if (P.znak !== ob) { if (!z.ciag) n += `<text x="${cx - g * 2}" y="${cy + g * 0.55}" font-size="${g * 1.9}" stroke="none">${P.znak === 1 ? '♯' : P.znak === -1 ? '♭' : '♮'}</text>`; stan[kl] = P.znak; }
+        const bel = wBelce[iz], pusta = z.d >= 8, wGore = bel ? bel.wGore : P.poz < 4, kropka = [3, 6, 12].includes(z.d);
+        n += `<ellipse cx="${cx}" cy="${cy}" rx="${g * 0.64}" ry="${g * 0.45}" transform="rotate(-20 ${cx} ${cy})" ${pusta ? 'fill="none" stroke-width="1.1"' : 'stroke="none"'}/>`;
+        if (bel) { el[iz].cy = cy; el[iz].sx = wGore ? cx + g * 0.58 : cx - g * 0.58; }
+        else if (z.d < 16) {
+          const sx = wGore ? cx + g * 0.58 : cx - g * 0.58, kon = wGore ? cy - 3.4 * g : cy + 3.4 * g;
+          n += `<line x1="${sx}" x2="${sx}" y1="${cy}" y2="${kon}" stroke-width="0.9"/>`;
+          const fl = z.d <= 1 ? 2 : z.d <= 3 ? 1 : 0;
+          for (let f = 0; f < fl; f++) {
+            const fy = kon + (wGore ? 1 : -1) * f * g * 0.7;
+            n += wGore ? `<path d="M${sx} ${fy} q ${g * .2} ${g * .8} ${g} ${g} q ${g * .2} ${g * .45} ${-g * .1} ${g * 1.1}" fill="none" stroke-width="1.1"/>`
+                       : `<path d="M${sx} ${fy} q ${g * .2} ${-g * .8} ${g} ${-g} q ${g * .2} ${-g * .45} ${-g * .1} ${-g * 1.1}" fill="none" stroke-width="1.1"/>`;
+          }
+        }
+        if (kropka) n += `<circle cx="${cx + g * 1.25}" cy="${P.poz % 2 === 0 ? cy - g / 2 : cy}" r="${g * 0.2}" stroke="none"/>`;
+        if (lukOd && lukOd.li === li) { const yl = cy + (wGore ? g : -g); n += `<path d="M${lukOd.x + g * .7} ${yl} Q ${(lukOd.x + cx) / 2} ${yl + (wGore ? g * .8 : -g * .8)} ${cx - g * .7} ${yl}" fill="none" stroke-width="0.9"/>`; }
+        lukOd = z.luk ? { x: cx, li } : null;
+        o += zl ? `<g fill="${ZLOTO}" stroke="${ZLOTO}">${n}</g>` : n;
+        pos += z.d;
+      });
+      grupy.filter(q => q.ix.length > 1).forEach(q => {
+        const pt = q.ix.map(i => el[i]), a = pt[0], b = pt[pt.length - 1], up = q.wGore, kier = up ? -1 : 1;
+        let y1 = a.cy + kier * 3.4 * g, y2 = b.cy + kier * 3.4 * g;
+        y2 = Math.max(y1 - g, Math.min(y1 + g, y2));                       // belka najwyżej lekko pochylona
+        const yAt = x => y1 + (y2 - y1) * (x - a.sx) / ((b.sx - a.sx) || 1);
+        let sh = 0;                                                        // każdy trzonek co najmniej 2,8 odstępu
+        pt.forEach(p => { const d = p.cy + kier * 2.8 * g - yAt(p.sx); sh = up ? Math.min(sh, d) : Math.max(sh, d); });
+        const Yb = x => yAt(x) + sh, bt = g * 0.5, wew2 = -kier * g * 0.75;
+        const belka = (xa, xb2, off) => `<path d="M${xa - .45} ${Yb(xa) + off} L${xb2 + .45} ${Yb(xb2) + off} L${xb2 + .45} ${Yb(xb2) + off - kier * bt} L${xa - .45} ${Yb(xa) + off - kier * bt} Z" stroke="none"/>`;
+        pt.forEach(p => o += `<line x1="${p.sx}" x2="${p.sx}" y1="${p.cy}" y2="${Yb(p.sx)}" stroke-width="0.9"/>`);
+        o += belka(a.sx, b.sx, 0);
+        pt.forEach((p, j) => {                                             // druga belka dla szesnastek
+          if (p.z.d !== 1) return;
+          const nx = pt[j + 1], pv = pt[j - 1];
+          if (nx && nx.z.d === 1) o += belka(p.sx, nx.sx, wew2);
+          else if (!(pv && pv.z.d === 1)) o += j > 0 ? belka(p.sx - g * 1.1, p.sx, wew2) : belka(p.sx, p.sx + g * 1.1, wew2);
+        });
+      });
+      if (glowna) {
+        const fx = t => bx + padL + (t / T) * wew + g * 0.6 - g * 0.6, fy = y0 - 1.9 * g, a0 = ti * T;
+        const ed = !doPng && trybF && fEd;
+        funkcje.forEach(f => {
+          if (f.t < a0 || f.t >= a0 + T || (ed && fEd.t0 === f.t)) return;
+          o += `<text x="${fx(f.t - a0)}" y="${fy}" font-size="8.5" font-style="italic" stroke="none" font-family="Georgia,'Times New Roman',serif">${esc(f.tekst)}</text>`;
+        });
+        if (ed && fEd.t >= a0 && fEd.t < a0 + T) {                        // wpisywana funkcja: złoty znacznik ▼ i tekst z kursorem
+          const x = fx(fEd.t - a0);
+          o += `<path d="M${x - 2.2 + g * .6} ${fy - 9.5} l 4.4 0 l -2.2 3.2 Z" fill="${ZLOTO}" stroke="none"/>`
+             + `<text x="${x}" y="${fy}" font-size="8.5" font-style="italic" fill="${ZLOTO}" stroke="none" font-family="Georgia,'Times New Roman',serif">${esc(fEd.tekst)}<tspan font-style="normal">|</tspan></text>`;
+        }
+      }
+      const xb = bx + szerTaktu, ost = ti === tk.length - 1 && !op.bezKonca;
+      if (glowna && !doPng && ti < tk.length - 1) kreski.push({ ti, x: xb, y0, y1: y0 + 4 * g, g, koniec: konce.has(ti) });
+      o += ost ? `<line x1="${xb - 4}" x2="${xb - 4}" y1="${y0}" y2="${y0 + 4 * g}" stroke-width="0.9"/><rect x="${xb - 2}" y="${y0}" width="2.2" height="${4 * g}" stroke="none"/>`
+               : `<line x1="${xb}" x2="${xb}" y1="${y0}" y2="${y0 + 4 * g}" stroke-width="0.9"/>`;
+    });
+    const xKon = xp + ids.length * szerTaktu;
+    for (let l = 0; l < 5; l++) o += `<line x1="6" x2="${xKon}" y1="${y0 + l * g}" y2="${y0 + l * g}" stroke-width="0.7"/>`;
+  }
+  if (glowna && !doPng) o += '<g id="kHover"></g>';
+  return { svg: o + '</svg>', ileTaktow: tk.length, naLinie, ileStron };
+}
+
+// ===== odświeżenie ekranu =====
+const TONACJE = { '-7': 'Ces-dur', '-6': 'Ges-dur', '-5': 'Des-dur', '-4': 'As-dur', '-3': 'Es-dur', '-2': 'B-dur', '-1': 'F-dur', '0': 'C-dur',
+  '1': 'G-dur', '2': 'D-dur', '3': 'A-dur', '4': 'E-dur', '5': 'H-dur', '6': 'Fis-dur', '7': 'Cis-dur' };
+$('tonacja').innerHTML = Object.keys(TONACJE).map(Number).sort((a, b) => a - b).map(k => `<option value="${k}">${TONACJE[k]}${k ? ' (' + Math.abs(k) + (k > 0 ? '♯' : '♭') + ')' : ''}</option>`).join('');
+const NAZWY = ['c', 'cis', 'd', 'dis', 'e', 'f', 'fis', 'g', 'gis', 'a', 'b', 'h'];
+const nazwaNuty = n => NAZWY[n % 12] + ['', '', '', '', '¹', '²', '³'][Math.floor(n / 12) - 1];
+const WART = { 1: 'szesnastka', 2: 'ósemka', 3: 'ósemka z kropką', 4: 'ćwierćnuta', 6: 'ćwierćnuta z kropką', 8: 'półnuta', 12: 'półnuta z kropką', 16: 'cała nuta' };
+function pokaz() {
+  const w = rysujStrone(false);
+  if (strona > w.ileStron - 1) { strona = w.ileStron - 1; return pokaz(); }
+  $('kartka').innerHTML = w.svg;
+  $('napis').textContent = $('tytul').value.trim() || '\u00a0';                   // nad kartką tylko tytuł pieśni
+  stron = Math.min(stron, w.ileStron);
+  $('strNr').textContent = `Strona ${strona + 1} z ${w.ileStron}`; $('strIle').textContent = `Stron: ${w.ileStron}`;
+  $('strPop').disabled = strona === 0; $('strNast').disabled = strona >= w.ileStron - 1;
+  $('strMniej').disabled = w.ileStron <= ileStronPrzy(1); $('strWiecej').disabled = w.ileStron >= ileStronPrzy(Math.ceil(w.ileTaktow / 4) + 4);
+  $('info').innerHTML = `<b>${esc($('tytul').value || 'bez tytułu')}</b> · ${ust.gora}/${ust.dol} · ${TONACJE[ust.k]} · ${w.ileTaktow} taktów, po ${w.naLinie} w linijce · ${ciag.filter(x => x.n != null).length} nut` +
+    (trybF ? '<br><b>Funkcje</b> — kliknij nutę i pisz; spacja przesuwa o ósemkę, Enter zapisuje.' : taktWyb >= 0 ? (nowy && nowy.tryb !== 'podmien' ? `<br>Nowy takt ${nowy.tryb === 'przed' ? 'przed' : 'za'} taktem <b>${taktWyb + 1}</b> — zagraj go w okienku, reszta przesunie się o takt.` : `<br>Poprawiasz takt <b>${taktWyb + 1}</b> — zagraj go od nowa w okienku nad nim.`) : '<br>Kliknij takt, który chcesz poprawić.');
+  $('cofnij').disabled = !historia.length;
+}
+function zmiana(f) {                          // każda zmiana najpierw zapamiętuje stan (Ctrl+Z)
+  historia.push(JSON.stringify({ ciag, zazn, ust, konce: [...konce], funkcje })); if (historia.length > 200) historia.shift();
+  f(); pokaz();
+}
+$('cofnij').onclick = () => { if (!historia.length) return; const h = JSON.parse(historia.pop()); ciag = h.ciag; zazn = h.zazn; ust = h.ust; konce = new Set(h.konce || []); funkcje = h.funkcje || []; fEd = null; ustawPola(); pokaz(); };
+function ustawPola() { $('metrum').value = ust.gora + '/' + ust.dol; $('tonacja').value = ust.k; $('tempo').value = ust.tempo; }
+
+// ===== wczytanie pliku =====
+async function wczytaj(f) {
+  try {
+    const M = czytajMidi(await f.arrayBuffer());
+    stopGrania();                                                    // nowy plik przerywa odsłuch starego
+    const t = M.teksty;
+    // tytuł z pliku; gdy program, który zapisał MIDI, zgubił polskie litery („Có? Ci…”), biorę nazwę pliku
+    const zNazwy = f.name.replace(/\.(mid|midi)$/i, '').replace(/(_\d+)+$/, '').replace(/_/g, ' ');
+    const zPliku = t[3] || t[8] || '';
+    $('tytul').value = zPliku && !zPliku.includes('?') ? zPliku : zNazwy;
+    // podpis kompozytora: tekst z „mel.”, „muz.”, „sł.” albo pole praw autorskich / dodatkowy tekst
+    $('podpis').value = (Object.values(t).find(x => /^(mel|muz|sł|sl|opr)\.?/i.test(x)) || t[10] || t[2] || '').replace(/^(mel|muz|sł|sl|opr)\.?:\s*/i, '$1. ');
+    // przedtakt: gdy metrum zmienia się przed końcem pierwszego taktu (np. 2/8, potem 6/8), pierwsze metrum to tylko przedtakt —
+    // biorę drugie, a przedtakt dopełniam z przodu pauzą, żeby kreski taktowe wypadły tam, gdzie w pliku
+    let mt = M.metrum && [2, 4, 8].includes(M.metrum.dol) ? M.metrum : { gora: 4, dol: 4 }, dopelnij = 0;
+    const m2 = M.metra.filter(m => m.tick > 0)[0];
+    if (m2 && [2, 4, 8].includes(m2.dol) && M.metra[0].tick === 0) {
+      const T2 = m2.gora * 16 / m2.dol, przed16 = Math.round(m2.tick / (M.tpq / 4));
+      if (przed16 > 0 && przed16 < T2) { mt = m2; dopelnij = T2 - przed16; }
+    }
+    ust = { gora: mt.gora, dol: mt.dol, k: M.tonacja != null && Math.abs(M.tonacja) <= 7 ? M.tonacja : 0, tempo: M.tempo || 100 };
+    if (![...$('metrum').options].some(o => o.value === mt.gora + '/' + mt.dol)) $('metrum').insertAdjacentHTML('beforeend', `<option>${mt.gora}/${mt.dol}</option>`);
+    ciag = ciagZMidi(M); zazn = -1; historia = []; stron = 1; strona = 0; konce = new Set(); fEd = null; zamknijOkienko();
+    funkcje = M.funkcje.map(f => ({ t: Math.round(f.tick / (M.tpq / 4)) + dopelnij, tekst: f.tekst }));
+    if (dopelnij) { if (ciag[0] && ciag[0].n == null) ciag[0].d += dopelnij; else ciag.unshift({ n: null, d: dopelnij }); }
+    ustawPola();
+    ['edycja', 'edycja2', 'strony'].forEach(id => $(id).hidden = false);
+    pokaz();
+  } catch (e) {
+    $('info').innerHTML = `<span class="blad">✖ ${esc(e.message)}</span>`;
+  }
+}
+$('wczytaj').onclick = () => $('plik').click();
+$('plik').onchange = () => { const f = $('plik').files[0]; if (f) wczytaj(f); $('plik').value = ''; };
+addEventListener('dragover', e => { e.preventDefault(); document.body.classList.add('upusc'); });
+addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('upusc'); });
+addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('upusc'); const f = e.dataTransfer.files[0]; if (f) wczytaj(f); });
+
+// ===== ustawienia: metrum, tonacja, tempo, podpis =====
+$('metrum').onchange = () => zmiana(() => { const [a, b] = $('metrum').value.split('/').map(Number); ust.gora = a; ust.dol = b; });
+$('tonacja').onchange = () => zmiana(() => { ust.k = +$('tonacja').value; });     // tonacja zmienia tylko zapis (krzyżyki/bemole), nie dźwięki
+$('tempo').onchange = () => { ust.tempo = Math.max(30, Math.min(240, +$('tempo').value || 100)); $('tempo').value = ust.tempo; };
+$('podpis').oninput = () => { if (ciag) pokaz(); };
+// strony: ➕ rozkłada pieśń na jedną stronę więcej, ➖ na mniej; ◀ ▶ przegląda
+// ile stron wyjdzie przy danym podziale (linijki dzielą się całe, więc nie każdy podział daje inną liczbę stron)
+function ileStronPrzy(n) { const st = stron, uk = uklad; stron = n; const w = rysujStrone(true).ileStron; stron = st; uklad = uk; return w; }
+function zmienStrony(kier) {
+  zamknijOkienko();
+  const teraz = uklad.ileStron, maks = Math.ceil(takty(ciag, dlT()).length / 4) + 4;
+  for (let n = stron + kier; n >= 1 && n <= maks; n += kier) {
+    const w = ileStronPrzy(n);
+    if (kier > 0 ? w > teraz : w < teraz) { stron = n; break; }
+    if (kier < 0 && n === 1) { stron = 1; break; }
+  }
+  pokaz();
+}
+$('strWiecej').onclick = () => zmienStrony(1);
+$('strMniej').onclick = () => zmienStrony(-1);
+$('strPop').onclick = () => { zamknijOkienko(); strona = Math.max(0, strona - 1); pokaz(); };
+$('strNast').onclick = () => { zamknijOkienko(); strona = Math.min(uklad.ileStron - 1, strona + 1); pokaz(); };
+$('tytul').oninput = () => { if (ciag) pokaz(); };
+
+// ===== POPRAWIANIE TAKTU: klik w takt → nad nim czysty takt → wybierasz wartość i grasz → ✔ Potwierdź =====
+// klawisze jak w pianinku Alicji (A W S E D F T G Y H U J K = c¹…c²), ↑ ↓ oktawa; albo klawiatura MIDI przez USB
+const KLAW = 'AWSEDFTGYHUJK';
+const WARTOSC_KLAWISZ = { 1: 1, 2: 2, 3: 4, 4: 8, 5: 16 };
+let nowy = null;                    // { ciag: [], wart: 4, kropka: false, okt: 0 }
+const dlT = () => ust.gora * 16 / ust.dol;
+const zajete = () => nowy.ciag.reduce((s, e) => s + e.d, 0);
+const dlugoscWybrana = () => nowy.kropka && nowy.wart > 1 ? nowy.wart * 1.5 : nowy.wart;
+function wKartce(e) {                         // punkt kliknięcia w jednostkach kartki (434 × 227)
+  const r = $('kartka').querySelector('svg').getBoundingClientRect();
+  return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H };
+}
+$('kartka').addEventListener('pointerdown', e => {
+  if (!ciag || !e.target.closest('svg') || granie) return;
+  const p = wKartce(e), S = taktyGeo.strzalki;
+  if (taktWyb >= 0 && S) for (const tr of ['przed', 'za']) if (Math.hypot(p.x - S[tr], p.y - S.y) < 7) {
+    e.preventDefault(); ustawTryb(nowy.tryb === tr ? 'podmien' : tr); return;          // drugi klik w tę samą strzałkę wraca do podmiany
+  }
+  if (trybF) {                                                     // Funkcje: klik w nutę stawia znacznik
+    const G = taktyGeo.find(G => p.x >= G.x0 && p.x < G.x1 && p.y >= G.gora - 6 && p.y < G.dol);
+    if (!G) { if (fEd) { fEd = null; pokaz(); } return; }
+    e.preventDefault();
+    const wT = Math.max(0, (p.x - G.xn) / G.wew * G.T);
+    const st = G.starty.reduce((a, b) => Math.abs(b - wT) < Math.abs(a - wT) ? b : a, 0);   // najbliższa nuta w takcie
+    zacznijFunkcje(G.ti * G.T + st); return;
+  }
+  const kr = taktWyb < 0 && kreskaPod(p);
+  if (kr) { e.preventDefault(); otworzMenuKreski(kr); return; }
+  zamknijMenuKreski();
+  const t = taktyGeo.find(G => p.x >= G.x0 && p.x < G.x1 && p.y >= G.gora && p.y < G.dol);
+  if (!t) return;
+  e.preventDefault(); otworzOkienko(t.ti);
+});
+// ===== FUNKCJE nad nutami: klik w nutę → piszesz (am, B, Es…) → spacja przesuwa o ósemkę → Enter zapisuje =====
+function zacznijFunkcje(t) {
+  const f = funkcje.find(x => x.t === t);
+  fEd = { t, t0: f ? t : null, tekst: f ? f.tekst : '' }; pokaz();
+}
+function przesunFunkcje(t) {
+  fEd.t = t;
+  const ti = Math.floor(t / dlT()), sp = Math.floor(Math.floor(ti / uklad.naLinie) / uklad.lpp);
+  if (!taktyGeo.some(G => G.ti === ti) && sp !== strona) strona = Math.max(0, Math.min(uklad.ileStron - 1, sp));   // znacznik przeszedł na inną stronę
+  pokaz();
+}
+function zapiszFunkcje() {
+  const e = fEd; fEd = null;
+  zmiana(() => {
+    funkcje = funkcje.filter(f => f.t !== e.t0 && f.t !== e.t);                // stare miejsce i nowe zastępuję
+    const tx = e.tekst.trim(); if (tx) funkcje.push({ t: e.t, tekst: tx });   // pusty tekst — funkcja usunięta
+    funkcje.sort((a, b) => a.t - b.t);
+  });
+}
+function ustawTrybF(on) {
+  trybF = on; fEd = null; zamknijOkienko(); zamknijMenuKreski(); podswietlKreske(null);
+  $('fBtn').classList.toggle('wl', on); pokaz();
+}
+$('fBtn').onclick = () => ustawTrybF(!trybF);
+// ===== KRESKA TAKTOWA: najechanie — zielona i grubsza; klik — ↵ Koniec linijki (albo ⤴ Połącz linijki) =====
+const kreskaPod = p => kreski.find(k => Math.abs(p.x - k.x) < Math.max(2.6, k.g * .7) && p.y >= k.y0 - k.g * 1.2 && p.y <= k.y1 + k.g * 1.2);
+function podswietlKreske(k) {
+  const war = $('kartka').querySelector('#kHover'); if (!war) return;
+  war.innerHTML = k ? `<rect x="${k.x - 2.4}" y="${k.y0 - k.g}" width="4.8" height="${k.y1 - k.y0 + 2 * k.g}" rx="2.4" fill="rgba(70,170,80,.25)" stroke="none"/>`
+                    + `<line x1="${k.x}" x2="${k.x}" y1="${k.y0 - k.g * .4}" y2="${k.y1 + k.g * .4}" stroke="#2f9a3e" stroke-width="2.4" stroke-linecap="round"/>` : '';
+  $('kartka').querySelector('svg').style.cursor = k ? 'pointer' : '';
+}
+$('kartka').addEventListener('pointermove', e => {
+  if (!ciag || granie || taktWyb >= 0 || trybF || !e.target.closest('svg')) return;
+  podswietlKreske(kreskaMenu >= 0 ? kreski.find(k => k.ti === kreskaMenu) : kreskaPod(wKartce(e)));
+});
+$('kartka').addEventListener('pointerleave', () => { if (kreskaMenu < 0) podswietlKreske(null); });
+function otworzMenuKreski(k) {
+  kreskaMenu = k.ti; podswietlKreske(k);
+  const m = $('kMenu'); m.hidden = false;
+  $('kBtn').textContent = k.koniec ? '⤴ Połącz linijki' : '↵ Koniec linijki';
+  const kon = document.querySelector('.stol').getBoundingClientRect(), r = $('kartka').getBoundingClientRect(), sk = r.width / W;
+  let left = r.left - kon.left + k.x * sk - m.offsetWidth / 2; left = Math.max(6, Math.min(kon.width - m.offsetWidth - 6, left));
+  let top = r.top - kon.top + (k.y0 - k.g * 1.4) * sk - m.offsetHeight; if (top < 2) top = r.top - kon.top + (k.y1 + k.g * 1.4) * sk;
+  m.style.left = left + 'px'; m.style.top = top + 'px';
+}
+function zamknijMenuKreski() { if (kreskaMenu < 0) return; kreskaMenu = -1; $('kMenu').hidden = true; podswietlKreske(null); }
+$('kBtn').onclick = () => {
+  const ti = kreskaMenu; if (ti < 0) return; zamknijMenuKreski();
+  zmiana(() => { if (konce.has(ti)) konce.delete(ti); else konce.add(ti); });
+};
+addEventListener('pointerdown', e => { if (kreskaMenu >= 0 && !e.composedPath().some(el => el.id === 'kMenu' || el.id === 'kartka')) zamknijMenuKreski(); });   // ścieżka zdarzenia — podświetlenie mogło już podmienić kliknięty element
+function otworzOkienko(ti) {
+  zamknijMenuKreski();
+  taktWyb = ti; nowy = { ciag: [], wart: nowy ? nowy.wart : 4, kropka: false, okt: nowy ? nowy.okt : 0, tryb: 'podmien' };
+  pokaz(); $('okno').hidden = false; rysujOkienko(); ustawOkienko(); podlaczMidi();   // najpierw treść, potem miejsce (znana wysokość)
+}
+function ustawTryb(tr) { nowy.tryb = tr; pokaz(); rysujOkienko(); }
+function zamknijOkienko() { zamknijMenuKreski(); if (usunUzbr) rozbrojUsun(); taktWyb = -1; nowy = nowy && { ...nowy, ciag: [] }; $('okno').hidden = true; if (ciag) pokaz(); }
+// okienko stoi nad poprawianym taktem (albo pod nim, gdy u góry brakuje miejsca)
+function ustawOkienko() {
+  const G = taktyGeo.find(g => g.ti === taktWyb); if (!G) return;
+  const ok = $('okno'), kon = document.querySelector('.stol').getBoundingClientRect(), r = $('kartka').getBoundingClientRect(), s = r.width / W;
+  const sz = ok.offsetWidth, wy = ok.offsetHeight;
+  let left = r.left - kon.left + (G.x0 + G.x1) / 2 * s - sz / 2; left = Math.max(6, Math.min(kon.width - sz - 6, left));
+  let top = r.top - kon.top + G.gora * s - wy - 6; if (top < 2) top = r.top - kon.top + G.dol * s + 6;   // nad taktem; gdy brak miejsca — pod nim
+  ok.style.left = left + 'px'; ok.style.top = top + 'px';
+}
+function rysujOkienko() {
+  const T = dlT(), z = zajete();
+  $('oknoTakt').innerHTML = rysujStrone(true, { ciag: nowy.ciag.length ? nowy.ciag : [], W: 300, H: 78, naLinie: 1, podpis: '', gMax: 7, slabeDopelnienie: true, bezKonca: true }).svg;
+  const nr = taktWyb + 1;
+  $('oknoTytul').innerHTML = nowy.tryb === 'podmien' ? `Takt <b>${nr}</b> — zagraj go od nowa` : `Nowy takt <b>${nowy.tryb === 'przed' ? 'przed' : 'za'}</b> taktem <b>${nr}</b>`;
+  document.querySelectorAll('#okno [data-t]').forEach(b => b.classList.toggle('wyb', b.dataset.t === nowy.tryb));
+  $('oOk').textContent = nowy.tryb === 'podmien' ? '✔ Potwierdź' : '✔ Wstaw takt';
+  $('oknoLicz').textContent = `zajęte ${z} z ${T}`;
+  document.querySelectorAll('#okno [data-w]').forEach(b => b.classList.toggle('wyb', +b.dataset.w === nowy.wart));
+  $('oKropka').classList.toggle('wyb', nowy.kropka);
+  const od = 60 + nowy.okt * 12; $('oOkt').textContent = `A…K: ${nazwaNuty(od)}–${nazwaNuty(od + 12)}`;
+}
+function mignij() { const l = $('oknoLicz'); l.classList.remove('pelno'); void l.offsetWidth; l.classList.add('pelno'); }
+function dodaj(n) {                          // nuta (albo pauza, gdy n == null) wybranej wartości, jeśli się zmieści
+  const d = dlugoscWybrana();
+  if (zajete() + d > dlT()) { mignij(); return; }
+  nowy.ciag.push({ n, d }); if (n != null) graj1(n); rysujOkienko();
+}
+function potwierdz() {
+  if (!nowy || taktWyb < 0) return;
+  const T = dlT(), b = taktWyb, nowe = nowy.ciag.slice(), tryb = nowy.tryb;
+  if (tryb !== 'podmien') { wstawTakt(tryb === 'przed' ? b * T : (b + 1) * T, nowe, T); zamknijOkienko(); return; }
+  zmiana(() => {
+    // wszystko poza poprawianym taktem zostaje; nuta, która w niego wchodzi albo z niego wychodzi, zostaje ucięta na granicy
+    const el = osCzasu();
+    const p0 = b * T, p1 = p0 + T, wynik = [];
+    for (const e of el) {
+      const a = e.s, z = e.s + e.d;
+      if (z <= p0 || a >= p1) { wynik.push(e); continue; }
+      if (a < p0) wynik.push({ n: e.n, s: a, d: p0 - a });
+      if (z > p1) wynik.push({ n: e.n, s: p1, d: z - p1 });
+    }
+    let tt = p0; for (const x of nowe) { wynik.push({ n: x.n, s: tt, d: x.d }); tt += x.d; }
+    if (tt < p1) wynik.push({ n: null, s: tt, d: p1 - tt });          // takt niedokończony → reszta to pauza
+    ciag = zlozCiag(wynik);
+  });
+  zamknijOkienko();
+}
+// nowy takt w miejscu p (na kresce taktowej): wszystko od p przesuwa się o cały takt; nuta przechodząca przez p zostaje rozcięta
+function wstawTakt(p, nowe, T) {
+  zmiana(() => {
+    const el = osCzasu(), t = el.length ? el[el.length - 1].s + el[el.length - 1].d : 0;
+    if (p > t) el.push({ n: null, s: t, d: p - t });                    // za końcem pieśni: najpierw pauza do tego miejsca
+    const wynik = [];
+    for (const e of el) {
+      const a = e.s, z = e.s + e.d;
+      if (z <= p) wynik.push(e);
+      else if (a >= p) wynik.push({ ...e, s: a + T });
+      else { wynik.push({ n: e.n, s: a, d: p - a }); wynik.push({ n: e.n, s: p + T, d: z - p }); }
+    }
+    let tt = p; for (const x of nowe) { wynik.push({ n: x.n, s: tt, d: x.d }); tt += x.d; }
+    if (tt < p + T) wynik.push({ n: null, s: tt, d: p + T - tt });
+    ciag = zlozCiag(wynik);
+    const q = p / T; konce = new Set([...konce].map(b => b >= q ? b + 1 : b));
+    funkcje = funkcje.map(f => f.t >= p ? { ...f, t: f.t + T } : f);                // funkcje idą razem z nutami     // końce linijek idą razem z taktami
+  });
+}
+// usunięcie taktu b: wszystko za nim cofa się o takt; z nuty wchodzącej w ten takt zostaje tylko kawałek poza nim
+function usunTakt(b) {
+  const T = dlT(), p0 = b * T, p1 = p0 + T;
+  zmiana(() => {
+    const wynik = [];
+    for (const e of osCzasu()) {
+      const a = e.s, z = e.s + e.d;
+      if (z <= p0) wynik.push(e);
+      else if (a >= p1) wynik.push({ ...e, s: a - T });
+      else {
+        if (a < p0) wynik.push({ n: e.n, s: a, d: p0 - a });
+        if (z > p1) wynik.push({ n: e.n, s: p0, d: z - p1 });
+      }
+    }
+    ciag = zlozCiag(wynik);
+    konce = new Set([...konce].map(x => x >= b ? x - 1 : x).filter(x => x >= 0));
+    funkcje = funkcje.filter(f => f.t < p0 || f.t >= p1).map(f => f.t >= p1 ? { ...f, t: f.t - T } : f);   // koniec linijki za usuniętym taktem zostaje w tym samym miejscu
+  });
+  zamknijOkienko();
+}
+// ciąg → oś czasu (każda nuta z początkiem s) i z powrotem; dziury między nutami wypełniają się pauzą
+function osCzasu() { const el = []; let t = 0; for (const e of ciag) { el.push({ n: e.n, s: t, d: e.d }); t += e.d; } return el; }
+function zlozCiag(wynik) {
+  wynik.sort((x, y) => x.s - y.s);
+  const c = []; let k = 0;
+  for (const e of wynik) { if (e.d <= 0) continue; if (e.s > k) c.push({ n: null, d: e.s - k }); c.push({ n: e.n, d: e.d }); k = e.s + e.d; }
+  return c;
+}
+// 🗑 na dwa kliknięcia: pierwsze pyta „Na pewno?”, drugie usuwa
+var usunUzbr = null;
+function rozbrojUsun() { clearTimeout(usunUzbr); usunUzbr = null; const b = $('oUsun'); b.classList.remove('pyta'); b.textContent = '🗑 Usuń takt'; }
+function klikUsun() {
+  if (taktWyb < 0) return;
+  if (!usunUzbr) { const b = $('oUsun'); b.classList.add('pyta'); b.textContent = 'Na pewno?'; usunUzbr = setTimeout(rozbrojUsun, 3000); return; }
+  const b = taktWyb; rozbrojUsun(); usunTakt(b);
+}
+$('oUsun').onclick = klikUsun;
+// przyciski w okienku
+document.querySelectorAll('#okno [data-t]').forEach(b => b.onclick = () => ustawTryb(b.dataset.t));
+document.querySelectorAll('#okno [data-w]').forEach(b => b.onclick = () => { nowy.wart = +b.dataset.w; if (nowy.wart === 1) nowy.kropka = false; rysujOkienko(); });
+$('oKropka').onclick = () => { if (nowy.wart > 1) nowy.kropka = !nowy.kropka; rysujOkienko(); };
+$('oPauza').onclick = () => dodaj(null);
+$('oCofnij').onclick = () => { nowy.ciag.pop(); rysujOkienko(); };
+$('oDol').onclick = () => { nowy.okt = Math.max(-2, nowy.okt - 1); rysujOkienko(); };
+$('oGora').onclick = () => { nowy.okt = Math.min(1, nowy.okt + 1); rysujOkienko(); };
+$('oOk').onclick = potwierdz;
+$('oNie').onclick = zamknijOkienko;
+addEventListener('resize', () => { if (taktWyb >= 0) ustawOkienko(); });
+
+// klawiatura komputera
+addEventListener('keydown', e => {
+  if (!ciag || ['INPUT', 'SELECT'].includes(e.target.tagName)) return;
+  if (e.key === 'Escape' && kreskaMenu >= 0) { zamknijMenuKreski(); return; }
+  if (trybF && fEd && !(e.ctrlKey || e.metaKey || e.altKey)) {
+    const k = e.key, dl = ciag.reduce((a, x) => a + x.d, 0);
+    if (k === ' ' || k === 'ArrowRight') { e.preventDefault(); przesunFunkcje(Math.min(dl - 1, fEd.t + 2)); return; }   // spacja — ósemkę dalej
+    if (k === 'ArrowLeft') { e.preventDefault(); przesunFunkcje(Math.max(0, fEd.t - 2)); return; }
+    if (k === 'Backspace') { e.preventDefault(); if (fEd.tekst) { fEd.tekst = fEd.tekst.slice(0, -1); pokaz(); } else przesunFunkcje(Math.max(0, fEd.t - 2)); return; }
+    if (k === 'Enter') { e.preventDefault(); zapiszFunkcje(); return; }
+    if (k === 'Escape') { e.preventDefault(); fEd = null; pokaz(); return; }
+    if (k.length === 1) { e.preventDefault(); if (fEd.tekst.length < 12) fEd.tekst += k; pokaz(); return; }
+    return;
+  }
+  if (taktWyb < 0) { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); $('cofnij').click(); } return; }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  if (WARTOSC_KLAWISZ[e.key]) { e.preventDefault(); nowy.wart = WARTOSC_KLAWISZ[e.key]; if (nowy.wart === 1) nowy.kropka = false; rysujOkienko(); return; }
+  if (e.key === '.' || e.key === ',') { e.preventDefault(); $('oKropka').click(); return; }
+  if (e.key === '0' || e.key === ' ') { e.preventDefault(); dodaj(null); return; }
+  if (e.key === 'Backspace') { e.preventDefault(); $('oCofnij').click(); return; }
+  if (e.key === 'ArrowUp') { e.preventDefault(); $('oGora').click(); return; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); $('oDol').click(); return; }
+  if (e.key === 'Enter') { e.preventDefault(); potwierdz(); return; }
+  if (e.key === 'Escape') { e.preventDefault(); zamknijOkienko(); return; }
+  if (e.key === 'Delete') { e.preventDefault(); klikUsun(); return; }
+  if (!e.repeat && k.length === 1 && KLAW.includes(k)) { e.preventDefault(); dodaj(60 + nowy.okt * 12 + KLAW.indexOf(k)); }
+});
+// klawiatura MIDI przez USB: każde wciśnięcie wstawia nutę wybranej wartości
+let midiDostep = null;
+async function podlaczMidi() {
+  if (midiDostep || !navigator.requestMIDIAccess) return;
+  try {
+    midiDostep = await navigator.requestMIDIAccess();
+    const podepnij = () => [...midiDostep.inputs.values()].forEach(we => we.onmidimessage = m => {
+      const [st, n, v] = m.data; if ((st & 0xf0) === 0x90 && v > 0 && taktWyb >= 0) dodaj(n);
+    });
+    podepnij(); midiDostep.onstatechange = podepnij;
+  } catch (_) { midiDostep = null; }
+}
+
+// ===== dźwięk: prosty głos organów (alikwoty pryncypału) =====
+let AC = null, FALA = null, granie = null;
+function audio() {
+  if (!AC) {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    const a = [1, .62, .42, .30, .20, .15, .10, .08, .06, .045, .035, .025], re = new Float32Array(a.length + 1), im = new Float32Array(a.length + 1);
+    a.forEach((x, i) => im[i + 1] = x); FALA = AC.createPeriodicWave(re, im);
+  }
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function ton(n, t, dl) {
+  const ac = audio(), o = ac.createOscillator(), g = ac.createGain();
+  o.setPeriodicWave(FALA); o.frequency.value = 440 * Math.pow(2, (n - 69) / 12);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.12, t + .04); g.gain.setValueAtTime(.12, t + Math.max(.05, dl - .06)); g.gain.linearRampToValueAtTime(0, t + dl);
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dl + .05);
+  return o;
+}
+function graj1(n) { if (!granie) ton(n, audio().currentTime, .35); }
+function stopGrania() {
+  if (!granie) return; granie.osc.forEach(o => { try { o.stop(); } catch (_) {} }); granie.czasy.forEach(clearTimeout);
+  granie = null; $('graj').textContent = '▶ Odsłuchaj'; $('graj').classList.remove('gra'); zazn = -1; if (ciag) pokaz();
+}
+$('graj').onclick = () => {
+  if (granie) { stopGrania(); return; }
+  if (!ciag || !ciag.length) return;
+  const ac = audio(), s16 = 60 / ust.tempo / 4, start = ac.currentTime + .1, osc = [], czasy = [];
+  zamknijOkienko(); let t = 0; const odZazn = 0, przed = ciag.slice(0, odZazn).reduce((s, e) => s + e.d, 0);
+  ciag.forEach((e, i) => {
+    if (i >= odZazn) {
+      const kiedy = (t - przed) * s16;
+      if (e.n != null) osc.push(ton(e.n, start + kiedy, e.d * s16 * .95));
+      const nrTaktu = Math.floor(t / dlT());
+      czasy.push(setTimeout(() => { zazn = i; const sp = Math.floor(Math.floor(nrTaktu / uklad.naLinie) / uklad.lpp); if (sp !== strona) strona = sp; pokaz(); }, (kiedy + .1) * 1000));
+    }
+    t += e.d;
+  });
+  czasy.push(setTimeout(stopGrania, ((t - przed) * s16 + .3) * 1000));
+  granie = { osc, czasy }; $('graj').textContent = '⏹ Stop'; $('graj').classList.add('gra');
+};
+
+// ===== zapis MIDI (format 0, 480 kroków na ćwierćnutę) — dalej to jest MIDI =====
+const PL = { ą: 'a', ć: 'c', ę: 'e', ł: 'l', ń: 'n', ó: 'o', ś: 's', ź: 'z', ż: 'z', Ą: 'A', Ć: 'C', Ę: 'E', Ł: 'L', Ń: 'N', Ó: 'O', Ś: 'S', Ź: 'Z', Ż: 'Z' };
+const nazwaPliku = (t, kon) => (t || 'nuty').replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, z => PL[z]).replace(/[^\w .()-]+/g, '').trim().replace(/\s+/g, '_') + kon;
+// polskie litery w tekstach MIDI zapisuję w kodowaniu Windows-1250 (tak samo czyta je ten program)
+const CP1250 = { ą: 0xb9, ć: 0xe6, ę: 0xea, ł: 0xb3, ń: 0xf1, ó: 0xf3, ś: 0x9c, ź: 0x9f, ż: 0xbf, Ą: 0xa5, Ć: 0xc6, Ę: 0xca, Ł: 0xa3, Ń: 0xd1, Ó: 0xd3, Ś: 0x8c, Ź: 0x8f, Ż: 0xaf };
+const bajtyTekstu = s => [...s].map(c => CP1250[c] || (c.charCodeAt(0) < 128 ? c.charCodeAt(0) : 63));
+function pobierz(blob, nazwa) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nazwa; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); }
+$('zapiszMidi').onclick = () => {
+  if (!ciag) return;
+  const b = [], vlq = v => { const w = [v & 0x7f]; while ((v >>= 7)) w.unshift((v & 0x7f) | 0x80); b.push(...w); };
+  const meta = (typ, dane) => { b.push(0, 0xff, typ); vlq(dane.length); b.push(...dane); };
+  const tytul = $('tytul').value.trim(), podpis = $('podpis').value.trim(), us = Math.round(60000000 / ust.tempo);
+  if (tytul) meta(0x03, bajtyTekstu(tytul));
+  if (podpis) meta(0x01, bajtyTekstu(podpis));
+  meta(0x58, [ust.gora, Math.log2(ust.dol), 24, 8]);
+  meta(0x59, [ust.k & 0xff, 0]);
+  meta(0x51, [(us >> 16) & 255, (us >> 8) & 255, us & 255]);
+  // zdarzenia po czasie: nuty i funkcje (funkcja = znacznik tekstowy w miejscu, gdzie stoi); 480 kroków na ćwierćnutę → 120 na szesnastkę
+  const zd = []; let t = 0;
+  for (const e of ciag) { if (e.n != null) { zd.push({ t: t * 120, k: 1, b: [0x90, e.n, 90] }); zd.push({ t: (t + e.d) * 120, k: 0, b: [0x80, e.n, 0] }); } t += e.d; }
+  funkcje.forEach(f => { const tx = bajtyTekstu(f.tekst), w = []; let v = tx.length; w.push(v & 0x7f); while ((v >>= 7)) w.unshift((v & 0x7f) | 0x80); zd.push({ t: f.t * 120, k: 0.5, b: [0xff, 0x06, ...w, ...tx] }); });
+  zd.sort((x, y) => x.t - y.t || x.k - y.k);                            // w tej samej chwili: puszczenie, znacznik, wciśnięcie
+  let teraz = 0;
+  for (const z of zd) { vlq(z.t - teraz); b.push(...z.b); teraz = z.t; }
+  vlq(t * 120 - teraz); b.push(0xff, 0x2f, 0x00);
+  const nag = [0x4d, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 0, 0, 1, 0x01, 0xe0], dl = b.length;
+  pobierz(new Blob([new Uint8Array([...nag, 0x4d, 0x54, 0x72, 0x6b, (dl >>> 24) & 255, (dl >>> 16) & 255, (dl >>> 8) & 255, dl & 255, ...b])], { type: 'audio/midi' }), nazwaPliku(tytul, '.mid'));
+};
+
+// ===== zapis PNG (1302 × 681 — trzy razy kartka), bez złotego zaznaczenia =====
+$('zapisz').onclick = async () => {
+  if (!ciag) return;
+  const ile = uklad.ileStron, tytul = $('tytul').value.trim();
+  for (let sp = 0; sp < ile; sp++) {
+    const img = new Image();
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(rysujStrone(true, { strona: sp }).svg);
+    await img.decode();
+    const c = document.createElement('canvas'); c.width = W * SKALA_PNG; c.height = H * SKALA_PNG;
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    const b = await new Promise(r => c.toBlob(r, 'image/png'));
+    pobierz(b, nazwaPliku(tytul, ile === 1 ? '.png' : `_${sp + 1}.png`));
+    if (sp < ile - 1) await new Promise(r => setTimeout(r, 400));     // przeglądarka lepiej przyjmuje kilka plików po kolei
+  }
+};
+</script>
+</body>
+</html>
