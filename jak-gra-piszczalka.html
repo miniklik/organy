@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jak gra piszczałka</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Outfit:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --zloto: #d8b46a; --kosc: #f3ead6; --tlo: #120c08; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: radial-gradient(ellipse at 50% 0%, #2a2238, #0d0b14 70%); color: var(--kosc); font-family: 'Outfit', system-ui, sans-serif;
+         display: grid; place-items: center; overflow: hidden; user-select: none; }
+  #skala { transform-origin: center; }
+  .stol { width: 1280px; padding: 18px 22px 20px; border-radius: 16px; display: grid; grid-template-columns: minmax(0, 1fr) 420px; grid-template-rows: auto 520px 124px; gap: 14px;
+          background: linear-gradient(180deg, #4a2a17, #2e190d); box-shadow: 0 30px 80px rgba(0,0,0,.7), inset 0 2px 0 rgba(255,255,255,.08); }
+  header { grid-column: 1 / 3; display: flex; align-items: baseline; gap: 18px; }
+  header h1 { margin: 0; font: 700 26px 'Cinzel', serif; letter-spacing: .1em; color: var(--zloto); }
+  header span { font-size: 14px; color: #c9b48c; }
+  .doNot { margin-left: auto; align-self: center; font: 700 14px 'Outfit'; padding: 8px 16px; border-radius: 999px; cursor: pointer; border: 0; background: linear-gradient(180deg, #f0d79a, #c9a35a); color: #2a1608; white-space: nowrap; }
+  /* okno „Notatnik” z gotowym kodem */
+  .npTlo { position: fixed; inset: 0; z-index: 20; background: rgba(5,3,2,.72); display: grid; place-items: center; }
+  .npTlo[hidden] { display: none; }
+  .np { width: min(980px, 94vw); height: min(760px, 90vh); display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.7); }
+  .np .t { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 8px 0 14px; background: #f0f0f0; border-bottom: 1px solid #ddd; font: 14px 'Outfit'; color: #333; }
+  .np .t b { font-weight: 600; } .np .t span { color: #888; font-size: 12.5px; }
+  .np .t button { font: 600 13px 'Outfit'; padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; color: #222; }
+  .np .t button:hover { background: #e9f2ff; border-color: #7aa7e8; }
+  .np .t .x { margin-left: 4px; border: 0; background: none; font-size: 18px; }
+  .np .m { font: 13px 'Outfit'; color: #555; padding: 4px 14px; border-bottom: 1px solid #eee; }
+  .np pre { flex: 1; margin: 0; overflow: auto; padding: 12px 16px; font: 13.5px/1.5 Consolas, 'JetBrains Mono', monospace; color: #111; white-space: pre; user-select: text; }
+  .np .rada { padding: 9px 14px; background: #fffbe6; border-top: 1px solid #eee3b0; font: 13.5px 'Outfit'; color: #5a4a10; }
+  .rejWybor { display: inline-flex; border: 1px solid rgba(216,180,106,.45); border-radius: 999px; overflow: hidden; align-self: center; }
+  .rejWybor button { font: 700 14px 'Outfit'; color: #e8d4a8; background: transparent; border: 0; padding: 7px 16px; cursor: pointer; }
+  .rejWybor button + button { border-left: 1px solid rgba(216,180,106,.35); }
+  .rejWybor button.on { background: linear-gradient(180deg, #f0d79a, #c9a35a); color: #2a1608; }
+  .panel { border-radius: 10px; background: linear-gradient(180deg, #1c120b, #2b1a0e); box-shadow: inset 0 2px 10px rgba(0,0,0,.7); position: relative; }
+  /* ===== schemat: droga dźwięku ===== */
+  #schemat { height: 520px; }
+  #schemat svg { width: 100%; height: 100%; display: block; }
+  .wezel { cursor: pointer; }
+  .wezel rect { fill: #2a1a0f; stroke: rgba(216,180,106,.45); stroke-width: 1.5; rx: 10; transition: fill .2s; }
+  .wezel:hover rect { fill: #3a2414; }
+  .wezel.wybrany rect { stroke: var(--zloto); stroke-width: 3; fill: #3d2615; }
+  .wezel .tytul { font: 700 15px 'Outfit'; fill: var(--kosc); }
+  .wezel .kod { font: 12px 'JetBrains Mono'; fill: #9fd6a6; }
+  .wezel .opis { font: 12px 'Outfit'; fill: #b59f78; }
+  .wezel .zar { fill: var(--zloto); opacity: 0; }
+  .grupa { font: 700 12px 'Outfit'; letter-spacing: .2em; fill: rgba(216,180,106,.5); }
+  .kabel { fill: none; stroke: #3a2a1c; stroke-width: 3; }
+  .prad { fill: none; stroke-linecap: round; stroke-dasharray: 2 14; }
+  /* ===== szczegóły wybranej części ===== */
+  #szczegoly { grid-row: 2 / 4; grid-column: 2; min-width: 0; min-height: 0; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #5a3b22 transparent; }
+  #szczegoly h2 { margin: 0; font: 700 19px 'Outfit'; color: var(--zloto); }
+  #szczegoly .co { font-size: 13.5px; line-height: 1.45; color: #e8dcc2; }
+  #suwaki { display: flex; flex-direction: column; gap: 6px; }
+  #suwaki:empty { display: none; }
+  .suw { display: grid; grid-template-columns: 150px 1fr 92px; align-items: center; gap: 10px; font-size: 13px; color: #e8dcc2; }
+  .suw input { accent-color: var(--zloto); width: 100%; }
+  .suw b { font: 700 13px 'JetBrains Mono'; color: #ffd98a; text-align: right; }
+  .suwPrzyc { display: flex; gap: 8px; align-items: center; }
+  .suwPrzyc button { font: 700 13px 'Outfit'; padding: 6px 14px; border-radius: 999px; cursor: pointer; border: 0; background: linear-gradient(180deg, #f0d79a, #c9a35a); color: #2a1608; }
+  .suwPrzyc button.gra { background: linear-gradient(180deg, #c0443b, #842720); color: #fff; }
+  .suwPrzyc button.cichy { background: rgba(255,255,255,.07); color: var(--kosc); border: 1px solid rgba(216,180,106,.4); }
+  .suwPrzyc small { font-size: 11.5px; color: #8d7a5c; }
+  #wykres { flex: none; width: 100%; height: 160px; border-radius: 8px; background: #0b0805; border: 1px solid #3d2a18; display: block; }
+  .podpisW { font-size: 12px; color: #b59f78; margin-top: -4px; }
+  #kod { font: 13px/1.75 'JetBrains Mono', monospace; background: #0b0805; border: 1px solid #3d2a18; border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; color: #cfc3a8; flex: none; }
+  #kod .s { color: #9fd6a6; border-bottom: 1px dashed rgba(159,214,166,.5); cursor: pointer; }
+  #kod .s:hover, #kod .s.on { background: rgba(159,214,166,.18); color: #c9ffd0; }
+  #kod .k { color: #7a6a52; }
+  #slowo { font-size: 14px; line-height: 1.5; min-height: 66px; padding: 10px 12px; border-radius: 8px; background: rgba(216,180,106,.1); border: 1px solid rgba(216,180,106,.3); }
+  #slowo b { color: #c9ffd0; font-family: 'JetBrains Mono'; font-weight: 700; }
+  /* ===== klawisze i przełączniki ===== */
+  .dol { display: flex; gap: 12px; min-width: 0; align-items: center; align-items: stretch; padding: 12px 14px; }
+  .klaw { display: flex; position: relative; height: 92px; flex: none; }
+  .klaw div { width: 36px; margin: 0 2px; border-radius: 0 0 6px 6px; background: linear-gradient(#e9e0cb, #fbf6ea 15%, #f3ead6); color: #6b5a3a; font: 700 14px 'Outfit';
+              display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 8px; cursor: pointer; box-shadow: 0 4px 0 #a99a7c; }
+  .klaw div small { font-size: 11px; color: #9a8a6a; font-weight: 400; }
+  .klaw div.on { background: linear-gradient(#d8ccb0, #efe3c6); transform: translateY(3px); box-shadow: 0 1px 0 #a99a7c, inset 0 0 18px rgba(216,180,106,.7); }
+  .przel { display: grid; grid-template-columns: repeat(3, auto); gap: 6px 6px; align-content: center; }
+  .przel label { font-size: 12.5px; white-space: nowrap; display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(216,180,106,.35); background: rgba(255,255,255,.05); }
+  .przel input { accent-color: var(--zloto); }
+  .przel .zwolnij { grid-column: 1 / 4; display: flex; gap: 8px; align-items: center; font-size: 12px; color: #b59f78; border: 0; background: none; padding: 0; }
+  .przyciski { display: flex; flex-direction: column; gap: 8px; justify-content: center; margin-left: auto; }
+  .przyciski button { white-space: nowrap; font: 700 14px 'Outfit'; padding: 9px 16px; border-radius: 999px; cursor: pointer; border: 0; background: linear-gradient(180deg, #f0d79a, #c9a35a); color: #2a1608; }
+  .przyciski button.cichy { background: rgba(255,255,255,.07); color: var(--kosc); border: 1px solid rgba(216,180,106,.4); }
+  .liczba { position: absolute; font: 700 14px 'JetBrains Mono'; color: #ffd98a; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="npTlo" id="npTlo" hidden><div class="np">
+  <div class="t">📝 <b id="npPlik">piszczalka.html – Notatnik</b><span id="npIle"></span><span style="flex:1"></span>
+    <button id="npKop">📋 Skopiuj</button><button id="npTxt">💾 Pobierz .txt</button><button id="npHtml">💾 Pobierz .html</button><button class="x" id="npZamk" title="Zamknij (Esc)">✕</button></div>
+  <div class="m">Plik &nbsp; Edycja &nbsp; Format &nbsp; Widok &nbsp; Pomoc</div>
+  <pre id="npKod"></pre>
+  <div class="rada">Skopiuj, otwórz <b>Notatnik</b>, wklej i zapisz jako <b id="npNazwa">piszczalka.html</b> (typ: „Wszystkie pliki”, kodowanie UTF-8). Otwórz dwuklikiem i graj klawiszami <b>A S D F G H J K</b>.</div>
+</div></div>
+<div id="skala"><div class="stol">
+  <header><h1>Jak gra piszczałka</h1>
+    <div class="rejWybor" id="rejWybor"><button data-r="pryncypal" class="on">Pryncypał 8'</button><button data-r="gedakt">Gedakt 8'</button></div>
+    <span>droga dźwięku od przepisu do głośnika — kliknij dowolną część albo słowo w kodzie</span>
+    <button class="doNot" id="doNot" title="Cały kod tej piszczałki — z twoimi ustawieniami — do wklejenia w Notatniku">📝 Kod do Notatnika</button></header>
+  <div class="panel" id="schemat"><svg id="svg" viewBox="0 0 820 520"></svg></div>
+  <div class="panel" id="szczegoly">
+    <h2 id="sTytul"></h2>
+    <div class="co" id="sCo"></div>
+    <canvas id="wykres" width="776" height="380"></canvas>
+    <div class="podpisW" id="sPodpis"></div>
+    <div id="suwaki"></div>
+    <div id="kod"></div>
+    <div id="slowo">Kliknij zielone słowo w kodzie, a zobaczysz, co robi.</div>
+  </div>
+  <div class="panel dol">
+    <div class="klaw" id="klaw"></div>
+    <div class="przel">
+      <label><input type="checkbox" id="pAlik" checked> alikwoty</label>
+      <label><input type="checkbox" id="pWej" checked> wejście</label>
+      <label><input type="checkbox" id="pPluc" checked> plucie</label>
+      <label><input type="checkbox" id="pWiatr" checked> wiatr</label>
+      <label><input type="checkbox" id="pPogl" checked> pogłos</label>
+      <label title="Przesadza wejście, falowanie i plucie, żeby było je dobrze widać i słychać"><input type="checkbox" id="pLupa"> 🔍 przesadź</label>
+    </div>
+    <div class="przyciski"><button id="graj">▶ Nuta a¹</button><button class="cichy" id="akord">▶ Akord</button></div>
+  </div>
+</div></div>
+
+<script>
+/* =====================================================================
+   JAK GRA PISZCZAŁKA — ten sam przepis co w Organach Alicji (Pryncypał 8'),
+   ale każda część ma „podsłuch” (AnalyserNode), więc widać, ile energii przez nią płynie.
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+// przepisy z Organów Alicji: Pryncypał = rząd A, Gedakt = rząd B (PRZEPISY w organy-alicji.html)
+// glos: głośność względem Pryncypała (w organach: glosnosc × alicja → 0,60 × 0,82 wobec 1,16 × 0,74)
+const REJ = {
+  pryncypal: { nazwa: "Pryncypał 8'", alikwoty: [1, 0.62, 0.42, 0.30, 0.20, 0.15, 0.10, 0.08, 0.06, 0.045, 0.035, 0.025], wejscie: 0.045, oddech: 0.10, oddechStaly: null, pasmo: 3, szerokosc: 2.5, glos: 1 },
+  gedakt:    { nazwa: "Gedakt 8'",    alikwoty: [1, 0.10, 0.05, 0.015], wejscie: 0.05, oddech: 0.45, oddechStaly: 0.05, pasmo: 5, szerokosc: 0.7, glos: (0.60 * 0.82) / (1.16 * 0.74) }
+};
+const WIATR = 0.9;
+let rej = 'pryncypal', R = REJ.pryncypal, ALIKWOTY = R.alikwoty, WEJSCIE = R.wejscie, ODDECH = R.oddech;
+const oddechStaly = () => (R.oddechStaly != null ? R.oddechStaly : R.oddech * 0.25) * (S.odd / R.oddech);   // cichy oddech rośnie razem z suwakiem
+// SUWAKI: to, czym gra piszczałka. Na start dokładnie jak w Organach Alicji; suwak zmienia tylko ten pokaz.
+let S = {};
+function domyslne() { S = { hz: 440, glos: 0.25, ile: R.alikwoty.length, wej: R.wejscie, odd: R.oddech, pasmo: R.pasmo, wiatr: WIATR, kosciol: 0.5 }; }
+domyslne();
+const l = x => String(x).replace('.', ',');                 // liczba po polsku: 0,45
+const hz = n => 440 * Math.pow(2, (n - 69) / 12);
+const lupa = () => $('pLupa').checked;
+
+// ===== dźwięk: te same węzły co w organach + podsłuchy =====
+let A = null, FALA, SINUS, SZUM, IMP;
+const POD = {};                         // podsłuchy: ton, plucie, nuta, sucho, mokro, wyjscie
+let sucho, mokro, poglos, wyjscie;
+function start() {
+  if (A) { if (A.state === 'suspended') A.resume(); return; }
+  A = new AudioContext();
+  FALA = falaZ(ALIKWOTY.slice(0, S.ile));
+  const im1 = new Float32Array(2); im1[1] = 1; SINUS = A.createPeriodicWave(new Float32Array(2), im1);
+  SZUM = A.createBuffer(1, A.sampleRate, A.sampleRate); const s = SZUM.getChannelData(0); for (let i = 0; i < s.length; i++) s[i] = Math.random() * 2 - 1;
+  const pod = n => { const a = A.createAnalyser(); a.fftSize = 4096; a.smoothingTimeConstant = 0.6; POD[n] = a; return a; };
+  ['ton', 'plucie', 'nuta', 'sucho', 'mokro', 'wyjscie'].forEach(pod);
+  wyjscie = A.createGain(); wyjscie.connect(A.destination); wyjscie.connect(POD.wyjscie);
+  sucho = A.createGain(); sucho.gain.value = 0.67; sucho.connect(wyjscie); sucho.connect(POD.sucho);
+  mokro = A.createGain(); poglos = A.createConvolver();
+  mokro.connect(poglos); poglos.connect(wyjscie); poglos.connect(POD.mokro);
+  budujPoglos();
+}
+function falaZ(a) { const re = new Float32Array(a.length + 1), im = new Float32Array(a.length + 1); a.forEach((x, i) => im[i + 1] = x); return A.createPeriodicWave(re, im); }
+// echo kościoła — ten sam przepis co w organach: 1,2 s (kaplica) … 6,5 s (katedra)
+function budujPoglos() {
+  if (!A) return; const p = S.kosciol, sek = 1.2 + p * 5.3, dl = Math.floor(A.sampleRate * sek); IMP = A.createBuffer(2, dl, A.sampleRate);
+  for (let k = 0; k < 2; k++) { const d = IMP.getChannelData(k); let c = 0;
+    for (let i = 0; i < dl; i++) { const t = i / A.sampleRate, g = Math.pow(1 - i / dl, 2.2) * Math.exp(-t * 1.1);
+      c += ((Math.random() * 2 - 1) - c) * Math.max(0.04, 0.55 * Math.exp(-t * 0.9)); d[i] = t < 0.018 ? 0 : c * g; } }
+  poglos.buffer = IMP; sucho.gain.value = 0.85 - p * 0.35; ustawPoglos();
+}
+function ustawPoglos() { if (A) mokro.gain.setTargetAtTime($('pPogl').checked ? 0.9 + S.kosciol * 1.6 : 0, A.currentTime, 0.05); }
+$('pPogl').onchange = ustawPoglos;
+
+const grajace = {};                     // nuta → { stop, t0, czW, baza }
+let ostatnia = null;                    // ostatnio wciśnięta nuta — jej liczby pokazujemy
+function piszczalka(n) {
+  const t = A.currentTime, f = hz(n), v = 0.12 * R.glos / Math.sqrt(Math.max(1, Object.keys(grajace).length + 1) / 1.5);
+  const nuta = A.createGain(); nuta.gain.value = 0; nuta.connect(sucho); nuta.connect(mokro); nuta.connect(POD.nuta);
+  const o = A.createOscillator(); o.setPeriodicWave($('pAlik').checked ? FALA : SINUS); o.frequency.value = f;
+  const baza = $('pWiatr').checked ? (Math.random() * 2 - 1) * 1.5 : 0; o.detune.value = baza;
+  const czW = 3.3 + Math.random() * 1.2, glW = $('pWiatr').checked ? S.wiatr * (lupa() ? 40 : 1) : 0;
+  const wiatr = A.createOscillator(), wg = A.createGain(); wiatr.frequency.value = czW; wg.gain.value = glW; wiatr.connect(wg).connect(o.detune);
+  o.connect(nuta); o.connect(POD.ton); o.start(t); wiatr.start(t);
+  const wej = $('pWej').checked ? S.wej * (lupa() ? 4 : 1) : 0.003;
+  nuta.gain.setValueAtTime(0, t);
+  if ($('pWej').checked) { nuta.gain.linearRampToValueAtTime(v * 1.12, t + wej); nuta.gain.linearRampToValueAtTime(v, t + wej + 0.09 * (lupa() ? 4 : 1)); }
+  else nuta.gain.linearRampToValueAtTime(v, t + wej);
+  const zrodla = [o, wiatr];
+  if ($('pPluc').checked && S.odd > 0) {
+    const p = A.createBufferSource(), fl = A.createBiquadFilter(), pg = A.createGain(), m = lupa() ? 3 : 1;
+    p.buffer = SZUM; p.loop = true; fl.type = 'bandpass'; fl.frequency.value = Math.min(9000, f * S.pasmo); fl.Q.value = R.szerokosc;
+    pg.gain.setValueAtTime(0, t); pg.gain.linearRampToValueAtTime(S.odd * 6 * m + 0.0001, t + 0.012 * m);
+    pg.gain.exponentialRampToValueAtTime(oddechStaly() * m + 0.0001, t + 0.09 * m);
+    p.connect(fl).connect(pg).connect(nuta); pg.connect(POD.plucie); p.start(t, Math.random() * 0.9); zrodla.push(p);
+  }
+  return { t0: t, czW, baza, glW, f, stop() {
+    const k = A.currentTime; nuta.gain.cancelScheduledValues(k); nuta.gain.setValueAtTime(nuta.gain.value, k); nuta.gain.linearRampToValueAtTime(0, k + 0.07);
+    zrodla.forEach(z => z.stop(k + 0.12)); } };
+}
+let surowy = null;                      // surowy ton: { o, g }
+function surowyGraj(wl) {
+  start();
+  if (!wl && surowy) { const k = A.currentTime; surowy.g.gain.setTargetAtTime(0, k, 0.02); surowy.o.stop(k + 0.2); surowy = null; }
+  if (wl && !surowy) { const o = A.createOscillator(), g = A.createGain(); o.type = 'sine'; o.frequency.value = S.hz; g.gain.value = 0;
+    g.gain.setTargetAtTime(S.glos * 0.4, A.currentTime, 0.02); o.connect(g); g.connect(A.destination); g.connect(POD.wyjscie); o.start(); surowy = { o, g }; }
+  const b = $('surBtn'); if (b) { b.textContent = surowy ? '⏹ Zatrzymaj' : '▶ Posłuchaj surowego tonu'; b.classList.toggle('gra', !!surowy); }
+}
+function wcisnij(n) { start(); if (grajace[n]) return; grajace[n] = piszczalka(n); ostatnia = n; document.querySelector(`[data-n="${n}"]`)?.classList.add('on'); }
+function pusc(n) { if (!grajace[n]) return; grajace[n].stop(); delete grajace[n]; document.querySelector(`[data-n="${n}"]`)?.classList.remove('on'); }
+
+// klawisze: A S D F G H J K = c¹ … c²
+const KL = [['A', 60, 'c¹'], ['S', 62, 'd¹'], ['D', 64, 'e¹'], ['F', 65, 'f¹'], ['G', 67, 'g¹'], ['H', 69, 'a¹'], ['J', 71, 'h¹'], ['K', 72, 'c²']];
+$('klaw').innerHTML = KL.map(([k, n, nz]) => `<div data-n="${n}">${nz}<small>${k}</small></div>`).join('');
+$('klaw').addEventListener('pointerdown', e => { const d = e.target.closest('[data-n]'); if (!d) return; e.preventDefault(); const n = +d.dataset.n; wcisnij(n);
+  const puscTo = () => { pusc(n); removeEventListener('pointerup', puscTo); }; addEventListener('pointerup', puscTo); });
+addEventListener('keydown', e => { if (e.repeat || e.ctrlKey || e.metaKey) return; const k = KL.find(x => x[0] === e.key.toUpperCase()); if (k) wcisnij(k[1]); });
+addEventListener('keyup', e => { const k = KL.find(x => x[0] === e.key.toUpperCase()); if (k) pusc(k[1]); });
+const przytrzymaj = (nuty, ms) => { nuty.forEach(wcisnij); setTimeout(() => nuty.forEach(pusc), ms); };
+$('graj').onclick = () => przytrzymaj([69], 1800);
+$('akord').onclick = () => przytrzymaj([62, 65, 69], 2400);
+
+// ===== SCHEMAT: części i kable =====
+// każdy węzeł: x, y, szer., wys., tytuł, słowo z kodu, krótki opis
+const W = {
+  przepis: [16, 46, 170, 74, 'Przepis na barwę', 'createPeriodicWave', '12 głośności alikwotów'],
+  ton:     [230, 46, 180, 74, 'Piszczałka drga', 'createOscillator()', 'ton + alikwoty'],
+  wiatr:   [16, 176, 170, 74, 'Wiatr z miechów', 'wiatr (oscylator)', '3,3–4,5 fal na sekundę'],
+  wiatrG:  [230, 176, 180, 74, 'Siła falowania', 'wg.gain = WIATR', 'o 0,9 centa'],
+  szum:    [16, 318, 170, 74, 'Powietrze', 'SZUM (bufor)', 'losowe liczby'],
+  filtr:   [230, 318, 180, 74, 'Usta piszczałki', "'bandpass'", 'szum tylko wokół nuty'],
+  plucie:  [452, 318, 160, 74, 'Plucie', 'pg.gain', '12 ms zrywu, potem oddech'],
+  nuta:    [452, 108, 160, 90, 'Wejście nuty', 'nuta.gain', 'narasta, przestrzeli, siada'],
+  sucho:   [650, 40, 156, 74, 'Prosto do uszu', 'sucho', 'dźwięk bez echa'],
+  mokro:   [650, 196, 156, 74, 'Do ścian', 'mokro', 'część, która odbije się'],
+  poglos:  [650, 318, 156, 74, 'Kościół', 'createConvolver()', 'echo: 3,8 s'],
+  glosnik: [452, 432, 354, 74, 'Głośnik', 'destination', 'wszystko razem — to słyszysz'],
+  surowy:  [16, 432, 396, 74, 'Skąd się bierze dźwięk?', 'sampleRate · sin(2π · f · t)', 'liczby → membrana → powietrze → ucho']
+};
+// kable: od, do, który podsłuch mierzy energię, kolor
+const KABLE = [
+  ['przepis', 'ton', 'ton', '#ffd98a'], ['ton', 'nuta', 'ton', '#ffd98a'],
+  ['wiatr', 'wiatrG', 'wiatr', '#8fd3ff'], ['wiatrG', 'ton', 'wiatr', '#8fd3ff', 'detune'],
+  ['szum', 'filtr', 'szum', '#d9c9a8'], ['filtr', 'plucie', 'plucie', '#ff9fb8'], ['plucie', 'nuta', 'plucie', '#ff9fb8'],
+  ['nuta', 'sucho', 'nuta', '#ffd98a'], ['nuta', 'mokro', 'nuta', '#ffd98a'],
+  ['mokro', 'poglos', 'nuta', '#c9a0ff'], ['sucho', 'glosnik', 'sucho', '#ffd98a'], ['poglos', 'glosnik', 'mokro', '#c9a0ff']
+];
+const svg = $('svg'), NS = 'http://www.w3.org/2000/svg';
+function srodek(k, strona) { const [x, y, w, h] = W[k]; return { l: [x, y + h / 2], p: [x + w, y + h / 2], g: [x + w / 2, y], d: [x + w / 2, y + h] }[strona]; }
+function droga(a, b, wej) {
+  const A_ = W[a], B = W[b];
+  let p1, p2;
+  if (wej === 'detune') { p1 = srodek(a, 'g'); p2 = [B[0] + B[2] / 2, B[1] + B[3]]; return `M${p1} C${p1[0]},${p1[1] - 30} ${p2[0]},${p2[1] + 30} ${p2}`; }
+  if (b === 'glosnik') { p1 = a === 'sucho' ? srodek(a, 'p') : srodek(a, 'd'); p2 = a === 'sucho' ? [B[0] + B[2], B[1] + 20] : [B[0] + B[2] - 60, B[1]];
+    return a === 'sucho' ? `M${p1} C${p1[0] + 10},${p1[1]} ${p2[0] + 10},${p2[1]} ${p2}` : `M${p1} L${p2}`; }
+  if (a === 'plucie') { p1 = srodek(a, 'g'); p2 = srodek(b, 'd'); return `M${p1} L${p2}`; }
+  if (a === 'mokro') { p1 = srodek(a, 'd'); p2 = srodek(b, 'g'); return `M${p1} L${p2}`; }
+  p1 = srodek(a, 'p'); p2 = srodek(b, 'l');
+  const mx = (p1[0] + p2[0]) / 2; return `M${p1} C${mx},${p1[1]} ${mx},${p2[1]} ${p2}`;
+}
+let h = `<text class="grupa" x="16" y="30">TON</text><text class="grupa" x="16" y="164">WIATR</text><text class="grupa" x="16" y="306">PLUCIE</text><text class="grupa" x="650" y="30">KOŚCIÓŁ</text><text class="grupa" x="16" y="424">ZACZNIJ TUTAJ</text>`;
+KABLE.forEach((k, i) => h += `<path class="kabel" d="${droga(k[0], k[1], k[4])}"/><path class="prad" id="prad${i}" d="${droga(k[0], k[1], k[4])}" stroke="${k[3]}"/>`);
+for (const [k, [x, y, w, hh, t, kod, op]] of Object.entries(W))
+  h += `<g class="wezel" data-w="${k}"><rect x="${x}" y="${y}" width="${w}" height="${hh}"/><rect class="zar" id="zar_${k}" x="${x + 6}" y="${y + hh - 7}" width="0" height="3" rx="1.5"/>
+        <text class="tytul" x="${x + 12}" y="${y + 24}">${t}</text><text class="kod" x="${x + 12}" y="${y + 44}">${kod}</text><text class="opis" x="${x + 12}" y="${y + 62}">${op}</text></g>`;
+svg.innerHTML = h;
+svg.addEventListener('click', e => { const g = e.target.closest('.wezel'); if (g) wybierz(g.dataset.w); });
+
+// ===== OPISY: co robi każda część i każde słowo kodu =====
+// w kodzie [[słowo|wyjaśnienie]] staje się klikalnym słowem
+function opisy() { const G = rej === 'gedakt', ped = Math.round(R.pasmo * 440), sr = A ? A.sampleRate : 48000, srT = sr.toLocaleString('pl-PL'); return {
+  surowy: { t: 'Skąd się bierze dźwięk?', co: `Dźwięk to drganie powietrza. Głośnik ma membranę, która rusza się w przód i w tył i popycha powietrze, a ono dociera do ucha.<br><br>
+      Komputer nie umie „drgać”. Umie tylko liczyć. Dlatego <b>${srT} razy na sekundę</b> wysyła do karty dźwiękowej jedną liczbę od −1 do 1: gdzie ma być membrana w tej chwili. To są <b>próbki</b>.
+      Karta zamienia liczby na prąd, wzmacniacz popycha membranę — i słychać.<br><br>
+      Najprostszy dźwięk to <b>sinus</b>: każda próbka = sin(2π · f · t). To jest surowy dźwięk, od którego zaczyna się każda piszczałka. Przesuń suwak i zobacz kropki-próbki.`,
+    pod: 'Złota linia: fala sinus. Kropki: próbki, które naprawdę lecą do głośnika. Po prawej membrana — w zwolnionym tempie.',
+    kod: [`const audio = new [[AudioContext|Silnik dźwięku przeglądarki. Od tej chwili karta dźwiękowa czeka na próbki.]]();`,
+          `audio.[[sampleRate|Ile próbek na sekundę wysyła ten komputer: ${srT}. Na jedno drganie a¹ (440 Hz) wypada ${(sr / 440).toFixed(1).replace('.', ',')} próbki.]]   // ${srT}`,
+          `const o = audio.[[createOscillator|Oscylator sam liczy próbki: sin(2π · f · t) dla kolejnych chwil t = 0, 1/${srT}, 2/${srT}…]]();`,
+          `o.[[type = 'sine'|Kształt fali: sinus — najgładsze możliwe drganie, bez żadnych alikwotów. Później zamienimy go na przepis piszczałki.]];`,
+          `o.[[frequency|Ile pełnych drgań na sekundę (herców). Więcej drgań = wyższy dźwięk; dwa razy więcej = oktawa wyżej.]].value = 440;`,
+          `o.[[connect(audio.destination)|Kabel prosto do głośnika — bez barwy, bez plucia, bez kościoła.]]; o.[[start()|Od teraz oscylator wysyła próbki bez przerwy.]];`] },
+  przepis: { t: 'Przepis na barwę', co: 'Prawdziwa piszczałka drga naraz z kilkoma prędkościami: podstawową (to nuta, którą grasz) oraz 2, 3, 4… razy szybciej. Te dodatkowe drgania to <b>alikwoty</b>. To, jak są głośne, decyduje o barwie. '
+      + (G ? 'Gedakt to flet zakryty: w przepisie są tylko 4 liczby, a alikwoty prawie znikają (0,10 · 0,05 · 0,015). Zostaje niemal czysty ton — okrągły i spokojny.' : 'Pryncypał ma ich 12, coraz cichszych ku górze — pełny, „śpiewający” dźwięk organów.'),
+    pod: 'Złote słupki: przepis z kodu. Zielone: to, co naprawdę wychodzi z piszczałki (zmierzone na żywo).',
+    kod: [`const [[ALIKWOTY|Tablica ${ALIKWOTY.length} liczb. Pierwsza to głośność tonu podstawowego, druga — 2× szybszego drgania, trzecia — 3× itd. Zmień jedną liczbę, a zmienisz barwę.]] = [${ALIKWOTY.slice(0, 4).join(', ')}${ALIKWOTY.length > 4 ? ', …' : ''}];`,
+          `const im = new [[Float32Array|Pudełko na liczby, które rozumie karta dźwiękowa. Tu wkładamy głośności alikwotów.]](${ALIKWOTY.length + 1});`,
+          '[[ALIKWOTY.forEach|„Dla każdej liczby z przepisu…” — wkładamy ją do pudełka na właściwe miejsce (1, 2, 3…).]]((a, i) => im[i + 1] = a);',
+          'fala = audio.[[createPeriodicWave|Zamienia przepis w jeden kształt fali. Przeglądarka sama sumuje wszystkie alikwoty — jeden oscylator gra 12 tonów naraz.]](re, im);'] },
+  ton: { t: 'Piszczałka drga', co: 'Oscylator to „piszczałka” w komputerze: 44 100 razy na sekundę wylicza, gdzie jest fala. Dostaje przepis na barwę i liczbę drgań na sekundę — dla a¹ to 440.',
+    pod: 'Fala dźwięku wychodząca z oscylatora. Wyłącz „alikwoty” na dole — zobaczysz gładki sinus.',
+    kod: ['const o = audio.[[createOscillator|Tworzy źródło dźwięku, które drga bez końca, dopóki go nie zatrzymamy.]]();',
+          'o.[[setPeriodicWave|Każe oscylatorowi grać nasz przepis zamiast zwykłego sinusa.]](fala);',
+          'o.[[frequency|Ile drgań na sekundę (herców). 440 * 2^((n − 69) / 12) — każdy półton to 2^(1/12) razy więcej.]].value = f;',
+          'o.[[detune|Lekkie rozstrojenie w centach (setnych częściach półtonu). Każda piszczałka trochę inaczej: ±1,5 centa.]].value = (Math.random() * 2 - 1) * 1.5;',
+          'o.[[connect|Podłącza kabel: dźwięk z oscylatora płynie dalej, do „Wejścia nuty”.]](nuta); o.[[start|Piszczałka zaczyna grać — teraz.]](t);'] },
+  wiatr: { t: 'Wiatr z miechów', co: 'Powietrze z miechów nigdy nie płynie idealnie równo. Drugi, bardzo wolny oscylator (3,3–4,5 fali na sekundę) kołysze strojem piszczałki. Sam nie gra — tylko popycha pierwszy.',
+    pod: 'O ile centów piszczałka jest w tej chwili rozstrojona. Włącz „🔍 przesadź”, a falowanie urośnie 40 razy i usłyszysz je wyraźnie.',
+    kod: ['const wiatr = audio.[[createOscillator|Drugi oscylator — ten nie trafia do głośnika. Jest tylko „ręką”, która kołysze strojem.]]();',
+          'wiatr.[[frequency|3,3 do 4,5 fali na sekundę — każda piszczałka losuje swoje tempo, więc akord nie faluje równo.]].value = 3.3 + Math.random() * 1.2;'] },
+  wiatrG: { t: 'Siła falowania', co: 'Wzmacniacz decyduje, jak mocno wiatr kołysze strojem: o 0,9 centa w górę i w dół. To prawie niesłyszalne wprost — ale bez tego organy brzmią sztucznie, jak z automatu.',
+    pod: 'Liczba drgań na sekundę ostatniej nuty — drży razem z wiatrem.',
+    kod: ['const wg = audio.[[createGain|Wzmacniacz — mnoży to, co przez niego płynie, przez swoją liczbę.]]();',
+          'wg.[[gain|Siła: 0,9. Wiatr daje −1…1, po wzmacniaczu −0,9…0,9 centa.]].value = [[WIATR|Stała z góry kodu: 0.9 centa. W organach to STROJ_WIATR.]];',
+          'wiatr.connect(wg).connect(o.[[detune|Kabel wchodzi nie do głośnika, tylko w strojenie piszczałki — to dlatego dźwięk faluje.]]);'] },
+  szum: { t: 'Powietrze', co: 'Szum to sekunda losowych liczb — tak brzmi „pusty” podmuch, jak z ust przy „ffff”. Z niego robi się plucie.',
+    pod: 'Kawałek szumu: zupełnie przypadkowe drgania.',
+    kod: ['SZUM = audio.[[createBuffer|Pusta taśma na 1 sekundę dźwięku (44 100 próbek).]](1, audio.sampleRate, audio.sampleRate);',
+          'for (…) s[i] = [[Math.random|Losowa liczba 0…1; razy 2 minus 1 daje −1…1. Losowe liczby = szum.]]() * 2 - 1;',
+          'p.[[loop|Taśma kręci się w kółko, więc szum nigdy się nie kończy.]] = true; p.start(t, [[Math.random() * 0.9|Każda piszczałka zaczyna z innego miejsca taśmy — dmucha „po swojemu”.]]);'] },
+  filtr: { t: 'Usta piszczałki', co: `Filtr pasmowy przepuszcza tylko szum w okolicy ${G ? 'pięciokrotności' : 'trzykrotności'} nuty, resztę wycisza. Dlatego plucie wysokich piszczałek jest jasne, a niskich — ciemne, tak jak w prawdziwych organach.`,
+    pod: `Widmo plucia: szum ułożony w górkę wokół ${R.pasmo} × wysokość nuty.`,
+    kod: ['const fl = audio.[[createBiquadFilter|Filtr — przepuszcza jedne wysokości, a inne wycisza.]]();',
+          "fl.type = [[‘bandpass’|Pasmowy: przepuszcza tylko pasmo wokół jednej wysokości.]];",
+          `fl.[[frequency|Środek pasma: ${R.pasmo} × wysokość nuty (dla a¹ to ${ped} Hz), najwyżej 9000 Hz.${G ? ' Gedakt dmucha wyżej niż Pryncypał (5 × zamiast 3 ×), więc jego „chiff” jest jasny i syczący.' : ''}]].value = Math.min(9000, f * ${R.pasmo});`,
+          `fl.[[Q|Szerokość pasma: im większa liczba, tym węższe. ${G ? '0,7 to bardzo szeroko — Gedakt pluje szerokim, wyraźnym szumem.' : '2,5 to średnio.'}]].value = ${R.szerokosc};`] },
+  plucie: { t: 'Plucie (chiff)', co: 'Na samym początku nuty powietrze uderza w wargę piszczałki, zanim słup powietrza „złapie” ton. Wzmacniacz otwiera szum mocno na 12 milisekund, a potem przymyka do cichego oddechu.'
+      + (G ? ' Gedakt pluje 4,5 raza mocniej niż Pryncypał (oddech 0,45 zamiast 0,10) — to jego znak rozpoznawczy.' : ''),
+    pod: 'Ile szumu przepływa: ostry zryw i szybki spadek. Z „🔍 przesadź” trwa 3 razy dłużej.',
+    kod: [`pg.gain.[[linearRampToValueAtTime|Płynnie do wartości w danej chwili — tu w 12 ms do szczytu plucia.]]([[ODDECH * 6|Szczyt: 6 × ${l(ODDECH)} = ${l(+(ODDECH * 6).toFixed(2))}. Dmuchnięcie jest krótkie, ale wyraźne.]], t + 0.012);`,
+          G ? `pg.gain.[[exponentialRampToValueAtTime|Opada jak dźwięk w naturze: najpierw szybko, potem coraz wolniej.]]([[ODDECH_STALY|Gedakt ma osobną liczbę na cichy oddech, który zostaje do końca nuty: 0,05 — słychać go jako delikatny szmer powietrza.]], t + 0.09);`
+            : 'pg.gain.[[exponentialRampToValueAtTime|Opada jak dźwięk w naturze: najpierw szybko, potem coraz wolniej.]]([[ODDECH * 0.25|Ciche dmuchanie, które zostaje do końca nuty: 0,025.]], t + 0.09);'] },
+  nuta: { t: 'Wejście nuty', co: `Piszczałka nie odzywa się od razu. Wzmacniacz nuty w ${Math.round(WEJSCIE * 1000)} ms otwiera dźwięk do 112%, a w kolejne 90 ms opuszcza go do 100%. Tu spotykają się ton i plucie.`,
+    pod: 'Głośność nuty w czasie — złota linia to 100%. Przestrzał trwa ułamek sekundy: włącz „🔍 przesadź”, a wejście zwolni 4 razy i zobaczysz go wyraźnie.',
+    kod: ['const nuta = audio.[[createGain|Wzmacniacz całej nuty — przez niego płynie ton i plucie.]]();',
+          `nuta.gain.linearRampToValueAtTime([[v * 1.12|112% — piszczałka na chwilę „przestrzeli”.]], t + [[WEJSCIE|${l(WEJSCIE)} s — tyle trwa narastanie ${G ? 'Gedaktu (trochę wolniej niż Pryncypał)' : 'Pryncypała'}.]]);`,
+          'nuta.gain.linearRampToValueAtTime([[v|100% — tak już zostaje, dopóki trzymasz klawisz.]], t + WEJSCIE + [[0.09|90 ms na opadnięcie po przestrzale.]]);',
+          '[[return () =>|Gdy puścisz klawisz: dźwięk gaśnie w 70 ms, a po 120 ms oscylatory się wyłączają.]] { … linearRampToValueAtTime(0, k + 0.07) … }'] },
+  sucho: { t: 'Prosto do uszu', co: 'Część dźwięku leci prosto od piszczałki do ciebie — bez odbić. To 67% głośności.',
+    pod: 'Fala, która idzie prosto do głośnika.',
+    kod: ['sucho = audio.createGain(); sucho.gain.value = [[0.67|W organach: 0,85 − pogłos × 0,35. Im większy kościół, tym mniej „suchego” dźwięku.]];',
+          'nuta.[[connect|Ta sama nuta idzie dwoma kablami naraz: sucho i mokro.]](sucho); nuta.connect(mokro);'] },
+  mokro: { t: 'Do ścian', co: 'Druga część dźwięku leci do ścian kościoła. Tę część przepuszczamy przez „echo wnętrza”.',
+    pod: 'To, co wraca od ścian — zostaje długo po puszczeniu klawisza.',
+    kod: ['mokro = audio.createGain(); mokro.gain.value = [[1.7|W organach: 0,9 + pogłos × 1,6. Wyłącz „pogłos” na dole — mokro spadnie do zera.]];'] },
+  poglos: { t: 'Kościół (pogłos)', co: 'Splot (convolver) mnoży każdą chwilę dźwięku przez wyliczone „echo kościoła”: 18 ms ciszy (dźwięk leci do ściany), potem szum, który przez 3,8 s gaśnie i ciemnieje. Żadnego nagrania — echo też jest policzone.',
+    pod: 'Echo kościoła, które policzył kod: najpierw cisza, potem gęste odbicia, coraz cichsze.',
+    kod: ['const poglos = audio.[[createConvolver|Splot: każda próbka dźwięku dostaje „ogon” z echa. Tak działa pogłos w programach muzycznych.]]();',
+          'd[i] = [[t < 0.018 ? 0|Pierwsze 18 ms ciszy — dźwięk dopiero leci do ściany.]] : ciemny * [[gasnie|Coraz cichsze: (1 − czas)^2,2 × e^(−1,1 × czas).]];',
+          'ciemny += (losowa − ciemny) * [[jasnosc|Wygładzanie szumu: z czasem mocniejsze, więc echo ciemnieje — wysokie tony giną pierwsze, jak w kamiennym kościele.]];'] },
+  glosnik: { t: 'Głośnik', co: 'Tu wszystko się sumuje: suchy dźwięk i echo. Na tym etapie w organach jest jeszcze kompresor i ogranicznik, żeby pełne organy z akordem nie przesterowały.',
+    pod: 'Widmo tego, co słyszysz: górki to ton podstawowy i alikwoty, mgiełka między nimi to plucie i echo.',
+    kod: ['sucho.connect(audio.[[destination|Wyjście: karta dźwiękowa i głośniki.]]);',
+          'poglos.connect(audio.destination);   [[// w organach|W Organach Alicji przed głośnikiem stoi jeszcze kompresor (−14 dB, 4:1) i ogranicznik (−4 dB).]]'] }
+}; }
+let wybrany = 'przepis';
+const hzLog = v => Math.round(55 * Math.pow(2, v / 100 * 5));        // suwak 0…100 → 55…1760 Hz
+const SUWAKI = {
+  surowy:  [['hz', 'Drgania na sekundę', 0, 100, 0.1, v => Math.round(v) + ' Hz', v => 100 * Math.log2(v / 55) / 5, hzLog], ['glos', 'Głośność (jak daleko membrana)', 0, 1, 0.01, v => Math.round(v * 100) + '%']],
+  przepis: [['ile', 'Ile alikwotów gra', 1, 0, 1, v => v + ' z ' + ALIKWOTY.length]],
+  ton:     [['ile', 'Ile alikwotów gra', 1, 0, 1, v => v + ' z ' + ALIKWOTY.length]],
+  nuta:    [['wej', 'Czas wejścia', 0.005, 0.4, 0.005, v => Math.round(v * 1000) + ' ms']],
+  plucie:  [['odd', 'Siła plucia', 0, 1, 0.01, v => v.toFixed(2).replace('.', ',')]],
+  szum:    [['odd', 'Siła plucia', 0, 1, 0.01, v => v.toFixed(2).replace('.', ',')]],
+  filtr:   [['pasmo', 'Gdzie szumi (× nuta)', 1, 8, 0.5, v => v.toString().replace('.', ',') + ' ×']],
+  wiatr:   [['wiatr', 'Siła wiatru', 0, 30, 0.1, v => v.toFixed(1).replace('.', ',') + ' centa']],
+  wiatrG:  [['wiatr', 'Siła wiatru', 0, 30, 0.1, v => v.toFixed(1).replace('.', ',') + ' centa']],
+  mokro:   [['kosciol', 'Kaplica ↔ katedra', 0, 1, 0.01, v => (1.2 + v * 5.3).toFixed(1).replace('.', ',') + ' s echa']],
+  poglos:  [['kosciol', 'Kaplica ↔ katedra', 0, 1, 0.01, v => (1.2 + v * 5.3).toFixed(1).replace('.', ',') + ' s echa']],
+  sucho:   [['kosciol', 'Kaplica ↔ katedra', 0, 1, 0.01, v => (1.2 + v * 5.3).toFixed(1).replace('.', ',') + ' s echa']]
+};
+let czasPogl = 0;
+function rysujSuwaki(k) {
+  const L = SUWAKI[k] || [];
+  let h = L.map(([kl, et, mn, mx, kr, fmt, doSuw]) => { if (kl === 'ile') mx = ALIKWOTY.length;
+    const val = doSuw ? doSuw(S[kl]) : S[kl];
+    return `<label class="suw"><span>${et}</span><input type="range" data-k="${kl}" min="${mn}" max="${mx}" step="${kr}" value="${val}"><b id="sw_${kl}">${fmt(S[kl])}</b></label>`; }).join('');
+  if (L.length) h += `<div class="suwPrzyc">${k === 'surowy' ? `<button id="surBtn">${surowy ? '⏹ Zatrzymaj' : '▶ Posłuchaj surowego tonu'}</button>` : ''}<button class="cichy" id="swDom">↺ jak w organach</button>
+    <small>${k === 'surowy' ? '' : 'zmienia tylko ten pokaz — zagraj klawiszem'}</small></div>`;
+  $('suwaki').innerHTML = h;
+  if (surowy) $('surBtn')?.classList.add('gra');
+}
+$('suwaki').addEventListener('input', e => {
+  const el = e.target.closest('input[data-k]'); if (!el) return; const kl = el.dataset.k, def = (SUWAKI[wybrany] || []).find(d => d[0] === kl);
+  S[kl] = def[7] ? def[7](+el.value) : +el.value; $('sw_' + kl).textContent = def[5](S[kl]);
+  if (kl === 'ile' && A) FALA = falaZ(ALIKWOTY.slice(0, S.ile));
+  if (kl === 'hz' && surowy) surowy.o.frequency.setTargetAtTime(S.hz, A.currentTime, 0.01);
+  if (kl === 'glos' && surowy) surowy.g.gain.setTargetAtTime(S.glos * 0.4, A.currentTime, 0.02);
+  if (kl === 'kosciol') { clearTimeout(czasPogl); czasPogl = setTimeout(budujPoglos, 120); }
+});
+$('suwaki').addEventListener('click', e => {
+  if (e.target.id === 'surBtn') surowyGraj(!surowy);
+  if (e.target.id === 'swDom') { const h = S.hz, g = S.glos; domyslne(); if (wybrany === 'surowy') { S.hz = 440; S.glos = 0.25; } else { S.hz = h; S.glos = g; }
+    if (A) { FALA = falaZ(ALIKWOTY.slice(0, S.ile)); budujPoglos(); } if (surowy) surowy.o.frequency.setTargetAtTime(S.hz, A.currentTime, 0.01); rysujSuwaki(wybrany); }
+});
+function wybierz(k) {
+  wybrany = k; const O = opisy()[k]; rysujSuwaki(k);
+  document.querySelectorAll('.wezel').forEach(g => g.classList.toggle('wybrany', g.dataset.w === k));
+  $('sTytul').textContent = O.t; $('sCo').innerHTML = O.co; $('sPodpis').textContent = O.pod;
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  $('kod').innerHTML = O.kod.map(l => esc(l).replace(/\[\[([^|]+)\|([^\]]+)\]\]/g, (_, w, o) => `<span class="s" data-o="${o.replace(/"/g, '&quot;')}">${w}</span>`)).join('\n');
+  $('slowo').innerHTML = 'Kliknij zielone słowo w kodzie, a zobaczysz, co robi.';
+}
+$('kod').addEventListener('click', e => { const s = e.target.closest('.s'); if (!s) return;
+  document.querySelectorAll('#kod .s').forEach(x => x.classList.toggle('on', x === s)); $('slowo').innerHTML = `<b>${s.textContent}</b> — ${s.dataset.o}`; });
+wybierz('surowy');
+// ===== wybór rejestru: Pryncypał albo Gedakt =====
+function ustawRej(r) {
+  rej = r; R = REJ[r]; ALIKWOTY = R.alikwoty; WEJSCIE = R.wejscie; ODDECH = R.oddech; nutaRef = 0;
+  const h = S.hz, g = S.glos; domyslne(); S.hz = h; S.glos = g;
+  if (A) { FALA = falaZ(ALIKWOTY.slice(0, S.ile)); budujPoglos(); }
+  document.querySelectorAll('#rejWybor button').forEach(b => b.classList.toggle('on', b.dataset.r === r));
+  const t = svg.querySelector('.wezel[data-w="przepis"] .opis'); if (t) t.textContent = ALIKWOTY.length + ' głośności alikwotów';
+  const t2 = svg.querySelector('.wezel[data-w="filtr"] .opis'); if (t2) t2.textContent = 'szum wokół ' + R.pasmo + ' × nuty';
+  wybierz(wybrany);
+}
+$('rejWybor').onclick = e => { const b = e.target.closest('[data-r]'); if (b) ustawRej(b.dataset.r); };
+
+// ===== ANIMACJA: energia płynie kablami, wykres wybranej części =====
+const bufor = new Float32Array(4096), widmo = new Float32Array(2048);
+const poziom = k => { const a = POD[k]; if (!a) return 0; a.getFloatTimeDomainData(bufor); let s = 0; for (let i = 0; i < 2048; i++) s += bufor[i] * bufor[i]; return Math.sqrt(s / 2048); };
+const HIST = { nuta: [], plucie: [], mokro: [], wiatr: [] }, DL_H = 260;
+const dodaj = (k, v) => { HIST[k].push(v); if (HIST[k].length > DL_H) HIST[k].shift(); };
+let przes = 0, nutaRef = 0;   // nutaRef: głośność nuty, gdy już siadła (to jest 100%)
+function wiatrTeraz() { const g = ostatnia != null && grajace[ostatnia]; if (!g || !A) return null;
+  return g.baza + g.glW * Math.sin(2 * Math.PI * g.czW * (A.currentTime - g.t0)); }
+const cv = $('wykres'), c = cv.getContext('2d');
+function klatka() {
+  requestAnimationFrame(klatka);
+  const L = { ton: poziom('ton') * 4, plucie: poziom('plucie') * 6, nuta: poziom('nuta') * 9, sucho: poziom('sucho') * 12, mokro: poziom('mokro') * 14 };
+  const w = wiatrTeraz(); L.wiatr = w == null ? 0 : 0.25 + Math.abs(w) / (lupa() ? 36 : 0.9) * 0.75; L.szum = L.plucie > 0.01 ? Math.max(0.5, L.plucie) : 0;
+  przes -= 1.4;
+  KABLE.forEach(([, , pod], i) => { const e = $('prad' + i), v = Math.min(1, L[pod] || 0);
+    e.style.strokeWidth = (2 + v * 7).toFixed(1); e.style.opacity = v < 0.01 ? 0 : (0.35 + v * 0.65).toFixed(2); e.style.strokeDashoffset = przes * (1 + v * 3); });
+  const ZAR = { przepis: L.ton, ton: L.ton, wiatr: L.wiatr, wiatrG: L.wiatr, szum: L.szum, filtr: L.plucie, plucie: L.plucie, nuta: L.nuta, sucho: L.sucho, mokro: L.nuta, poglos: L.mokro, glosnik: Math.max(L.sucho, L.mokro) };
+  for (const k in W) { const z = $('zar_' + k); if (z) { z.setAttribute('width', Math.min(1, ZAR[k] || 0) * (W[k][2] - 12)); z.style.opacity = (ZAR[k] || 0) > 0.01 ? 0.9 : 0; } }
+  { const g = ostatnia != null && grajace[ostatnia]; if (g && A.currentTime - g.t0 > 0.45 && A.currentTime - g.t0 < 0.6) nutaRef = poziom('nuta'); }
+  dodaj('nuta', poziom('nuta')); dodaj('plucie', poziom('plucie')); dodaj('mokro', poziom('mokro')); dodaj('wiatr', w);
+  rysujWykres();
+}
+function siatka() { c.clearRect(0, 0, cv.width, cv.height); c.strokeStyle = 'rgba(255,255,255,.06)'; c.lineWidth = 1;
+  for (let i = 1; i < 6; i++) { c.beginPath(); c.moveTo(0, i * cv.height / 6); c.lineTo(cv.width, i * cv.height / 6); c.stroke(); } }
+function napis(t, x, y, kol = '#b59f78', r = 22) { c.fillStyle = kol; c.font = `600 ${r}px Outfit`; c.fillText(t, x, y); }
+function fala(pod, kol) { const a = POD[pod]; if (!a) { napis('naciśnij klawisz (A … K)', 24, 200); return; } a.getFloatTimeDomainData(bufor);
+  let s0 = 0; for (let i = 1; i < 2000; i++) if (bufor[i - 1] < 0 && bufor[i] >= 0) { s0 = i; break; }
+  let mx = 0.001; for (let i = 0; i < 2048; i++) mx = Math.max(mx, Math.abs(bufor[i]));
+  c.strokeStyle = kol; c.lineWidth = 3; c.shadowColor = kol; c.shadowBlur = 8; c.beginPath();
+  for (let i = 0; i < 700; i++) { const x = i / 700 * cv.width, y = cv.height / 2 - bufor[s0 + i] / mx * cv.height * 0.42; i ? c.lineTo(x, y) : c.moveTo(x, y); }
+  c.stroke(); c.shadowBlur = 0; }
+function widmoRys(pod, kol, fMax = 6000) { const a = POD[pod]; if (!a) return; a.getFloatFrequencyData(widmo);
+  const bin = A.sampleRate / 4096; c.fillStyle = kol;
+  for (let x = 0; x < cv.width; x += 2) { const i = Math.floor(x / cv.width * fMax / bin), db = widmo[i]; const h = Math.max(0, (db + 110) / 90) * cv.height; c.fillRect(x, cv.height - h, 2, h); }
+  napis('0 Hz', 8, cv.height - 10, '#7a6a52', 18); napis(fMax + ' Hz', cv.width - 110, cv.height - 10, '#7a6a52', 18); }
+function historia(k, kol, skala, linia) { const H_ = HIST[k]; c.strokeStyle = kol; c.lineWidth = 3; c.beginPath();
+  H_.forEach((v, i) => { const x = cv.width - (H_.length - i) / DL_H * cv.width, y = cv.height - 20 - (v || 0) * skala; i ? c.lineTo(x, y) : c.moveTo(x, y); }); c.stroke();
+  if (linia) { c.strokeStyle = 'rgba(216,180,106,.6)'; c.setLineDash([8, 8]); c.beginPath(); c.moveTo(0, cv.height - 20 - linia); c.lineTo(cv.width, cv.height - 20 - linia); c.stroke(); c.setLineDash([]); } }
+function rysujWykres() {
+  siatka();
+  switch (wybrany) {
+    case 'surowy': {
+      const sr = A ? A.sampleRate : 48000, okresy = 3, prob = Math.max(12, Math.min(64, Math.round(okresy * sr / S.hz))), Wf = cv.width - 150, sy = cv.height / 2, am = S.glos / 0.25 * 0.38 * cv.height / 2;
+      const amp = Math.min(cv.height * 0.44, am);
+      c.strokeStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.moveTo(0, sy); c.lineTo(Wf, sy); c.stroke();
+      c.strokeStyle = '#ffd98a'; c.lineWidth = 3; c.beginPath();
+      for (let x = 0; x <= Wf; x++) { const t = x / Wf * prob / sr, y = sy - Math.sin(2 * Math.PI * S.hz * t) * amp; x ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke();
+      if (true) { c.fillStyle = '#7dff9a'; for (let i = 0; i <= prob; i++) { const x = i / prob * Wf, y = sy - Math.sin(2 * Math.PI * S.hz * i / sr) * amp;
+        c.beginPath(); c.arc(x, y, 4.5, 0, 7); c.fill(); } }
+      napis((sr / S.hz).toFixed(1).replace('.', ',') + ' próbki na jedno drganie', 16, 30, '#7dff9a', 22);
+      napis('widać ' + prob + ' próbek = ' + (prob / sr * 1000).toFixed(2).replace('.', ',') + ' ms', 16, cv.height - 12, '#b59f78', 18);
+      // membrana głośnika: rusza się tak samo, tylko 440 razy wolniej (1 drganie na sekundę), żeby było ją widać
+      const ph = Math.sin(2 * Math.PI * performance.now() / 1000), mx = Wf + 80, my = sy, ruch = ph * 18 * Math.min(1, S.glos / 0.25);
+      c.fillStyle = '#3d2a18'; c.fillRect(mx + 22, my - 34, 30, 68);
+      c.strokeStyle = '#d9c9a8'; c.lineWidth = 3; c.beginPath(); c.moveTo(mx + 22, my - 34); c.quadraticCurveTo(mx - 6 + ruch, my, mx + 22, my + 34); c.stroke();
+      c.fillStyle = '#d9c9a8'; c.beginPath(); c.ellipse(mx - 2 + ruch, my, 8, 16, 0, 0, 7); c.fill();
+      for (let i = 1; i <= 3; i++) { const r = ((performance.now() / 1000 + i / 3) % 1); c.strokeStyle = `rgba(255,217,138,${(1 - r) * 0.6})`; c.lineWidth = 2;
+        c.beginPath(); c.arc(mx - 10, my, 20 + r * 50, Math.PI * 0.75, Math.PI * 1.25); c.stroke(); }
+      napis('membrana', mx - 40, cv.height - 12, '#7a6a52', 17);
+      break; }
+    case 'przepis': {
+      const n = ALIKWOTY.length, sz = cv.width / n, ileG = S.ile, f = ostatnia != null && grajace[ostatnia] ? hz(ostatnia) : null;
+      let zm = null; if (f && POD.ton) { POD.ton.getFloatFrequencyData(widmo); const bin = A.sampleRate / 4096;
+        const db = ALIKWOTY.map((_, k) => { let m = -200; const i0 = Math.round(f * (k + 1) / bin); for (let i = i0 - 2; i <= i0 + 2; i++) m = Math.max(m, widmo[i]); return m; });
+        const d0 = db[0]; zm = db.map(d => Math.pow(10, (d - d0) / 20)); }
+      ALIKWOTY.forEach((a, k) => { const h = a * (cv.height - 70); c.fillStyle = k < ileG ? 'rgba(216,180,106,.85)' : 'rgba(216,180,106,.18)'; c.fillRect(k * sz + sz * 0.15, cv.height - 40 - h, sz * 0.32, h);
+        if (zm) { const h2 = Math.min(1.2, zm[k]) * (cv.height - 70); c.fillStyle = '#7dff9a'; c.fillRect(k * sz + sz * 0.5, cv.height - 40 - h2, sz * 0.32, h2); }
+        napis('×' + (k + 1), k * sz + sz * 0.18, cv.height - 10, '#b59f78', 18); });
+      if (!zm) napis('naciśnij klawisz, a zielone słupki pokażą, co gra', 24, 36, '#7a6a52', 20);
+      break; }
+    case 'ton': case 'wiatrG': fala('ton', '#ffd98a');
+      { const g = ostatnia != null && grajace[ostatnia], w = wiatrTeraz(); if (g && w != null) napis((g.f * Math.pow(2, w / 1200)).toFixed(2).replace('.', ',') + ' drgań na sekundę', 20, 36, '#ffd98a', 26); }
+      break;
+    case 'wiatr': { const H_ = HIST.wiatr, sk = lupa() ? 4 : 140; c.strokeStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.moveTo(0, cv.height / 2); c.lineTo(cv.width, cv.height / 2); c.stroke();
+      c.strokeStyle = '#8fd3ff'; c.lineWidth = 3; c.beginPath(); let p = false;
+      H_.forEach((v, i) => { if (v == null) { p = false; return; } const x = cv.width - (H_.length - i) / DL_H * cv.width, y = cv.height / 2 - v * sk; p ? c.lineTo(x, y) : c.moveTo(x, y); p = true; }); c.stroke();
+      const w = wiatrTeraz(); napis(w == null ? 'naciśnij klawisz i przytrzymaj' : (w >= 0 ? '+' : '') + w.toFixed(2).replace('.', ',') + ' centa', 20, 36, '#8fd3ff', 26); break; }
+    case 'szum': { c.strokeStyle = '#d9c9a8'; c.lineWidth = 1.5; c.beginPath(); for (let x = 0; x < cv.width; x += 3) { const y = cv.height / 2 + (Math.random() * 2 - 1) * cv.height * 0.35; x ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); break; }
+    case 'filtr': widmoRys('plucie', '#ff9fb8', 8000); if (ostatnia != null) { const x = Math.min(9000, hz(ostatnia) * R.pasmo) / 8000 * cv.width; c.strokeStyle = '#fff'; c.setLineDash([6, 6]); c.beginPath(); c.moveTo(x, 0); c.lineTo(x, cv.height); c.stroke(); c.setLineDash([]); napis(R.pasmo + ' × nuta', x + 8, 30, '#fff', 20); } break;
+    case 'plucie': { const mx = Math.max(0.001, ...HIST.plucie); historia('plucie', '#ff9fb8', (cv.height - 60) / mx); break; }
+    case 'nuta': { if (!nutaRef) { historia('nuta', '#ffd98a', 1100); break; }
+      const sk = 170 / nutaRef; historia('nuta', '#ffd98a', sk, 170); napis('100%', 8, cv.height - 30 - 170, 'rgba(216,180,106,.8)', 18); napis('112%', 8, cv.height - 30 - 170 * 1.12 - 14, 'rgba(255,217,138,.6)', 16); break; }
+    case 'sucho': fala('sucho', '#ffd98a'); break;
+    case 'mokro': historia('mokro', '#c9a0ff', 2600); break;
+    case 'poglos': { if (!IMP) { napis('naciśnij klawisz, a kod policzy echo', 24, 60); break; } const d = IMP.getChannelData(0), krok = Math.floor(d.length / cv.width);
+      c.fillStyle = '#c9a0ff'; for (let x = 0; x < cv.width; x++) { let m = 0; for (let i = 0; i < krok; i += 8) m = Math.max(m, Math.abs(d[x * krok + i])); const hh = m * cv.height * 1.6; c.fillRect(x, cv.height / 2 - hh / 2, 1, hh); }
+      napis('0 s', 8, cv.height - 10, '#7a6a52', 18); napis((IMP.length / A.sampleRate).toFixed(1).replace('.', ',') + ' s', cv.width - 70, cv.height - 10, '#7a6a52', 18); break; }
+    case 'glosnik': widmoRys('wyjscie', '#ffd98a', 6000); break;
+  }
+}
+requestAnimationFrame(klatka);
+
+// ===== KOD DO NOTATNIKA: cała piszczałka w jednym pliku, z twoimi ustawieniami (rejestr, suwaki, przełączniki) =====
+function kodPiszczalki() {
+  const alik = $('pAlik').checked ? ALIKWOTY.slice(0, S.ile) : [1];
+  const odd = $('pPluc').checked ? S.odd : 0, oddSt = $('pPluc').checked && S.odd > 0 ? +oddechStaly().toFixed(3) : 0;
+  const wej = $('pWej').checked ? S.wej : 0.003, przestrzal = $('pWej').checked ? 1.12 : 1;
+  const wiatr = $('pWiatr').checked ? S.wiatr : 0, rozstr = $('pWiatr').checked ? 1.5 : 0;
+  const kos = S.kosciol, sek = +(1.2 + kos * 5.3).toFixed(2), sucho = +(0.85 - kos * 0.35).toFixed(3), mokro = $('pPogl').checked ? +(0.9 + kos * 1.6).toFixed(3) : 0;
+  const glos = +(0.12 * R.glos).toFixed(4), n = (x, d = 3) => +(+x).toFixed(d);
+  return `<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Piszczałka — ${R.nazwa}</title>
+</head>
+<body style="background:#1c120b;color:#f3ead6;font:18px sans-serif;text-align:center;padding-top:60px">
+<h1>Jedna piszczałka: ${R.nazwa}</h1>
+<p>Graj klawiszami <b>A S D F G H J K</b> (od c¹ do c²)</p>
+<script>
+// ===== PRZEPIS NA PISZCZAŁKĘ — zmień liczbę i posłuchaj =====
+const ALIKWOTY = [${alik.join(', ')}];   // ton podstawowy, potem 2×, 3×, 4×… szybsze drgania
+const WEJSCIE = ${n(wej)};        // ile sekund narasta dźwięk
+const PRZESTRZAL = ${przestrzal};      // na chwilę głośniej niż potem (1.12 = 112%)
+const ODDECH = ${n(odd)};         // jak mocno piszczałka „pluje” na początku (0 = wcale)
+const ODDECH_STALY = ${oddSt};    // cichy szmer powietrza do końca nuty
+const PASMO = ${n(S.pasmo, 2)};           // gdzie szumi plucie: ile razy wyżej niż nuta
+const SZEROKOSC = ${R.szerokosc};       // szerokość pasma plucia (mniej = szerzej)
+const WIATR = ${n(wiatr, 2)};           // o ile centów faluje dźwięk od wiatru z miechów
+const KOSCIOL = ${sek};         // ile sekund trwa echo kościoła
+const SUCHO = ${sucho}, MOKRO = ${mokro};  // ile dźwięku prosto do uszu, a ile do ścian
+const GLOSNOSC = ${glos};
+
+let audio, fala, szum, sucho, mokro;
+function start() {
+  if (audio) return;
+  audio = new AudioContext();
+  // 1. przepis na barwę: wszystkie alikwoty zamknięte w jednej fali
+  const re = new Float32Array(ALIKWOTY.length + 1), im = new Float32Array(ALIKWOTY.length + 1);
+  ALIKWOTY.forEach((a, i) => im[i + 1] = a);
+  fala = audio.createPeriodicWave(re, im);
+  // 2. szum powietrza do plucia: sekunda losowych liczb
+  szum = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
+  const s = szum.getChannelData(0); for (let i = 0; i < s.length; i++) s[i] = Math.random() * 2 - 1;
+  // 3. echo kościoła: 18 ms ciszy (dźwięk leci do ściany), potem szum, który gaśnie i ciemnieje
+  const dl = Math.floor(audio.sampleRate * KOSCIOL), imp = audio.createBuffer(2, dl, audio.sampleRate);
+  for (let k = 0; k < 2; k++) {
+    const d = imp.getChannelData(k); let ciemny = 0;
+    for (let i = 0; i < dl; i++) {
+      const t = i / audio.sampleRate, gasnie = Math.pow(1 - i / dl, 2.2) * Math.exp(-t * 1.1);
+      ciemny += ((Math.random() * 2 - 1) - ciemny) * Math.max(0.04, 0.55 * Math.exp(-t * 0.9));
+      d[i] = t < 0.018 ? 0 : ciemny * gasnie;
+    }
+  }
+  const poglos = audio.createConvolver(); poglos.buffer = imp;
+  sucho = audio.createGain(); sucho.gain.value = SUCHO;
+  mokro = audio.createGain(); mokro.gain.value = MOKRO;
+  sucho.connect(audio.destination); mokro.connect(poglos).connect(audio.destination);
+}
+
+function piszczalka(n) {
+  const t = audio.currentTime, f = 440 * Math.pow(2, (n - 69) / 12), v = GLOSNOSC;
+  const nuta = audio.createGain(); nuta.gain.value = 0; nuta.connect(sucho); nuta.connect(mokro);
+  // ton z alikwotami + wiatr (falowanie) + lekkie rozstrojenie każdej piszczałki
+  const o = audio.createOscillator(); o.setPeriodicWave(fala); o.frequency.value = f;
+  o.detune.value = (Math.random() * 2 - 1) * ${rozstr};
+  const wiatr = audio.createOscillator(), wg = audio.createGain();
+  wiatr.frequency.value = 3.3 + Math.random() * 1.2; wg.gain.value = WIATR; wiatr.connect(wg).connect(o.detune);
+  o.connect(nuta); o.start(t); wiatr.start(t);
+  const zrodla = [o, wiatr];
+  // wejście: narasta, przestrzeli i siada
+  nuta.gain.linearRampToValueAtTime(v * PRZESTRZAL, t + WEJSCIE);
+  nuta.gain.linearRampToValueAtTime(v, t + WEJSCIE + 0.09);
+  // plucie: szum w paśmie wokół nuty — 12 ms zrywu, potem cichy oddech
+  if (ODDECH > 0) {
+    const p = audio.createBufferSource(), filtr = audio.createBiquadFilter(), pg = audio.createGain();
+    p.buffer = szum; p.loop = true; filtr.type = 'bandpass'; filtr.frequency.value = Math.min(9000, f * PASMO); filtr.Q.value = SZEROKOSC;
+    pg.gain.setValueAtTime(0, t); pg.gain.linearRampToValueAtTime(ODDECH * 6 + 0.0001, t + 0.012);
+    pg.gain.exponentialRampToValueAtTime(ODDECH_STALY + 0.0001, t + 0.09);
+    p.connect(filtr).connect(pg).connect(nuta); p.start(t, Math.random() * 0.9); zrodla.push(p);
+  }
+  return () => {                        // puszczasz klawisz: dźwięk gaśnie w 0,07 s
+    const k = audio.currentTime;
+    nuta.gain.cancelScheduledValues(k); nuta.gain.setValueAtTime(nuta.gain.value, k); nuta.gain.linearRampToValueAtTime(0, k + 0.07);
+    zrodla.forEach(z => z.stop(k + 0.12));
+  };
+}
+
+const KLAWISZE = { a: 60, s: 62, d: 64, f: 65, g: 67, h: 69, j: 71, k: 72 };
+const grajace = {};
+addEventListener('keydown', e => {
+  const n = KLAWISZE[e.key.toLowerCase()]; if (n == null || e.repeat) return;
+  start(); grajace[n] = piszczalka(n);
+});
+addEventListener('keyup', e => {
+  const n = KLAWISZE[e.key.toLowerCase()]; if (grajace[n]) { grajace[n](); delete grajace[n]; }
+});
+<\/script>
+</body>
+</html>
+`;
+}
+const plikPisz = () => 'piszczalka-' + rej;
+function pokazNotatnik() {
+  const k = kodPiszczalki(); $('npKod').textContent = k;
+  $('npPlik').textContent = plikPisz() + '.html – Notatnik';
+  $('npNazwa').textContent = plikPisz() + '.html';
+  $('npIle').textContent = k.split('\n').length + ' linijek · ' + k.length.toLocaleString('pl-PL') + ' znaków · ' + R.nazwa;
+  $('npTlo').hidden = false;
+}
+function pobierzPlik(tekst, nazwa, typ) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([tekst], { type: typ })); a.download = nazwa; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); }
+$('doNot').onclick = pokazNotatnik;
+$('npZamk').onclick = () => $('npTlo').hidden = true;
+$('npTlo').onclick = e => { if (e.target.id === 'npTlo') $('npTlo').hidden = true; };
+addEventListener('keydown', e => { if (e.key === 'Escape') $('npTlo').hidden = true; });
+$('npKop').onclick = async () => { const t = $('npKod').textContent;
+  try { await navigator.clipboard.writeText(t); } catch (_) { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); }
+  $('npKop').textContent = '✔ Skopiowane!'; setTimeout(() => $('npKop').textContent = '📋 Skopiuj', 2200); };
+$('npTxt').onclick = () => pobierzPlik($('npKod').textContent, plikPisz() + '.txt', 'text/plain;charset=utf-8');
+$('npHtml').onclick = () => pobierzPlik($('npKod').textContent, plikPisz() + '.html', 'text/html;charset=utf-8');
+
+function skaluj() { const s = Math.min(innerWidth / 1320, innerHeight / 930, 1.3); $('skala').style.transform = `scale(${s})`; }
+addEventListener('resize', skaluj); skaluj();
+</script>
+</body>
+</html>
