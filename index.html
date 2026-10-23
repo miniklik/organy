@@ -649,6 +649,7 @@
     <button class="powBtn glowny" data-link="demo"><i>▶</i><span>Zobacz demo<small>organy zagrają i pokażą, co potrafią</small></span></button>
     <button class="powBtn" data-link="edytor"><i>🎵</i><span>Edytor MIDI → PNG<small>z pliku .mid robisz nuty do śpiewnika</small></span></button>
     <button class="powBtn" data-link="sample"><i>⬇</i><span>Pobierz sample Alicji<small>gotowy zestaw .organy do banku „Moje sample”</small></span></button>
+    <button class="powBtn" data-link="piszczalka"><i>🎺</i><span>Jak gra piszczałka<small>zobacz i posłuchaj, jak powstaje dźwięk</small></span></button>
   </div>
 </div>
 <div class="pelny" id="pelny" hidden>
@@ -2288,7 +2289,8 @@ document.getElementById('powitanie').addEventListener('click', wejdz);
 const LINKI_POWITANIA = {
   demo:   'demo.html',            // Zobacz demo — wycieczka po organach z Alicją
   edytor: 'nuty-z-midi.html',     // edytor MIDI → PNG
-  sample: ''                      // np. 'sample-alicji.html' albo plik 'Glosy-Alicji.organy'
+  sample: '',                     // np. 'sample-alicji.html' albo plik 'Glosy-Alicji.organy'
+  piszczalka: 'jak-gra-piszczalka.html'   // jak powstaje dźwięk jednej piszczałki
 };
 document.querySelectorAll('#powitanie .powBtn').forEach(b => b.addEventListener('click', e => {
   e.stopPropagation();                                            // przycisk nie wchodzi do organów
