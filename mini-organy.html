@@ -29,6 +29,9 @@
   .poglos.wyl input[type=range] { opacity: .35; }
   #wstaw em { font-style: normal; }
   @media (max-width: 1000px) { #wstaw em { display: none; } }   /* wąsko: sam znaczek 📋, żeby zmieścił się pogłos */
+  .dom { flex: 0 0 auto; margin-right: 4px; font: 600 13px 'Outfit', sans-serif; color: var(--kosc); text-decoration: none; white-space: nowrap;
+         background: rgba(255,255,255,.06); border: 1px solid rgba(216,180,106,.45); border-radius: 999px; padding: 5px 12px; }
+  .dom:hover { background: rgba(216,180,106,.15); }
   .gora h1 { margin: 0; font: 700 clamp(15px, 2.2vw, 22px) 'Cinzel', serif; letter-spacing: .12em; color: var(--zloto); }
   .gora .tyt span { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: clamp(10px, 1.2vw, 13px); color: #c9b48c; }
   .gora button { font: 600 13px 'Outfit', sans-serif; color: var(--kosc); background: rgba(255,255,255,.06); border: 1px solid rgba(216,180,106,.45);
@@ -102,7 +105,7 @@
 </head>
 <body>
 <div class="mini" id="mini">
-  <div class="gora"><div class="tyt"><h1>Organy Alicji</h1><span>głosy Alicji · bez nagrań, liczone na żywo</span></div>
+  <div class="gora"><div class="tyt"><h1>Organy Alicji</h1><span>głosy Alicji · bez nagrań, liczone na żywo</span><a class="dom" href="https://miniklik.github.io/organy/" target="_top" title="Otwórz pełne Organy Alicji">🏠 Dom</a></div>
     <div class="prawa"><div class="poglos" id="poglosBox" title="Pogłos kościoła: od małej kaplicy do katedry"><label><input type="checkbox" id="poglosWl" checked> Pogłos</label><input type="range" id="poglos" min="0" max="100" value="33" title="w lewo: kaplica · w prawo: katedra"></div>
     <span class="wstaw"><button id="wstaw" title="Skopiuj kod i wklej organy na swoją stronę">📋 <em>Wstaw na swoją stronę</em></button>
     <div class="okno" id="okno" hidden><b id="oknoTyt">✔ Kod skopiowany</b> — wklej go na swojej stronie tam, gdzie mają stać organy:
