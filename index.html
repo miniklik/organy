@@ -2282,10 +2282,11 @@ const LINKI_POWITANIA = {
   mini:   'mini-organy.html',     // mini organy: same głosy Alicji, do wstawienia na inne strony
   alicja: 'https://miniklik.github.io/alicja/'   // Alicja — główna strona
 };
+const W_TEJ_KARCIE = new Set(['mini', 'alicja']);   // te przyciski przechodzą w tej samej karcie — bez mnożenia kart
 document.querySelectorAll('#powitanie .powBtn').forEach(b => b.addEventListener('click', e => {
   e.stopPropagation();                                            // przycisk nie wchodzi do organów
   const adres = LINKI_POWITANIA[b.dataset.link];
-  if (adres) { window.open(adres, '_blank'); return; }
+  if (adres) { if (W_TEJ_KARCIE.has(b.dataset.link)) location.href = adres; else window.open(adres, '_blank'); return; }
   const s = b.querySelector('small'); if (!s.dataset.opis) s.dataset.opis = s.innerHTML;
   s.innerHTML = '<span class="wkrotce">wkrótce</span>'; clearTimeout(b._czas); b._czas = setTimeout(() => s.innerHTML = s.dataset.opis, 2000);
 }));
