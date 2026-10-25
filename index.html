@@ -166,6 +166,9 @@
   .przelacznik { position: absolute; bottom: 12px; right: 18px; z-index: 3; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;   /* prawy dolny róg panelu */
                  font-size: 17px; line-height: 1; color: #f3ead6; background: rgba(255,255,255,.07); border: 1px solid rgba(216,180,106,.45); }
   .przelacznik:hover { background: rgba(255,255,255,.16); }
+  .domOrg { position: absolute; bottom: 12px; left: 18px; z-index: 3; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;   /* lewy dolny róg panelu — para do 🎼 */
+            font-size: 17px; line-height: 1; color: #f3ead6; background: rgba(255,255,255,.07); border: 1px solid rgba(216,180,106,.45); }
+  .domOrg:hover { background: rgba(255,255,255,.16); }
   .wyciagi.prawy, .utwory { position: relative; }
   /* przejście konsola ⇄ pulpit: płynne przenikanie przez 3 s w obie strony (warstwa pulpitu leży na wierzchu i jaśnieje albo gaśnie) */
   .warstwaPulpitu { position: absolute; inset: 0; border-radius: 10px; opacity: 0; visibility: hidden; pointer-events: none;
@@ -455,6 +458,7 @@
       </div>
 
       <div class="konsola">
+        <button class="domOrg" id="domOrg" title="Dom — wróć do ekranu powitania">🏠</button>
         <button class="przelacznik" id="przelacznik" title="Pulpit z tekstami">🎼</button>
         <div class="warstwaPulpitu" id="pulpitTekst">
           <div class="czytStrona" id="czytStrona">
@@ -2303,6 +2307,9 @@ addEventListener('keydown', e => { if (document.getElementById('powitanie')) { e
 function skaluj() { const st = document.querySelector('.stol'), s = Math.min(innerWidth / (st.offsetWidth + 40), innerHeight / (st.offsetHeight + 40), 1.35); document.getElementById('skala').style.transform = `scale(${s})`; }
 new ResizeObserver(skaluj).observe(document.querySelector('.stol'));
 addEventListener('resize', skaluj); skaluj();
+
+// ===== DOM: powrót do ekranu powitania (ta sama strona, w tej samej karcie) =====
+document.getElementById('domOrg').onclick = () => location.reload();
 
 // ===== PRZEŁĄCZNIK: konsola ⇄ pulpit. Środek → tekst, prawy panel → spis treści, podłużny pasek → (na razie pusty) =====
 document.getElementById('przelacznik').onclick = () => {
