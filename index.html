@@ -37,6 +37,34 @@
   .opisRej { font-size: 12px; color: #d9c9a8; text-align: center; line-height: 1.35; }
   .opisRej b { color: var(--zloto); }
   .rejOrg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 2px; }
+  /* dwie szafy: 9 gałek + 4 kombinacje (guziki z mosiądzu, jak w prawdziwym stole gry) */
+  .szafa { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; flex: 1; }
+  #szafaP { flex: 0 0 auto; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(216,180,106,.18); gap: 8px; }
+  #szafaP .kombinacje { border-top: 0; padding-top: 0; }   /* kombinacje na dole prawego panelu */
+  .wSrodku { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+  .wsRzad { display: flex; align-items: center; gap: 6px; }
+  .wsRzad > .wsNazwa { flex: 0 0 74px; font: 700 10px/1.15 'Cinzel', serif; color: #8d7a5c; text-align: right; transition: color .3s; }
+  .wsRzad.gra > .wsNazwa { color: var(--zloto); }
+  .wsRzad .rejestr { display: block; flex: 0 0 46px; width: 46px; height: 46px; cursor: default; pointer-events: none; }
+  .wsRzad .rejestr .tuleja { inset: 7px; } .wsRzad .rejestr .galka { inset: 3px; transition: filter .35s, transform .35s, box-shadow .35s; }
+  .wsRzad .rejestr .galka b { font-size: 7.5px; } .wsRzad .rejestr .galka i { font-size: 11px; margin-top: 0; }
+  .wsRzad .rejestr:not(.wyciagniety) .galka { filter: brightness(.45) saturate(.6); }
+  .kombNapis { font: 700 11px 'Cinzel', serif; letter-spacing: .2em; color: var(--zloto); opacity: .8; text-transform: uppercase; }
+  #kombP { row-gap: 10px; }
+  .szafa[hidden] { display: none; }
+  .rejestr.wolne { cursor: default; }
+  .rejestr.wolne .galka { background: radial-gradient(circle at 38% 32%, #5a4a3a, #3a2c22 60%, #241a12); color: #8d7a5c; filter: none !important; box-shadow: inset 0 2px 4px rgba(0,0,0,.6); }
+  .rejestr.wolne .galka b { font-size: 8px; letter-spacing: .08em; }
+  .kombinacje { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 100%; padding-top: 10px; border-top: 1px solid rgba(216,180,106,.18); }
+  .komb { border: 0; background: none; padding: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #d9c9a8; font: 600 10px 'Outfit', sans-serif; position: relative; }
+  .komb i { width: 30px; height: 30px; border-radius: 50%; display: block; transition: transform .12s, box-shadow .2s;
+            background: radial-gradient(circle at 38% 32%, #fff3c8, #d8b46a 50%, #8a6326 100%); box-shadow: 0 3px 0 #4a3010, 0 4px 6px rgba(0,0,0,.6); }
+  .komb:active i, .komb.wcisk i { transform: translateY(2px); box-shadow: 0 1px 0 #4a3010, 0 2px 3px rgba(0,0,0,.6); }
+  .komb.aktywna i { box-shadow: 0 3px 0 #4a3010, 0 0 0 3px rgba(125,255,154,.35), 0 0 14px rgba(240,215,154,.8); }
+  .komb.aktywna { color: #f0d79a; }
+  .komb.wlasna::after { content: ''; position: absolute; top: 0; right: 10px; width: 6px; height: 6px; border-radius: 50%; background: #7dff9a; }
+  .komb.zapisuje i { animation: zapisKomb .9s linear; }
+  @keyframes zapisKomb { from { box-shadow: 0 3px 0 #4a3010, 0 0 0 0 rgba(125,255,154,.9); } to { box-shadow: 0 3px 0 #4a3010, 0 0 0 12px rgba(125,255,154,0); } }
   .rejestr.sredni { width: 64px; height: 64px; justify-self: center; }
   .rejestr.sredni .tuleja { inset: 10px; } .rejestr.sredni .galka { inset: 4px; }
   .rejestr.sredni .galka i { font-size: 12px; margin-top: 1px; }
@@ -451,7 +479,7 @@
     <div class="gora">
       <div class="wyciagi">
         <h3>Rejestry</h3>
-        <div class="rejOrg" id="rejOrg"></div>
+        <div class="szafa" id="szafaL"><div class="rejOrg" id="rejOrg"></div></div>
         <div class="mojeRejestry" id="mojeRejestry" hidden></div>
         <div class="sfRejestry" id="sfRejestry" hidden></div>
         <div class="opisRej" id="sfPodpowiedz" hidden>Wczytaj plik <b>.sf2</b> po prawej.<br>Jego brzmienia staną tu<br>jako gałki do wyciągania.</div>
@@ -481,7 +509,7 @@
         </div>
         <div class="prospekt" id="prospekt" title="Kliknij — wróć do konsoli"><svg class="rysProspekt" viewBox="0 0 452 410"></svg></div>
         <h1>Organy Alicji</h1>
-        <div class="pod">Stół gry · jeden manuał · 12 głosów</div>
+        <div class="pod">Stół gry · jeden manuał · 15 głosów</div>
         <div class="banki" id="banki"><button data-bank="moje">🎼 Moje sample</button><button data-bank="alicja">📜 Głosy Alicji</button><button data-bank="sf">📂 Bank zewnętrzny</button></div>
         <div class="nuta" id="nuta">—<small>zagraj coś</small></div>
         <div class="rzad">
@@ -523,6 +551,7 @@
         </div>
         <h3>Bank brzmień</h3>
         <div class="opisRej opisBanku" id="opisBanku"></div>
+        <div class="szafa" id="szafaP" hidden><div class="kombNapis">W środku</div><div class="wSrodku" id="wSrodku"></div><div class="kombNapis" style="margin-top:6px">Kombinacje</div><div class="kombinacje" id="kombP"></div></div>
         <div class="mojeKol" id="mojeKol" hidden>
           <button class="sfBtn" id="mojeOtworz">📂 Otwórz zestaw</button>
           <button class="sfBtn cichy" id="mojeOstatni" hidden>↺ Ostatni</button>
@@ -577,7 +606,7 @@
       <input type="file" id="midiPlik" accept=".mid,.midi,.kar" hidden>
     </div>
     <div class="manual"><div class="klawisze" id="klawisze"></div></div>
-    <div class="pomoc">Graj myszką albo klawiaturą komputera: dolny rząd <b>Z S X D C V G B H N J M ,</b> (od c) · górny rząd <b>Q 2 W 3 E R 5 T 6 Y 7 U I</b> (od c¹) · rejestry: <b>Shift + 1…9, 0, -, =</b></div>
+    <div class="pomoc">Graj myszką albo klawiaturą komputera: dolny rząd <b>Z S X D C V G B H N J M ,</b> (od c) · górny rząd <b>Q 2 W 3 E R 5 T 6 Y 7 U I</b> (od c¹)</div>
   </div>
 </div>
 
@@ -698,10 +727,23 @@ const REJESTRY = [
   { id: 'oboj',        nazwa: 'Obój',        stopy: "8'",   rzad: 'F', przes: 0,   glosnosc: 0.87, alicja: 1.17,
     opis: "Języczkowy, węższy i nosowy.<br>Solowa melodia na tle<br>cichego Gedaktu." },
   { id: 'subbas',      nazwa: 'Subbas',      stopy: "16'",  rzad: 'B', przes: -12, glosnosc: 0.67, alicja: 0.83, doNuty: 54,
-    opis: "Bas jak z pedału: gra tylko<br>w dolnej części klawiatury<br>(do fis). Podpiera całość." }
+    opis: "Bas jak z pedału: gra tylko<br>w dolnej części klawiatury<br>(do fis). Podpiera całość." },
+  // nowe głosy (prawa szafa): Traverso — zmierzony z nagrania fletu (flute.wav), Trompeta — trąbka hiszpańska „en chamade”
+  { id: 'traverso',    nazwa: 'Traverso',    stopy: "8'",   rzad: 'G', przes: 0,   glosnosc: 0.68, alicja: 1.00,
+    opis: "Flauto traverso — flet poprzeczny.<br>Przepis zmierzony z prawdziwego<br>nagrania: śpiewny, z vibrato." },
+  { id: 'trompeta',    nazwa: 'Trompeta',    stopy: "8'",   rzad: 'H', przes: 0,   glosnosc: 1.04, alicja: 1.00,
+    opis: "Trompeta real — trąbka hiszpańska.<br>Lejki poziomo, prosto na ludzi:<br>jasna, twarda, z brzęknięciem." },
+  { id: 'sesquialtera', nazwa: 'Sesquialtera', stopy: 'II', rzad: 'J', przes: 0,   glosnosc: 0.80, alicja: 1.00,
+    opis: "Dwa rzędy fletowe: Nasard 2⅔' i Tercja 1⅗'.<br>Sama brzmi dziwnie — z Gedaktem 8'<br>daje nosową, śpiewającą barwę solową." }
 ];
+// głosy złożone z kilku rzędów — prawy panel pokazuje, co gra w środku
+const W_SRODKU = [
+  { id: 'sesquialtera', nazwa: 'Sesquialtera II', rzedy: [['Nasard', "2⅔'"], ['Tercja', "1⅗'"]] },
+  { id: 'mixtura',      nazwa: 'Mixtura III',     rzedy: [['', "2'"], ['', "1⅓'"], ['', "1'"]] }
+];
+const PUSTE_MIEJSCA = 0;     // wolne miejsca na kolejne głosy (ciemne gałki „WOLNE”)
 // zakres nagrań każdego rzędu: za wysokie albo za niskie nuty wracają o oktawę (tak robią prawdziwe organy — „repetycja”)
-const ZAKRES_RZEDU = { A: [36, 108], B: [24, 108], C: [36, 96], D: [36, 96], E: [36, 96], F: [36, 96] };
+const ZAKRES_RZEDU = { A: [36, 108], B: [24, 108], C: [36, 96], D: [36, 96], E: [36, 96], F: [36, 96], G: [36, 108], H: [36, 96], J: [36, 96] };
 function celNuta(R, n) {
   let c = n + R.przes; const [od, doN] = ZAKRES_RZEDU[R.rzad];
   while (c > doN + 1) c -= 12; while (c < od - 1) c += 12; return c;
@@ -828,7 +870,14 @@ const PRZEPISY = {
   C: { rzedy: [[4, 0.9], [6, 0.75], [8, 0.65]], alikwoty: [1, 0.35, 0.18], wejscie: 0.03, oddech: 0.06 },                   // Mixtura: 2', 1⅓', 1'
   D: { alikwoty: [1, 0.59, 0.44, 0.35, 0.30, 0.26, 0.23, 0.21, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12], wejscie: 0.09, oddech: 0.05 }, // Salicjonał
   E: { formanta: [1500, 900, 30], wejscie: 0.02, oddech: 0 },                                                                // Trąbka
-  F: { formanta: [1100, 450, 22], nieparzyste: 1.3, wejscie: 0.03, oddech: 0 }                                              // Obój
+  F: { formanta: [1100, 450, 22], nieparzyste: 1.3, wejscie: 0.03, oddech: 0 },                                             // Obój
+  // Traverso: alikwoty zmierzone z nagrania fletu (4. głośniejszy niż 3.!), łagodne wejście bez przestrzału, vibrato i falowanie oddechu
+  G: { alikwoty: [1, 0.292, 0.087, 0.165, 0.037, 0.014, 0.007, 0.004, 0.004, 0.003], wejscie: 0.22, lagodnie: true, oddech: 0.18,
+       vibrato: 6, vibratoHz: 4.6, falowanie: 10 },
+  // Trompeta: formanta wyżej i szerzej (jasna „blacha”), twarde wejście z przestrzałem, brzęknięcie języczka, mniej pogłosu (z przodu)
+  H: { formanta: [2800, 2200, 40], wejscie: 0.012, oddech: 0, przestrzal: 1.25, opad: 0.06, brzek: 35, chrapliwosc: 0.35, zPrzodu: 0.5 },
+  // Sesquialtera II: dwa rzędy fletowe z kominkiem — Nasard ×3 (2⅔') i Tercja ×5 (1⅗'), jak Mixtura, tylko flety i z tercją
+  J: { rzedy: [[3, 1], [5, 0.667]], alikwoty: [1, 0.04, 0.06, 0.02, 0.10], wejscie: 0.05, oddech: 0.30, oddechStaly: 0.04, pasmo: 5, szerokosc: 0.7 }
 };
 // alikwoty z „formantą”: wzmocnione w okolicy jednej częstotliwości — tak brzmią rejestry języczkowe
 function alikwotyRzedu(P, f) {
@@ -843,6 +892,12 @@ function przygotujGlosyAlicji() {
   SZUM = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
   const d = SZUM.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
 }
+const KRZYWE_CHRAPANIA = {};
+function krzywaChrapania(ch) {   // lekkie przesterowanie języczka (Trompeta)
+  const k = ch.toFixed(2); if (KRZYWE_CHRAPANIA[k]) return KRZYWE_CHRAPANIA[k];
+  const n = 1024, c = new Float32Array(n), d = 1 + ch * 4; for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1; c[i] = Math.tanh(x * d) / Math.tanh(d); }
+  return KRZYWE_CHRAPANIA[k] = c;
+}
 function falaRzedu(r, f) {                       // fala dla rzędu; języczkowe mają osobną dla każdej nuty (formanta zależy od wysokości)
   const P = PRZEPISY[r], klucz = P.formanta ? r + Math.round(f) : r;
   if (!FALE[klucz]) { const a = alikwotyRzedu(P, f), re = new Float32Array(a.length + 1), im = new Float32Array(a.length + 1); a.forEach((x, i) => im[i + 1] = x); FALE[klucz] = audio.createPeriodicWave(re, im); }
@@ -853,31 +908,50 @@ function glosAlicji(R, n) {
   if (R.doNuty && n > R.doNuty) return () => {};
   const P = PRZEPISY[R.rzad], t = audio.currentTime, f = hz(celNuta(R, n));
   const v = 0.15 * 0.7 * R.glosnosc * R.alicja * Math.min(1.1, Math.pow(261.6 / f, 0.18));
+  const osc0 = [];
   // PRZESTRZEŃ: piszczałki stoją na dwóch wiatrownicach — strona C (lewo) i strona Cis (prawo), na zmianę co półton.
   // Niskie, duże piszczałki stoją na brzegach, wysokie bliżej środka; każdy rejestr odrobinę w innym miejscu.
   const strona = n % 2 === 0 ? -1 : 1, szer = 0.6 - 0.4 * Math.max(0, Math.min(1, (n - 36) / 60));
   const przes = ((R.id || '').split('').reduce((h, z) => (h * 31 + z.charCodeAt(0)) | 0, 7) % 9) / 100;   // od −0,08 do +0,08
-  const pan = audio.createStereoPanner(); pan.pan.value = Math.max(-1, Math.min(1, strona * szer + przes)); pan.connect(sucho);
-  const nuta = audio.createGain(); nuta.gain.value = 0; nuta.connect(pan); nuta.connect(mokro);
+  const pan = audio.createStereoPanner(); pan.pan.value = Math.max(-1, Math.min(1, strona * szer + przes));
+  const nuta = audio.createGain(); nuta.gain.value = 0;
+  const doSucho = audio.createGain(), doMokro = audio.createGain();          // „z przodu” (Trompeta): trochę głośniej prosto, mniej pogłosu
+  doSucho.gain.value = 1 + (P.zPrzodu || 0) * 0.25; doMokro.gain.value = 1 - (P.zPrzodu || 0) * 0.7;
+  pan.connect(doSucho).connect(sucho); doMokro.connect(mokro);
+  let wyjscieNuty = nuta;
+  if (P.chrapliwosc) { const ws = audio.createWaveShaper(); ws.curve = krzywaChrapania(P.chrapliwosc); ws.oversample = '2x'; nuta.connect(ws); wyjscieNuty = ws; }
+  wyjscieNuty.connect(pan); wyjscieNuty.connect(doMokro);
+  let zrodloOsc = nuta;                                                         // falowanie oddechu (Traverso): głośność lekko faluje
+  if (P.falowanie) { const fal = audio.createGain(), fo = audio.createOscillator(), fg = audio.createGain();
+    fal.gain.value = 1; fo.frequency.value = 2.6; fg.gain.value = P.falowanie / 100; fo.connect(fg).connect(fal.gain); fal.connect(nuta); fo.start(t); zrodloOsc = fal; osc0.push(fo); }
   const osc = [];
   // Mixtura to kilka wysokich rzędów naraz; za wysoki rząd wraca oktawę niżej (repetycja)
   const skladniki = P.rzedy ? P.rzedy.map(([k, a]) => { let kk = k; while (f * kk > 4200) kk /= 2; return [kk, a * 0.45]; }) : [[1, 1]];
   for (const [k, a] of skladniki) {
     const o = audio.createOscillator(), g = audio.createGain(), wiatr = audio.createOscillator(), wg = audio.createGain();
     o.setPeriodicWave(falaRzedu(R.rzad, f)); o.frequency.value = f * k; o.detune.value = (Math.random() * 2 - 1) * 1.5;
+    if (P.brzek) { o.detune.setValueAtTime(P.brzek + o.detune.value, t); o.detune.setTargetAtTime((Math.random() * 2 - 1) * 1.5, t + 0.004, 0.012); }   // brzęknięcie języczka
     wiatr.frequency.value = 3.3 + Math.random() * 1.2; wg.gain.value = STROJ_WIATR; wiatr.connect(wg).connect(o.detune);
-    g.gain.value = a; o.connect(g).connect(nuta); o.start(t); wiatr.start(t); osc.push(o, wiatr);
+    if (P.vibrato) { const vo = audio.createOscillator(), vg = audio.createGain(); vo.frequency.value = P.vibratoHz || 4.5; vg.gain.value = P.vibrato; vo.connect(vg).connect(o.detune); vo.start(t); osc.push(vo); }
+    g.gain.value = a; o.connect(g).connect(zrodloOsc); o.start(t); wiatr.start(t); osc.push(o, wiatr);
   }
+  osc.push(...osc0);
   nuta.gain.setValueAtTime(0, t);
-  nuta.gain.linearRampToValueAtTime(v * 1.12, t + P.wejscie);
-  nuta.gain.linearRampToValueAtTime(v, t + P.wejscie + 0.09);
+  if (P.lagodnie) nuta.gain.setTargetAtTime(v, t, P.wejscie / 3);              // flet: łagodnie, bez przestrzału
+  else { nuta.gain.linearRampToValueAtTime(v * (P.przestrzal || 1.12), t + P.wejscie); nuta.gain.linearRampToValueAtTime(v, t + P.wejscie + (P.opad || 0.09)); }
+  if (P.brzek) {   // krótki „trzask” języczka: wysoki szum przez kilka milisekund
+    const tz = audio.createBufferSource(), tf = audio.createBiquadFilter(), tg = audio.createGain();
+    tz.buffer = SZUM; tf.type = 'highpass'; tf.frequency.value = Math.min(8000, f * 6); tg.gain.setValueAtTime(0, t); tg.gain.linearRampToValueAtTime(0.35, t + 0.003); tg.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+    tz.connect(tf).connect(tg).connect(nuta); tz.start(t, Math.random() * 0.9); tz.stop(t + 0.05); }
   // oddech: krótki szum powietrza na początku nuty.
   // Każda piszczałka dmucha po swojemu (szum z losowego miejsca), a przy wielu rejestrach naraz każdy „pluje” ciszej —
   // inaczej kilka jednakowych szumów nałożyłoby się i plucie rosłoby lawinowo.
   const ileDmucha = Math.max(1, [...orgWlaczone].filter(id => PRZEPISY[rejestr(id).rzad].oddech > 0).length), cichszy = Math.pow(ileDmucha, -0.6);
   const s = audio.createBufferSource(), filtr = audio.createBiquadFilter(), sg = audio.createGain();
   s.buffer = SZUM; s.loop = true; filtr.type = 'bandpass'; filtr.frequency.value = Math.min(9000, f * (P.pasmo || 3)); filtr.Q.value = P.szerokosc || 2.5;   // pasmo: gdzie szumi, szerokosc: im mniejsza liczba, tym szersze pasmo
-  sg.gain.setValueAtTime(0, t); sg.gain.linearRampToValueAtTime(P.oddech * 6 * cichszy + 0.0001, t + 0.012); sg.gain.exponentialRampToValueAtTime((P.oddechStaly || P.oddech * 0.25) * cichszy + 0.0001, t + 0.09);
+  if (P.lagodnie) { filtr.frequency.value = Math.min(9000, f * 4); filtr.Q.value = 0.7;     // flet poprzeczny: oddech miękki i dłuższy, jak u flecisty
+    sg.gain.setValueAtTime(0, t); sg.gain.linearRampToValueAtTime(P.oddech * 0.5 * cichszy + 0.0001, t + 0.03); sg.gain.exponentialRampToValueAtTime(P.oddech * 0.12 * cichszy + 0.0001, t + 0.25); }
+  else { sg.gain.setValueAtTime(0, t); sg.gain.linearRampToValueAtTime(P.oddech * 6 * cichszy + 0.0001, t + 0.012); sg.gain.exponentialRampToValueAtTime((P.oddechStaly || P.oddech * 0.25) * cichszy + 0.0001, t + 0.09); }
   s.connect(filtr).connect(sg).connect(nuta); s.start(t, Math.random() * 0.9);
   return () => {
     const k = audio.currentTime;
@@ -889,7 +963,7 @@ function glosAlicji(R, n) {
 // ===== BANKI BRZMIEŃ: skąd biorą dźwięk rejestry =====
 const BANKI = {
   moje:   { nazwa: '🎼 Moje sample', opis: '' },
-  alicja: { nazwa: '📜 Głosy Alicji', opis: '<b>Głosy Alicji</b><br>Bez żadnych nagrań. Każdy głos to przepis zapisany tekstem w kodzie: lista alikwotów, wejście piszczałki i oddech.<br><br>Waży tyle co nic i zagra na każdym komputerze.' },
+  alicja: { nazwa: '📜 Głosy Alicji', opis: '<b>Głosy Alicji</b> — bez nagrań: każdy głos to przepis w kodzie. Na dole guziki kombinacji.' },
   sf:     { nazwa: '📂 Bank zewnętrzny', opis: '' }
 };
 let bank = (() => { try { const b = localStorage.getItem('organy-alicji-bank'); return BANKI[b] ? b : 'alicja'; } catch (e) { return 'alicja'; } })();
@@ -899,7 +973,7 @@ function rysujBank() {
   document.querySelectorAll('[data-bank]').forEach(b => b.classList.toggle('wybrany', b.dataset.bank === bank));
   const zew = bank === 'sf';
   const moje = bank === 'moje';
-  document.getElementById('rejOrg').hidden = zew || moje; document.getElementById('mojeRejestry').hidden = !moje; document.getElementById('mojeKol').hidden = !moje;
+  document.getElementById('szafaL').hidden = zew || moje; document.getElementById('szafaP').hidden = bank !== 'alicja'; document.getElementById('mojeRejestry').hidden = !moje; document.getElementById('mojeKol').hidden = !moje;
   document.getElementById('sfRejestry').hidden = !zew || !SF; document.getElementById('sfPodpowiedz').hidden = !zew || !!SF;
   document.getElementById('opisBanku').hidden = zew; document.getElementById('opisBanku').innerHTML = moje ? opisMoich() : BANKI[bank].opis;
   document.getElementById('sfPusty').hidden = !zew || !!SF; document.getElementById('sfPelny').hidden = !zew || !SF;
@@ -1150,14 +1224,73 @@ async function ustawOrg(id, wl) {
   const b = document.querySelector(`[data-org="${id}"]`); if (b) b.classList.toggle('wyciagniety', wl);
   if (audio && bank === 'alicja') przelaczGlosy('org:' + id, wl);
   pokazNute(); zapiszWybor();
+  if (typeof podswietlKombinacje === 'function') podswietlKombinacje();
+  if (typeof odswiezWsrodku === 'function') odswiezWsrodku();
 }
-document.getElementById('rejOrg').innerHTML = REJESTRY.map(R =>
+const galkaHTML = R =>
   `<button class="rejestr sredni${orgWlaczone.has(R.id) ? ' wyciagniety' : ''}" data-org="${R.id}" title="${R.nazwa} ${R.stopy} — ${R.opis.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()}">
-    <span class="tuleja"></span><span class="galka"><span><b>${R.nazwa}</b><i>${R.stopy}</i></span></span></button>`).join('');
-document.getElementById('rejOrg').addEventListener('click', e => {
+    <span class="tuleja"></span><span class="galka"><span><b>${R.nazwa}</b><i>${R.stopy}</i></span></span></button>`;
+document.getElementById('rejOrg').innerHTML = REJESTRY.map(galkaHTML).join('')
+  + '<button class="rejestr sredni wolne" disabled title="Wolne miejsce na nowy głos"><span class="tuleja"></span><span class="galka"><span><b>WOLNE</b></span></span></button>'.repeat(PUSTE_MIEJSCA);
+['rejOrg'].forEach(el => document.getElementById(el).addEventListener('click', e => {
   const b = e.target.closest('[data-org]'); if (!b) return; startAudio();
   const id = b.dataset.org; ustawOrg(id, !orgWlaczone.has(id));
+}));
+/* ===== KOMBINACJE: guzik wyciąga gotowy zestaw rejestrów w całych organach (obie szafy), jak w prawdziwym stole gry.
+   Przytrzymaj guzik ok. 1 s — zapamięta TWÓJ układ gałek (zielona kropka). Prawy klik — wraca ustawienie fabryczne. ===== */
+const KOMBINACJE = [
+  // górny rząd — do śpiewu w kościele, od cicha do pełnych organów
+  { id: 'psalm',  szafa: 'L', nazwa: 'Psalm',   opis: 'cicho: Gedakt i Salicjonał',                    rej: ['gedakt', 'salicjonal'] },
+  { id: 'spiew',  szafa: 'L', nazwa: 'Śpiew',   opis: 'średnio: do śpiewu ludu',                       rej: ['pryncypal', 'gedakt', 'oktawa', 'subbas'] },
+  { id: 'forte',  szafa: 'L', nazwa: 'Forte',   opis: 'mocno: pryncypały i Mixtura',                   rej: ['bourdon', 'pryncypal', 'oktawa', 'superoktawa', 'mixtura', 'subbas'] },
+  { id: 'tutti',  szafa: 'L', nazwa: 'Tutti',   opis: 'pełne organy: wszystkie głosy',                 rej: null },
+  // dolny rząd — solowe barwy z cichym tłem
+  { id: 'flet',   nazwa: 'Flet',    opis: 'solo: Traverso z cichym Gedaktem',              rej: ['traverso', 'gedakt'] },
+  { id: 'oboj',   nazwa: 'Obój',    opis: 'solo: Obój z Gedaktem',                         rej: ['oboj', 'gedakt'] },
+  { id: 'trabka', nazwa: 'Trąbka',  opis: 'Trąbka z pryncypałami',                         rej: ['pryncypal', 'oktawa', 'trabka', 'subbas'] },
+  { id: 'fanfara',nazwa: 'Fanfara', opis: 'Trompeta, Trąbka i pryncypały — uroczyście',    rej: ['pryncypal', 'oktawa', 'superoktawa', 'trabka', 'trompeta', 'subbas'] }
+];
+const kombFabryczna = K => K.rej || REJESTRY.map(R => R.id);
+let kombWlasne = (() => { try { return JSON.parse(localStorage.getItem('organy-alicji-kombinacje')) || {}; } catch (e) { return {}; } })();
+const kombRej = K => kombWlasne[K.id] || kombFabryczna(K);
+function rysujKombinacje() {
+  ['P'].forEach(sz => document.getElementById('komb' + sz).innerHTML = KOMBINACJE.map(K =>
+    `<button class="komb${kombWlasne[K.id] ? ' wlasna' : ''}" data-komb="${K.id}" title="${K.nazwa}: ${kombWlasne[K.id] ? 'Twój układ gałek' : K.opis}
+Przytrzymaj, żeby zapamiętać obecne gałki · prawy klik: ustawienie fabryczne"><i></i>${K.nazwa}</button>`).join(''));
+  podswietlKombinacje();
+}
+function podswietlKombinacje() {   // świeci ta kombinacja, której układ jest właśnie wyciągnięty
+  KOMBINACJE.forEach(K => { const b = document.querySelector(`[data-komb="${K.id}"]`); if (!b) return; const r = kombRej(K);
+    b.classList.toggle('aktywna', r.length === orgWlaczone.size && r.every(id => orgWlaczone.has(id))); });
+}
+async function uzyjKombinacji(K) {
+  startAudio(); const r = kombRej(K);
+  for (const R of REJESTRY) if (r.includes(R.id) !== orgWlaczone.has(R.id)) await ustawOrg(R.id, r.includes(R.id));
+  status(`🎛 Kombinacja <b>${K.nazwa}</b>${kombWlasne[K.id] ? ' (Twoja)' : ' — ' + K.opis}.`); podswietlKombinacje();
+}
+function zapiszKombinacje() { try { localStorage.setItem('organy-alicji-kombinacje', JSON.stringify(kombWlasne)); } catch (e) {} }
+['kombP'].forEach(el => {
+  const pole = document.getElementById(el); let trzym = null, zapisane = false;
+  pole.addEventListener('pointerdown', e => { const b = e.target.closest('[data-komb]'); if (!b || e.button !== 0) return; zapisane = false; b.classList.add('wcisk');
+    trzym = setTimeout(() => { const K = KOMBINACJE.find(k => k.id === b.dataset.komb); zapisane = true;
+      if (!orgWlaczone.size) { status('Wyciągnij najpierw gałki, które ma zapamiętać kombinacja.'); return; }
+      kombWlasne[K.id] = REJESTRY.map(R => R.id).filter(id => orgWlaczone.has(id)); zapiszKombinacje();
+      b.classList.remove('zapisuje'); void b.offsetWidth; b.classList.add('zapisuje'); rysujKombinacje();
+      status(`💾 Kombinacja <b>${K.nazwa}</b> zapamiętała Twój układ: ${kombWlasne[K.id].map(id => rejestr(id).nazwa).join(', ')}.`); }, 900); });
+  const puscGuzik = () => { clearTimeout(trzym); document.querySelectorAll('.komb.wcisk').forEach(b => b.classList.remove('wcisk')); };
+  pole.addEventListener('pointerup', e => { const b = e.target.closest('[data-komb]'); puscGuzik(); if (b && !zapisane) uzyjKombinacji(KOMBINACJE.find(k => k.id === b.dataset.komb)); });
+  pole.addEventListener('pointerleave', puscGuzik); pole.addEventListener('pointercancel', puscGuzik);
+  pole.addEventListener('contextmenu', e => { const b = e.target.closest('[data-komb]'); if (!b) return; e.preventDefault(); const K = KOMBINACJE.find(k => k.id === b.dataset.komb);
+    if (kombWlasne[K.id]) { delete kombWlasne[K.id]; zapiszKombinacje(); rysujKombinacje(); status(`↺ Kombinacja <b>${K.nazwa}</b> wróciła do ustawienia fabrycznego.`); }
+    else status(`Kombinacja <b>${K.nazwa}</b> ma ustawienie fabryczne: ${K.opis}.`); });
 });
+rysujKombinacje();
+// ===== W ŚRODKU: rzędy piszczałek głosów złożonych — zapalają się, gdy głos jest wyciągnięty =====
+document.getElementById('wSrodku').innerHTML = W_SRODKU.map(W => `<div class="wsRzad" data-ws="${W.id}" title="${W.nazwa}: ${W.rzedy.map(r => (r[0] + ' ' + r[1]).trim()).join(' + ')}"><span class="wsNazwa">${W.nazwa}</span>` +
+  W.rzedy.map(([n, st]) => `<span class="rejestr"><span class="tuleja"></span><span class="galka"><span>${n ? `<b>${n}</b>` : ''}<i>${st}</i></span></span></span>`).join('') + '</div>').join('');
+function odswiezWsrodku() { W_SRODKU.forEach(W => { const on = orgWlaczone.has(W.id), r = document.querySelector(`[data-ws="${W.id}"]`); if (!r) return;
+  r.classList.toggle('gra', on); r.querySelectorAll('.rejestr').forEach((g, i) => setTimeout(() => g.classList.toggle('wyciagniety', orgWlaczone.has(W.id)), on ? i * 120 : 0)); }); }
+odswiezWsrodku();
 /* =====================================================================
    MOJE SAMPLE — edytor zestawu (3–6 rejestrów z Twoich nagrań), okno w organach
    ===================================================================== */
@@ -2134,18 +2267,6 @@ document.getElementById('nagrWav').onclick = async () => {
   } catch (e) { status('✖ Nie udało się przerobić na WAV. Zapisz MIDI.'); }
 };
 
-// ===== rejestry na klawiaturze: Shift + 1…9, 0, -, = (albo klawiatura numeryczna 1–9, 0) =====
-const KLAWISZE_REJ = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'Minus', 'Equal'];
-addEventListener('keydown', e => {
-  if (e.repeat || piszeTekst(e)) return;
-  const m = e.code.match(/^(Digit|Numpad)?(\d|Minus|Equal)$/); if (!m) return;
-  if (m[1] !== 'Numpad' && !e.shiftKey) return;                // zwykłe cyfry grają czarne klawisze
-  const i = KLAWISZE_REJ.indexOf(m[2]); if (i < 0) return;
-  e.preventDefault(); e.stopImmediatePropagation();
-  if (bank === 'sf') { if (SF && SF.presety[i]) wyciagnijSF(i, !sfWlaczone.has(i)); return; }
-  if (bank === 'moje') { if (EZ.zestaw().rejestry[i]) { startAudio(); wyciagnijMoje(i, !mojeWlaczone.has(i)); } return; }   // Moje sample: Shift + 1…6 = Twoje rejestry
-  const R = REJESTRY[i]; if (R) { startAudio(); ustawOrg(R.id, !orgWlaczone.has(R.id)); }
-}, true);
 
 // ===== PROSPEKT: obrazek organów zamiast konsoli, gdy gra utwór =====
 // Start utworu — konsola przenika w prospekt przez 4 s. Pod koniec — prospekt gaśnie i wraca konsola.
