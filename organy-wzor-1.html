@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Organy Alicji</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ORGANY ALICJI NA STRONĘ (wzór 1): same głosy Alicji — 16 rejestrów w dwóch rzędach nad klawiaturą (3 oktawy jak w organach), utwory MIDI, klawiatura USB. Bez nagrywania.
+     SZTYWNA RAMKA: organy mają zawsze ten sam układ, 1040 × 446 px (do rezerwacji na stronie: 1040 × 450). Gdy dostaną mniej miejsca, zmniejszają się w całości jak obrazek;
+     poniżej 700 px w ramce na cudzej stronie zamiast organów jest przycisk „Otwórz Organy Alicji”.
+     Kod do wklejenia (podawany na stronie organów, nie tutaj):
+     <iframe src="https://miniklik.github.io/organy/organy-wzor-1.html" title="Organy Alicji" style="display:block;width:100%;max-width:1040px;aspect-ratio:1040/446;margin:0 auto;border:0;contain:inline-size" allow="midi; autoplay"></iframe> */
+  :root { --zloto: #d8b46a; --kosc: #f3ead6; --vw: 10.4px; }   /* --vw: 1% z 1040 px — rozmiary liczone zawsze jak przy pełnej szerokości */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; overflow: hidden; }
+  html { background: #0d0b14 radial-gradient(ellipse at 50% 0%, #2a2238, #0d0b14 70%) no-repeat fixed; }   /* tło jak w Organach Alicji (tylko gdy organy są osobną stroną) */
+  /* .cialo: „pokój” organów — wszystko, co organy mają, jest w nim (tak samo na osobnej stronie i wklejone w cudzą) */
+  .cialo { position: relative; overflow: hidden; font-family: 'Outfit', system-ui, sans-serif; color: var(--kosc); padding: 0; user-select: none; text-align: left; line-height: normal; }   /* margines 6 px robi „dopasuj” */
+  /* sztywny stół 1028 px (+ 2 × 6 px marginesu = 1040): nigdy się nie ściska — skrypt „dopasuj” najwyżej zmniejsza go w całości */
+  .mini { width: 1028px; margin: 0; transform-origin: 0 0; border-radius: 14px; padding: 10px 12px 12px; background: linear-gradient(180deg, #4a2a17, #2e190d);
+          box-shadow: 0 14px 40px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.08); }
+  /* górny pasek ułożony w te same 22 kolumny co rejestry i panel: prawa część zaczyna się równo z panelem */
+  .gora { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: center; }
+  .gora .tyt { grid-column: 1; display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .gora .prawa { grid-column: 2; margin-left: 10px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; min-height: 30px; }   /* puste brązowe miejsce, Dom na prawym końcu */
+  .poglos { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; font-size: clamp(10px, calc(1.1 * var(--vw)), 13px); color: #c9b48c;
+            background: linear-gradient(180deg, #1c120b, #2b1a0e); box-shadow: inset 0 2px 6px rgba(0,0,0,.7); }
+  .poglos label { display: flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; color: var(--kosc); font-weight: 600; }
+  .poglos input[type=checkbox] { accent-color: var(--zloto); width: 14px; height: 14px; margin: 0; cursor: pointer; }
+  .poglos input[type=range] { flex: 1; min-width: 40px; accent-color: var(--zloto); margin: 0; cursor: pointer; }
+  .poglos small { font-size: .85em; color: #9a8665; white-space: nowrap; }
+  .poglos.wyl input[type=range] { opacity: .35; }
+  .dom { flex: 0 0 auto; font: 600 13px 'Outfit', sans-serif; color: var(--kosc); text-decoration: none; white-space: nowrap;
+         background: rgba(255,255,255,.06); border: 1px solid rgba(216,180,106,.45); border-radius: 999px; padding: 5px 12px; }
+  .dom:hover { background: rgba(216,180,106,.15); }
+  .gora h1 { margin: 0; font: 700 clamp(15px, calc(2.2 * var(--vw)), 22px) 'Cinzel', serif; letter-spacing: .12em; color: var(--zloto); }
+  .gora .tyt span { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: clamp(10px, calc(1.2 * var(--vw)), 13px); color: #c9b48c; }
+  .gora button { font: 600 13px 'Outfit', sans-serif; color: var(--kosc); background: rgba(255,255,255,.06); border: 1px solid rgba(216,180,106,.45);
+                 border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+  .mini { position: relative; }
+  .srodek { margin-top: 10px; }
+  /* nad klawiaturą: 16 rejestrów w dwóch rzędach po 8 (jak w Organach Alicji), obok wąski panel 300 px */
+  .rzad { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)) 300px; gap: 4px 0; margin-bottom: 8px; }
+  /* gałki rejestrów — te same co w Organach Alicji: tuleja w drewnie i kremowa gałka z nazwą i stopami */
+  .rej { position: relative; aspect-ratio: 1; border: 0; padding: 0; background: none; cursor: pointer; }
+  .rej .tuleja { position: absolute; inset: 21%; border-radius: 50%; background: radial-gradient(circle, #120a05 55%, #3b2414 70%, #120a05 72%); }
+  .rej .galka { position: absolute; inset: 13%;   /* mniejsza średnica, środek gałki w tym samym miejscu */ border-radius: 50%; display: grid; place-items: center; text-align: center;
+                background: radial-gradient(circle at 38% 32%, #fffaf0, var(--kosc) 45%, #cdbf9f 100%);
+                box-shadow: 0 2px 2px rgba(0,0,0,.6); transition: transform .18s, box-shadow .18s; color: #3a1f10; }
+  .rej .galka b { display: block; font: 700 clamp(5.5px, calc(0.78 * var(--vw)), 10px)/1.05 'Cinzel', serif; word-break: normal; hyphens: manual; padding: 0 2px; }
+  .rej .galka i { display: block; font: 700 clamp(7px, calc(1.05 * var(--vw)), 14px) 'Cinzel', serif; font-style: normal; color: #8a1c1c; margin-top: 1px; }
+  .rej.on .galka { transform: scale(1.09) translateY(-2px); box-shadow: 0 12px 16px rgba(0,0,0,.65), 0 0 0 3px rgba(216,180,106,.35); }
+  .rej:not(.on) .galka { filter: brightness(.82); }
+  .rej:focus, .rej:focus-visible { outline: none; }   /* bez kwadratowej ramki po kliknięciu gałki */
+  .panel { grid-column: 9; grid-row: 1 / span 2; margin-left: 10px; border-radius: 10px; background: linear-gradient(180deg, #1c120b, #2b1a0e);
+           box-shadow: inset 0 2px 8px rgba(0,0,0,.7); display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 8px 12px; min-width: 0; }
+  .nagr, .utw { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .utw select { width: 100%; font: 600 clamp(10px, calc(1.1 * var(--vw)), 13px) 'Outfit', sans-serif; color: var(--kosc); background: #120b06; border: 1px solid rgba(216,180,106,.4);
+                border-radius: 8px; padding: 6px 8px; max-width: 100%; flex: 1 1 180px; min-width: 0; cursor: pointer; }
+  .utw button.okr { width: 2.3em; padding: 6px 0; }
+  .postep { width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .glos { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; font-size: clamp(9px, calc(1 * var(--vw)), 12px); color: #c9b48c; flex: 0 0 auto; }
+  .glos div { display: flex; align-items: center; gap: 6px; }
+  .glos input { width: 150px; accent-color: var(--zloto); margin: 0; cursor: pointer; }
+  .glos b { color: var(--zloto); width: 32px; font-variant-numeric: tabular-nums; }
+  .postep .napis { display: flex; justify-content: space-between; gap: 8px; font-size: clamp(9px, calc(1 * var(--vw)), 12px); color: #c9b48c; }
+  .postep .napis span:first-child { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .postep .napis span:last-child { white-space: nowrap; flex: 0 0 auto; }
+  .postep .napis b { color: var(--kosc); }
+  .pasek { height: 5px; border-radius: 4px; background: rgba(255,255,255,.08); cursor: pointer; overflow: hidden; }
+  .pasek i { display: block; height: 100%; width: 0; background: var(--zloto); }
+  .panel hr { width: 100%; border: 0; border-top: 1px solid rgba(216,180,106,.18); margin: 0; }
+  .panel button { font: 600 clamp(10px, calc(1.1 * var(--vw)), 13px) 'Outfit', sans-serif; color: var(--kosc); background: rgba(255,255,255,.07); border: 1px solid rgba(216,180,106,.4);
+                 border-radius: 999px; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+  .panel button.polaczone { border-color: #7dff9a; color: #c9ffd0; }
+  .panel .czas { font: 700 clamp(11px, calc(1.2 * var(--vw)), 14px) 'Outfit', sans-serif; color: #ffd98a; font-variant-numeric: tabular-nums; min-width: 38px; text-align: center; }
+  /* klawiatura jak w Organach Alicji: 3 oktawy, c (48) – c³ (84), 37 klawiszy */
+  /* manuał i klawisze — 1:1 jak w Organach Alicji: wypukłe, z cieniem pod spodem, wciskają się przy graniu */
+  .klaw { position: relative; aspect-ratio: 22 / 3.6; border-radius: 6px; padding: 10px 12px 12px;
+          background: linear-gradient(180deg, #160c06, #24140a); box-shadow: inset 0 6px 14px rgba(0,0,0,.8); }
+  .klaw .wnetrze { position: relative; width: 100%; height: 100%; }
+  .bialy { position: absolute; top: 0; height: 100%; border-radius: 0 0 5px 5px; cursor: pointer;
+           background: linear-gradient(180deg, #e9e0cb, #fbf6ea 12%, #f3ead6 88%, #d6cab0); box-shadow: 0 4px 0 #a99a7c, 0 6px 6px rgba(0,0,0,.5); }
+  .czarny { position: absolute; top: 0; height: 61%; border-radius: 0 0 4px 4px; cursor: pointer; z-index: 2;
+            background: linear-gradient(180deg, #1a1210, #3a2c26 80%, #241a16); box-shadow: 0 4px 0 #0c0806, 0 6px 8px rgba(0,0,0,.6); }
+  .bialy.gra { background: linear-gradient(180deg, #d8ccb0, #efe3c6); box-shadow: 0 1px 0 #a99a7c, inset 0 0 16px rgba(216,180,106,.6); transform: translateY(3px); }
+  .czarny.gra { background: linear-gradient(180deg, #3d2f28, #5a4a3a); transform: translateY(2px); box-shadow: 0 1px 0 #0c0806, 0 0 12px rgba(216,180,106,.5); }
+  .bialy small, .czarny small { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; font-size: clamp(7px, calc(0.85 * var(--vw)), 10px); color: #9a8a6a; pointer-events: none; }
+  .czarny small { color: #a8957a; bottom: 5px; }
+  .bialy .c { position: absolute; bottom: clamp(14px, calc(1.7 * var(--vw)), 20px); left: 0; right: 0; text-align: center; font: 700 clamp(7px, calc(0.85 * var(--vw)), 10px) 'Cinzel', serif; color: #8a1c1c; pointer-events: none; }
+  .stopka { margin-top: 6px; font-size: clamp(9px, calc(1 * var(--vw)), 12px); color: #b59f78; text-align: center; min-height: 1.3em; }
+  /* za wąsko do grania (mniej niż 700 px): zamiast maleńkich organów duży przycisk */
+  .za-waskie { display: none; position: absolute; inset: 0; z-index: 50; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 10px; text-align: center;
+               background: linear-gradient(180deg, #4a2a17, #2e190d); color: var(--kosc); }
+  .cialo.waskie .za-waskie { display: flex; }
+  .cialo.waskie .mini { visibility: hidden; }
+  .za-waskie b { font: 700 clamp(14px, 6vw, 22px) 'Cinzel', serif; letter-spacing: .1em; color: var(--zloto); }
+  .za-waskie a { font: 700 15px 'Outfit', sans-serif; color: #3a1f10; text-decoration: none; border-radius: 999px; padding: 10px 18px;
+                 background: radial-gradient(circle at 38% 32%, #fffaf0, var(--kosc) 45%, #cdbf9f 100%); box-shadow: 0 6px 14px rgba(0,0,0,.5); }
+  .za-waskie small { font-size: 12px; color: #c9b48c; }
+</style>
+</head>
+<body>
+<div class="cialo" id="cialo">
+<div class="za-waskie" id="zaWaskie"><b>Organy Alicji</b><a id="otworzPelne" href="https://miniklik.github.io/organy/organy-wzor-1.html" target="_blank" rel="noopener">🎹 Otwórz Organy Alicji</a><small id="zaWaskieNap">tu jest za mało miejsca do grania</small></div>
+<div class="mini" id="mini">
+  <div class="gora"><div class="tyt"><h1>Organy Alicji</h1><span>głosy Alicji · bez nagrań, liczone na żywo</span></div>
+    <div class="prawa"><a class="dom" href="https://miniklik.github.io/organy/" target="_top" title="Otwórz pełne Organy Alicji">🏠 Dom</a>
+    </div></div>
+  <div class="srodek">
+    <div class="rzad" id="rzad">
+      <div class="panel">
+        <div class="utw"><select id="utLista" title="Pieśni z folderu Midiala"></select></div>
+        <div class="utw"><button id="utWczytaj" title="Wczytaj własny plik .mid z dysku">🎵 Wczytaj MIDI</button><button class="okr" id="utGraj" title="Graj / pauza">▶</button><button class="okr" id="utStop" title="Stop">⏹</button></div>
+        <div class="postep"><div class="napis"><span id="utTytul">wybierz utwór z listy albo wczytaj swój plik MIDI</span><span id="utCzas">0:00 / 0:00</span></div><div class="pasek" id="utPostep" title="Kliknij, żeby przewinąć"><i id="utPasek"></i></div></div>
+        <label class="glos">Głośność<div><input type="range" id="glosnosc" min="0" max="100" value="70"><b id="glosNap">70%</b></div></label>
+        <div class="nagr"><button id="midi" title="Podłącz klawiaturę sterującą przez USB (Chrome, Edge)">🔌 USB</button>
+        <div class="poglos" id="poglosBox" title="Pogłos kościoła: od małej kaplicy do katedry"><label><input type="checkbox" id="poglosWl" checked> Pogłos</label><input type="range" id="poglos" min="0" max="100" value="33" title="w lewo: kaplica · w prawo: katedra"></div></div>
+      </div>
+      <input type="file" id="midiPlik" accept=".mid,.midi,.kar" hidden>
+    </div>
+    <div class="klaw"><div class="wnetrze" id="klawisze"></div></div>
+    <div class="stopka" id="stopka">Graj myszką albo klawiaturą komputera: dolny rząd Z S X D C… (od c) · górny rząd Q 2 W 3 E… (od c¹)</div>
+  </div>
+</div>
+</div><!-- /cialo -->
+<script>
+/* =====================================================================
+   GŁOSY ALICJI — ten sam silnik co w Organach Alicji:
+   przepis na alikwoty, wejście piszczałki, dmuchnięcie powietrza, wiatr z miechów i pogłos kościoła.
+   ===================================================================== */
+/* ╔══════════════════════════════════════════════════════════════════════╗
+   ║  PIEŚNI: folder „Midiala” obok tego pliku                            ║
+   ║  W organach nic nie jest wbudowane. Pieśni leżą w folderze Midiala:  ║
+   ║                                                                      ║
+   ║     index.html          ← te organy                                  ║
+   ║     Midiala/                                                         ║
+   ║       Barka.mid                                                      ║
+   ║       Cicha noc.mid                                                  ║
+   ║       lista.txt         ← nazwy plików, każda w osobnej linijce      ║
+   ║                                                                      ║
+   ║  Na GitHubie (adres …github.io) organy same pytają GitHuba, co leży  ║
+   ║  w Midiala — lista.txt nie jest potrzebny. Na każdym innym serwerze  ║
+   ║  organy czytają lista.txt. Tytuł na liście = nazwa pliku bez .mid.   ║
+   ╚══════════════════════════════════════════════════════════════════════╝ */
+// KORZEN: gdzie mieszkają organy. Na osobnej stronie: dokument. Wklejone w cudzą stronę: własny pokój (shadow root).
+// Strona „Organy na Twoją stronę” podmienia tę jedną linijkę, gdy składa kod do wklejenia.
+const KORZEN = document, GOSPODARZ = null;            // ORGANY-KORZEN
+const WKLEJONE = !!GOSPODARZ;
+const $ = id => KORZEN.getElementById(id);
+const REJESTRY = [
+  { id: 'bourdon',     nazwa: 'Bourdon',     stopy: "16'", rzad: 'B', przes: -12, glosnosc: 0.63, alicja: 0.82 },
+  { id: 'pryncypal',   nazwa: 'Pryncypał',   stopy: "8'",  rzad: 'A', przes: 0,   glosnosc: 1.16, alicja: 0.74 },
+  { id: 'gedakt',      nazwa: 'Gedakt',      stopy: "8'",  rzad: 'B', przes: 0,   glosnosc: 0.60, alicja: 0.82 },
+  { id: 'salicjonal',  nazwa: 'Salicjonał',  stopy: "8'",  rzad: 'D', przes: 0,   glosnosc: 0.66, alicja: 1.09 },
+  { id: 'oktawa',      nazwa: 'Oktawa',      stopy: "4'",  rzad: 'A', przes: 12,  glosnosc: 0.79, alicja: 0.73 },
+  { id: 'flet4',       nazwa: 'Flet',        stopy: "4'",  rzad: 'B', przes: 12,  glosnosc: 0.46, alicja: 0.83 },
+  { id: 'kwinta',      nazwa: 'Kwinta',      stopy: "2⅔'", rzad: 'A', przes: 19,  glosnosc: 0.44, alicja: 0.83 },
+  { id: 'superoktawa', nazwa: 'Superoktawa', stopy: "2'",  rzad: 'A', przes: 24,  glosnosc: 0.59, alicja: 0.75 },
+  { id: 'mixtura',     nazwa: 'Mixtura',     stopy: 'III', rzad: 'C', przes: 0,   glosnosc: 0.61, alicja: 1.08 },
+  { id: 'trabka',      nazwa: 'Trąbka',      stopy: "8'",  rzad: 'E', przes: 0,   glosnosc: 1.29, alicja: 1.30 },
+  { id: 'oboj',        nazwa: 'Obój',        stopy: "8'",  rzad: 'F', przes: 0,   glosnosc: 0.87, alicja: 1.17 },
+  { id: 'subbas',      nazwa: 'Subbas',      stopy: "16'", rzad: 'B', przes: -12, glosnosc: 0.67, alicja: 0.83, doNuty: 54 },
+  { id: 'traverso',    nazwa: 'Traverso',    stopy: "8'",   rzad: 'G', przes: 0,   glosnosc: 0.68, alicja: 1.00 },
+  { id: 'trompeta',    nazwa: 'Trompeta',    stopy: "8'",   rzad: 'H', przes: 0,   glosnosc: 1.04, alicja: 1.00 },
+  { id: 'sesquialtera', nazwa: 'Sesquialtera', stopy: 'II', rzad: 'J', przes: 0,   glosnosc: 0.80, alicja: 1.00 },
+  // Flet 2' (tylko w mini organach): ten sam flet co Flet 4', dwie oktawy nad 8' — głośność ×0,75 jak Superoktawa wobec Oktawy
+  { id: 'flet2',       nazwa: 'Flet',        stopy: "2'",  rzad: 'B', przes: 24,  glosnosc: 0.35, alicja: 0.83 }
+];
+const rejestr = id => REJESTRY.find(R => R.id === id);
+const ZAKRES_RZEDU = { A: [36, 108], B: [24, 108], C: [36, 96], D: [36, 96], E: [36, 96], F: [36, 96], G: [36, 108], H: [36, 96], J: [36, 96] };
+function celNuta(R, n) { let c = n + R.przes; const [od, doN] = ZAKRES_RZEDU[R.rzad]; while (c > doN + 1) c -= 12; while (c < od - 1) c += 12; return c; }
+const STROJ_WIATR = 0.9;    // pogłos i głośność z suwaków — na start jak w organach: pogłos 33, głośność 70%
+const hz = n => 440 * Math.pow(2, (n - 69) / 12);
+const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+let audio = null, wyjscieGl, kompresor, ogranicznik, sucho, mokro, poglos;
+function startAudio() {
+  if (audio) { if (audio.state === 'suspended') audio.resume(); return; }
+  audio = new (window.AudioContext || window.webkitAudioContext)();
+  kompresor = audio.createDynamicsCompressor(); kompresor.threshold.value = -14; kompresor.ratio.value = 4;
+  wyjscieGl = audio.createGain(); wyjscieGl.gain.value = +$('glosnosc').value / 100 * 0.9;   // jak w organach: suwak 0–100 % × 0,9
+  ogranicznik = audio.createDynamicsCompressor();
+  ogranicznik.threshold.value = -4; ogranicznik.knee.value = 0; ogranicznik.ratio.value = 20; ogranicznik.attack.value = 0.001; ogranicznik.release.value = 0.15;
+  kompresor.connect(wyjscieGl).connect(ogranicznik).connect(audio.destination);
+  sucho = audio.createGain(); mokro = audio.createGain(); poglos = audio.createConvolver();
+  sucho.connect(kompresor); mokro.connect(poglos).connect(kompresor);
+  ustawPoglos();
+}
+// pogłos kościoła — jak w organach: wyliczone echo wnętrza (18 ms ciszy, potem szum, który gaśnie i ciemnieje)
+function ustawPoglos() {
+  const wl = $('poglosWl').checked; $('poglos').disabled = !wl; $('poglosBox').classList.toggle('wyl', !wl);
+  if (!audio) return;
+  const p = +$('poglos').value / 100;                     // 0 = kaplica, 1 = katedra
+  const sek = 1.2 + p * 5.3, sr = audio.sampleRate, dl = Math.floor(sr * sek), imp = audio.createBuffer(2, dl, sr);
+  for (let k = 0; k < 2; k++) { const d = imp.getChannelData(k); let c = 0;
+    for (let i = 0; i < dl; i++) { const t = i / sr, g = Math.pow(1 - i / dl, 2.2) * Math.exp(-t * 1.1);
+      c += ((Math.random() * 2 - 1) - c) * Math.max(0.04, 0.55 * Math.exp(-t * 0.9)); d[i] = t < 0.018 ? 0 : c * g; } }
+  poglos.buffer = imp;
+  sucho.gain.value = wl ? 0.85 - p * 0.35 : 1;           // bez pogłosu: sam czysty dźwięk
+  mokro.gain.value = wl ? 0.9 + p * 1.6 : 0;
+}
+
+// przepisy na barwę (rzędy piszczałek)
+const PRZEPISY = {
+  A: { alikwoty: [1, 0.62, 0.42, 0.30, 0.20, 0.15, 0.10, 0.08, 0.06, 0.045, 0.035, 0.025], wejscie: 0.045, oddech: 0.10 },
+  B: { alikwoty: [1, 0.10, 0.05, 0.015], wejscie: 0.05, oddech: 0.45, oddechStaly: 0.05, pasmo: 5, szerokosc: 0.7 },
+  C: { rzedy: [[4, 0.9], [6, 0.75], [8, 0.65]], alikwoty: [1, 0.35, 0.18], wejscie: 0.03, oddech: 0.06 },
+  D: { alikwoty: [1, 0.59, 0.44, 0.35, 0.30, 0.26, 0.23, 0.21, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12], wejscie: 0.09, oddech: 0.05 },
+  E: { formanta: [1500, 900, 30], wejscie: 0.02, oddech: 0 },
+  F: { formanta: [1100, 450, 22], nieparzyste: 1.3, wejscie: 0.03, oddech: 0 },
+  // Traverso: alikwoty zmierzone z nagrania fletu (4. głośniejszy niż 3.!), łagodne wejście bez przestrzału, vibrato i falowanie oddechu
+  G: { alikwoty: [1, 0.292, 0.087, 0.165, 0.037, 0.014, 0.007, 0.004, 0.004, 0.003], wejscie: 0.22, lagodnie: true, oddech: 0.18,
+       vibrato: 6, vibratoHz: 4.6, falowanie: 10 },
+  // Trompeta: formanta wyżej i szerzej (jasna „blacha”), twarde wejście z przestrzałem, brzęknięcie języczka, mniej pogłosu (z przodu)
+  H: { formanta: [2800, 2200, 40], wejscie: 0.012, oddech: 0, przestrzal: 1.25, opad: 0.06, brzek: 35, chrapliwosc: 0.35, zPrzodu: 0.5 },
+  // Sesquialtera II: dwa rzędy fletowe z kominkiem — Nasard ×3 (2⅔') i Tercja ×5 (1⅗'), jak Mixtura, tylko flety i z tercją
+  J: { rzedy: [[3, 1], [5, 0.667]], alikwoty: [1, 0.04, 0.06, 0.02, 0.10], wejscie: 0.05, oddech: 0.30, oddechStaly: 0.04, pasmo: 5, szerokosc: 0.7 }
+};
+function alikwotyRzedu(P, f) {
+  if (!P.formanta) return P.alikwoty;
+  const [srodek, szer, ile] = P.formanta, a = [];
+  for (let k = 1; k < ile; k++) a.push((1 / Math.pow(k, 0.35)) * (0.25 + Math.exp(-Math.pow((f * k - srodek) / szer, 2))) * (P.nieparzyste ? (k % 2 ? P.nieparzyste : 0.8) : 1));
+  return a;
+}
+let FALE = null, SZUM = null;
+function przygotuj() {
+  if (FALE) return; startAudio(); FALE = {};
+  SZUM = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
+  const d = SZUM.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+}
+function falaRzedu(r, f) {
+  const P = PRZEPISY[r], klucz = P.formanta ? r + Math.round(f) : r;
+  if (!FALE[klucz]) { const a = alikwotyRzedu(P, f), re = new Float32Array(a.length + 1), im = new Float32Array(a.length + 1); a.forEach((x, i) => im[i + 1] = x); FALE[klucz] = audio.createPeriodicWave(re, im); }
+  return FALE[klucz];
+}
+const wlaczone = new Set(['pryncypal']);
+const KRZYWE_CHRAPANIA = {};
+function krzywaChrapania(ch) {   // lekkie przesterowanie języczka (Trompeta)
+  const k = ch.toFixed(2); if (KRZYWE_CHRAPANIA[k]) return KRZYWE_CHRAPANIA[k];
+  const n = 1024, c = new Float32Array(n), d = 1 + ch * 4; for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1; c[i] = Math.tanh(x * d) / Math.tanh(d); }
+  return KRZYWE_CHRAPANIA[k] = c;
+}
+function glosAlicji(R, n) {
+  przygotuj();
+  if (R.doNuty && n > R.doNuty) return () => {};
+  const P = PRZEPISY[R.rzad], t = audio.currentTime, f = hz(celNuta(R, n));
+  const v = 0.15 * 0.7 * R.glosnosc * R.alicja * Math.min(1.1, Math.pow(261.6 / f, 0.18));
+  const osc0 = [];
+  // PRZESTRZEŃ: piszczałki stoją na dwóch wiatrownicach — strona C (lewo) i strona Cis (prawo), na zmianę co półton.
+  // Niskie, duże piszczałki stoją na brzegach, wysokie bliżej środka; każdy rejestr odrobinę w innym miejscu.
+  const strona = n % 2 === 0 ? -1 : 1, szer = 0.6 - 0.4 * Math.max(0, Math.min(1, (n - 36) / 60));
+  const przes = ((R.id || '').split('').reduce((h, z) => (h * 31 + z.charCodeAt(0)) | 0, 7) % 9) / 100;   // od −0,08 do +0,08
+  const pan = audio.createStereoPanner(); pan.pan.value = Math.max(-1, Math.min(1, strona * szer + przes));
+  const nuta = audio.createGain(); nuta.gain.value = 0;
+  const doSucho = audio.createGain(), doMokro = audio.createGain();          // „z przodu” (Trompeta): trochę głośniej prosto, mniej pogłosu
+  doSucho.gain.value = 1 + (P.zPrzodu || 0) * 0.25; doMokro.gain.value = 1 - (P.zPrzodu || 0) * 0.7;
+  pan.connect(doSucho).connect(sucho); doMokro.connect(mokro);
+  let wyjscieNuty = nuta;
+  if (P.chrapliwosc) { const ws = audio.createWaveShaper(); ws.curve = krzywaChrapania(P.chrapliwosc); ws.oversample = '2x'; nuta.connect(ws); wyjscieNuty = ws; }
+  wyjscieNuty.connect(pan); wyjscieNuty.connect(doMokro);
+  let zrodloOsc = nuta;                                                         // falowanie oddechu (Traverso): głośność lekko faluje
+  if (P.falowanie) { const fal = audio.createGain(), fo = audio.createOscillator(), fg = audio.createGain();
+    fal.gain.value = 1; fo.frequency.value = 2.6; fg.gain.value = P.falowanie / 100; fo.connect(fg).connect(fal.gain); fal.connect(nuta); fo.start(t); zrodloOsc = fal; osc0.push(fo); }
+  const osc = [];
+  // Mixtura to kilka wysokich rzędów naraz; za wysoki rząd wraca oktawę niżej (repetycja)
+  const skladniki = P.rzedy ? P.rzedy.map(([k, a]) => { let kk = k; while (f * kk > 4200) kk /= 2; return [kk, a * 0.45]; }) : [[1, 1]];
+  for (const [k, a] of skladniki) {
+    const o = audio.createOscillator(), g = audio.createGain(), wiatr = audio.createOscillator(), wg = audio.createGain();
+    o.setPeriodicWave(falaRzedu(R.rzad, f)); o.frequency.value = f * k; o.detune.value = (Math.random() * 2 - 1) * 1.5;
+    if (P.brzek) { o.detune.setValueAtTime(P.brzek + o.detune.value, t); o.detune.setTargetAtTime((Math.random() * 2 - 1) * 1.5, t + 0.004, 0.012); }   // brzęknięcie języczka
+    wiatr.frequency.value = 3.3 + Math.random() * 1.2; wg.gain.value = STROJ_WIATR; wiatr.connect(wg).connect(o.detune);
+    if (P.vibrato) { const vo = audio.createOscillator(), vg = audio.createGain(); vo.frequency.value = P.vibratoHz || 4.5; vg.gain.value = P.vibrato; vo.connect(vg).connect(o.detune); vo.start(t); osc.push(vo); }
+    g.gain.value = a; o.connect(g).connect(zrodloOsc); o.start(t); wiatr.start(t); osc.push(o, wiatr);
+  }
+  osc.push(...osc0);
+  nuta.gain.setValueAtTime(0, t);
+  if (P.lagodnie) nuta.gain.setTargetAtTime(v, t, P.wejscie / 3);              // flet: łagodnie, bez przestrzału
+  else { nuta.gain.linearRampToValueAtTime(v * (P.przestrzal || 1.12), t + P.wejscie); nuta.gain.linearRampToValueAtTime(v, t + P.wejscie + (P.opad || 0.09)); }
+  if (P.brzek) {   // krótki „trzask” języczka: wysoki szum przez kilka milisekund
+    const tz = audio.createBufferSource(), tf = audio.createBiquadFilter(), tg = audio.createGain();
+    tz.buffer = SZUM; tf.type = 'highpass'; tf.frequency.value = Math.min(8000, f * 6); tg.gain.setValueAtTime(0, t); tg.gain.linearRampToValueAtTime(0.35, t + 0.003); tg.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+    tz.connect(tf).connect(tg).connect(nuta); tz.start(t, Math.random() * 0.9); tz.stop(t + 0.05); }
+  // oddech: krótki szum powietrza na początku nuty.
+  // Każda piszczałka dmucha po swojemu (szum z losowego miejsca), a przy wielu rejestrach naraz każdy „pluje” ciszej —
+  // inaczej kilka jednakowych szumów nałożyłoby się i plucie rosłoby lawinowo.
+  const ileDmucha = Math.max(1, [...wlaczone].filter(id => PRZEPISY[rejestr(id).rzad].oddech > 0).length), cichszy = Math.pow(ileDmucha, -0.6);
+  const s = audio.createBufferSource(), filtr = audio.createBiquadFilter(), sg = audio.createGain();
+  s.buffer = SZUM; s.loop = true; filtr.type = 'bandpass'; filtr.frequency.value = Math.min(9000, f * (P.pasmo || 3)); filtr.Q.value = P.szerokosc || 2.5;   // pasmo: gdzie szumi, szerokosc: im mniejsza liczba, tym szersze pasmo
+  if (P.lagodnie) { filtr.frequency.value = Math.min(9000, f * 4); filtr.Q.value = 0.7;     // flet poprzeczny: oddech miękki i dłuższy, jak u flecisty
+    sg.gain.setValueAtTime(0, t); sg.gain.linearRampToValueAtTime(P.oddech * 0.5 * cichszy + 0.0001, t + 0.03); sg.gain.exponentialRampToValueAtTime(P.oddech * 0.12 * cichszy + 0.0001, t + 0.25); }
+  else { sg.gain.setValueAtTime(0, t); sg.gain.linearRampToValueAtTime(P.oddech * 6 * cichszy + 0.0001, t + 0.012); sg.gain.exponentialRampToValueAtTime((P.oddechStaly || P.oddech * 0.25) * cichszy + 0.0001, t + 0.09); }
+  s.connect(filtr).connect(sg).connect(nuta); s.start(t, Math.random() * 0.9);
+  return () => {
+    const k = audio.currentTime;
+    nuta.gain.cancelScheduledValues(k); nuta.gain.setValueAtTime(nuta.gain.value, k); nuta.gain.linearRampToValueAtTime(0, k + 0.07);
+    osc.forEach(o => o.stop(k + 0.12)); s.stop(k + 0.12);
+  };
+}
+
+/* ===== granie ===== */
+const grajace = {};                                         // nuta → Map(rejestr → wycisz)
+// kto trzyma nutę: 'mysz', 'klaw' (komputer), 'midi' (USB), 'odtw' (utwór) — jak w organach.
+// Nuta milknie dopiero, gdy puszczą ją wszyscy: utwór nie utnie dźwięku, który właśnie trzymasz, i odwrotnie.
+const zrodla = {};
+function wcisnij(n, z = 'mysz') {
+  startAudio(); (zrodla[n] = zrodla[n] || new Set()).add(z);
+  if (grajace[n]) return;
+  const m = new Map(); wlaczone.forEach(id => m.set(id, glosAlicji(rejestr(id), n))); grajace[n] = m;
+  KORZEN.querySelectorAll(`[data-n="${n}"]`).forEach(k => k.classList.add('gra'));
+}
+function pusc(n, z = 'mysz') {
+  if (zrodla[n]) { zrodla[n].delete(z); if (zrodla[n].size) return; delete zrodla[n]; }
+  if (!grajace[n]) return; grajace[n].forEach(f => f()); delete grajace[n];
+  KORZEN.querySelectorAll(`[data-n="${n}"]`).forEach(k => k.classList.remove('gra'));
+}
+// wyciągnięcie rejestru w trakcie grania: dokłada albo zabiera ten jeden głos
+function przelacz(id) { ustaw(id, !wlaczone.has(id)); }
+function ustaw(id, wl) {
+  startAudio(); if (wl === wlaczone.has(id)) return;
+  if (wl) wlaczone.add(id); else wlaczone.delete(id);   // jak w organach: można wsunąć wszystkie — wtedy cisza
+  for (const n in grajace) { const m = grajace[n]; if (wl) m.set(id, glosAlicji(rejestr(id), +n)); else if (m.has(id)) { m.get(id)(); m.delete(id); } }
+  KORZEN.querySelector(`[data-r="${id}"]`).classList.toggle('on', wl);
+}
+
+/* ===== rejestry nad klawiaturą ===== */
+$('rzad').insertAdjacentHTML('afterbegin', REJESTRY.map(R =>
+  `<button class="rej${wlaczone.has(R.id) ? ' on' : ''}" data-r="${R.id}" title="${R.nazwa} ${R.stopy}"><span class="tuleja"></span><span class="galka"><span><b>${R.nazwa.replace('Superoktawa', 'Super&shy;oktawa').replace('Sesquialtera', 'Sesqui&shy;altera')}</b><i>${R.stopy}</i></span></span></button>`).join(''));
+$('rzad').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (b) przelacz(b.dataset.r); });
+
+/* ===== klawiatura jak w Organach Alicji: c (48) – c³ (84), 3 oktawy ===== */
+const OD = 48, DO = 84, CZARNE = [1, 3, 6, 8, 10];
+const NAZWY = ['C', 'Cis', 'D', 'Dis', 'E', 'F', 'Fis', 'G', 'Gis', 'A', 'B', 'H'];
+const nazwa = n => { const o = Math.floor(n / 12) - 1, nz = NAZWY[n % 12]; return o === 2 ? nz : nz.toLowerCase() + ['', '¹', '²', '³', '⁴'][o - 3]; };
+// klawiatura komputera — jak w organach: dolny rząd od c (48), górny od c¹ (60)
+const KOMPUTER = { KeyZ: 48, KeyS: 49, KeyX: 50, KeyD: 51, KeyC: 52, KeyV: 53, KeyG: 54, KeyB: 55, KeyH: 56, KeyN: 57, KeyJ: 58, KeyM: 59, Comma: 60,
+                   KeyQ: 60, Digit2: 61, KeyW: 62, Digit3: 63, KeyE: 64, KeyR: 65, Digit5: 66, KeyT: 67, Digit6: 68, KeyY: 69, Digit7: 70, KeyU: 71, KeyI: 72 };
+const LITERA = {}; for (const [k, n] of Object.entries(KOMPUTER)) if (k !== 'Comma') LITERA[n] = k.replace(/^Key|^Digit/, '');
+(function rysuj() {
+  const biale = []; for (let n = OD; n <= DO; n++) if (!CZARNE.includes(n % 12)) biale.push(n);
+  const W = 100 / biale.length; let h = '';
+  biale.forEach((n, i) => h += `<div class="bialy" data-n="${n}" style="left:calc(${i * W}% + 1px);width:calc(${W}% - 2px)">${n % 12 === 0 ? `<span class="c">${nazwa(n)}</span>` : ''}<small>${LITERA[n] || ''}</small></div>`);
+  for (let n = OD; n <= DO; n++) if (CZARNE.includes(n % 12)) { const i = biale.filter(b => b < n).length; h += `<div class="czarny" data-n="${n}" style="left:${i * W - W * .31}%;width:${W * .62}%"><small>${LITERA[n] || ''}</small></div>`; }
+  $('klawisze').innerHTML = h;
+})();
+// myszka i palec: można przeciągać po klawiszach (glissando)
+(() => {
+  const el = $('klawisze'); let mysz = false;
+  el.addEventListener('pointerdown', e => { const k = e.target.closest('[data-n]'); if (!k) return; mysz = true; e.preventDefault(); el.setPointerCapture(e.pointerId); wcisnij(+k.dataset.n, 'mysz'); });
+  el.addEventListener('pointermove', e => { if (!mysz) return; const k = KORZEN.elementFromPoint(e.clientX, e.clientY)?.closest('[data-n]'), n = k ? +k.dataset.n : -1;
+    for (const g in zrodla) if (+g !== n && zrodla[g].has('mysz')) pusc(+g, 'mysz'); if (n >= 0) wcisnij(n, 'mysz'); });
+  const koniec = () => { mysz = false; for (const g in zrodla) if (zrodla[g].has('mysz')) pusc(+g, 'mysz'); };
+  el.addEventListener('pointerup', koniec); el.addEventListener('pointercancel', koniec);
+})();
+// klawiatura komputera: nie gra, gdy ktoś pisze w polu tekstowym; wklejone w cudzą stronę — gra dopiero po kliknięciu w organy
+let aktywne = !WKLEJONE;
+if (WKLEJONE) addEventListener('pointerdown', e => { aktywne = e.composedPath().includes(GOSPODARZ); }, true);
+const piszeTekst = e => { const t = e.composedPath()[0]; return t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)); };
+addEventListener('keydown', e => { if (!aktywne || piszeTekst(e) || e.repeat || e.ctrlKey || e.altKey || e.metaKey) return; const n = KOMPUTER[e.code]; if (n == null) return; e.preventDefault(); wcisnij(n, 'klaw'); });
+addEventListener('keyup', e => { const n = KOMPUTER[e.code]; if (n == null) return; pusc(n, 'klaw'); });
+addEventListener('blur', () => { for (const g in zrodla) { pusc(+g, 'klaw'); pusc(+g, 'mysz'); } });
+
+/* ===== klawiatura sterująca USB (MIDI) — Chrome i Edge ===== */
+function midiWiadomosc(e) {
+  const [st, n, sila] = e.data, typ = st & 0xF0;
+  if (typ === 0x90 && sila > 0) wcisnij(n, 'midi');
+  else if (typ === 0x80 || (typ === 0x90 && sila === 0)) pusc(n, 'midi');
+}
+function podepnijMidi(dostep) {
+  const wejscia = [...dostep.inputs.values()];
+  wejscia.forEach(w => w.onmidimessage = midiWiadomosc);
+  const b = $('midi');
+  if (wejscia.length) { b.textContent = '🔌 USB'; b.classList.add('polaczone');   // nazwa klawiatury tylko w napisie pod klawiaturą
+    $('stopka').textContent = '✔ Klawiatura sterująca podłączona: ' + wejscia.map(w => w.name).join(', ') + '. Graj!'; }
+  else { b.textContent = '🔌 USB'; b.classList.remove('polaczone'); $('stopka').textContent = 'Nie widzę klawiatury sterującej. Podłącz ją przez USB i kliknij jeszcze raz.'; }
+}
+$('midi').onclick = async () => {
+  startAudio();
+  if (!navigator.requestMIDIAccess) { $('stopka').textContent = 'Ta przeglądarka nie obsługuje klawiatur USB (MIDI). Użyj Chrome albo Edge.'; return; }
+  try { const d = await navigator.requestMIDIAccess(); podepnijMidi(d); d.onstatechange = () => podepnijMidi(d); }
+  catch (e) { $('stopka').textContent = 'Przeglądarka nie pozwoliła podłączyć klawiatury USB.' + (window.parent !== window ? ' Strona z organami w ramce musi mieć allow="midi".' : ''); }
+};
+
+/* ===== UTWORY: z plików MIDI (folder Midiala albo „Wczytaj MIDI”) ===== */
+function posortuj(ev) {
+  const kolej = e => e.typ === 3 ? -1 : e.typ;          // przy równym czasie: najpierw rejestry, potem puszczam, potem wciskam
+  ev.sort((a, b) => a.t - b.t || kolej(a) - kolej(b));
+  return { ev, dl: ev.length ? ev[ev.length - 1].t : 0 };
+}
+
+// ===== czytanie pliku MIDI (.mid / .kar) =====
+function czytajMidi(dane) {
+  const u8 = new Uint8Array(dane), dv = new DataView(dane), txt = (o, n) => String.fromCharCode(...u8.slice(o, o + n));
+  if (txt(0, 4) !== 'MThd') throw new Error('To nie jest plik MIDI.');
+  const dlNag = dv.getUint32(4), ileSciezek = dv.getUint16(10), podzial = dv.getUint16(12);
+  if (podzial & 0x8000) throw new Error('Ten plik MIDI liczy czas w klatkach filmu (SMPTE) — tego nie obsługuję.');
+  const surowe = [], tempa = [{ tick: 0, us: 500000 }];   // domyślnie 120 BPM
+  let o = 8 + dlNag;
+  for (let s = 0; s < ileSciezek && o + 8 <= u8.length; s++) {
+    if (txt(o, 4) !== 'MTrk') break;
+    const koniec = o + 8 + dv.getUint32(o + 4); let p = o + 8, tick = 0, status = 0, ostatni = 0;
+    const vlq = () => { let v = 0, b; do { b = u8[p++]; v = (v << 7) | (b & 0x7f); } while (b & 0x80 && p < koniec); return v; };
+    while (p < koniec) {
+      tick += vlq();
+      let b = u8[p];
+      if (b & 0x80) { status = b; p++; if (b < 0xf0) ostatni = b; } else if (ostatni) status = ostatni; else break;   // „running status”: bez bajtu rodzaju — ten sam co poprzednio
+      const typ = status & 0xf0, kanal = status & 0x0f;
+      if (status === 0xff) {
+        const meta = u8[p++], n = vlq();
+        if (meta === 0x51) tempa.push({ tick, us: (u8[p] << 16) | (u8[p + 1] << 8) | u8[p + 2] });
+        else if (meta === 0x05 || (meta === 0x01 && tick > 0)) surowe.push({ tick, typ: 2, tekst: new TextDecoder('windows-1250').decode(u8.slice(p, p + n)) });
+        p += n;
+      } else if (status === 0xf0 || status === 0xf7) { p += vlq(); }
+      else if (typ === 0x90 || typ === 0x80) {
+        const n = u8[p++], v = u8[p++];
+        if (kanal !== 9) surowe.push({ tick, typ: typ === 0x90 && v > 0 ? 1 : 0, n });   // kanał 10 to perkusja — organy jej nie grają
+      } else if (typ === 0xc0 || typ === 0xd0) p += 1;
+      else p += 2;
+    }
+    o = koniec;
+  }
+  // takty → sekundy, z uwzględnieniem zmian tempa
+  tempa.sort((a, b) => a.tick - b.tick);
+  const sekundy = tick => { let t = 0, ost = 0, us = 500000; for (const T of tempa) { if (T.tick >= tick) break; t += (T.tick - ost) * us / podzial / 1e6; ost = T.tick; us = T.us; } return t + (tick - ost) * us / podzial / 1e6; };
+  const ev = surowe.map(e => ({ ...e, t: sekundy(e.tick) }));
+  if (!ev.some(e => e.typ === 1)) throw new Error('W tym pliku nie ma nut do zagrania.');
+  return posortuj(ev);
+}
+
+
+/* ===== odtwarzacz utworów (z folderu Midiala i z dysku) — gra głosami Alicji z wyciągniętymi rejestrami ===== */
+let UTWOR = null, pozycja = 0, gra = false, startCzas = 0, startPoz = 0, indeks = 0, petla = 0;
+const esc = t => String(t).replace(/[&<>"]/g, z => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[z]));
+const teraz = () => gra ? startPoz + (audio.currentTime - startCzas) : pozycja;
+function wybierzUtwor(U) {
+  stopUtwor(); UTWOR = U; pozycja = 0; indeks = 0;
+  $('utTytul').innerHTML = `<b>${esc(U.tytul)}</b>${U.autor ? ' · ' + esc(U.autor) : ''}`; pokazPostep();
+}
+function puscOdtwarzane() { for (const n in zrodla) if (zrodla[n].has('odtw')) pusc(+n, 'odtw'); }
+function grajUtwor() {
+  if (!UTWOR) return; startAudio();
+  if (pozycja >= UTWOR.dl) { pozycja = 0; indeks = 0; }
+  gra = true; startCzas = audio.currentTime; startPoz = pozycja; $('utGraj').textContent = '⏸';
+  clearInterval(petla); petla = setInterval(krokUtworu, 10);
+}
+function krokUtworu() {
+  const t = teraz();
+  while (indeks < UTWOR.ev.length && UTWOR.ev[indeks].t <= t) {
+    const e = UTWOR.ev[indeks++];
+    if (e.typ === 1) wcisnij(e.n, 'odtw');
+    else if (e.typ === 0) pusc(e.n, 'odtw');
+  }
+  pozycja = t; pokazPostep();
+  if (indeks >= UTWOR.ev.length) { stopUtwor(); pozycja = UTWOR.dl; pokazPostep(); }
+}
+function pauzaUtwor() { if (!gra) return; pozycja = teraz(); gra = false; clearInterval(petla); puscOdtwarzane(); $('utGraj').textContent = '▶'; }
+function stopUtwor() { pauzaUtwor(); gra = false; clearInterval(petla); puscOdtwarzane(); pozycja = 0; indeks = 0; $('utGraj').textContent = '▶'; pokazPostep(); }
+function przewin(s) {
+  if (!UTWOR) return; const gralo = gra; pauzaUtwor();
+  pozycja = Math.max(0, Math.min(UTWOR.dl, s)); indeks = UTWOR.ev.findIndex(e => e.t >= pozycja); if (indeks < 0) indeks = UTWOR.ev.length;
+  pokazPostep(); if (gralo) grajUtwor();
+}
+function pokazPostep() {
+  const dl = UTWOR ? UTWOR.dl : 0;
+  $('utPasek').style.width = (dl ? Math.min(100, pozycja / dl * 100) : 0) + '%';
+  $('utCzas').textContent = mmss(pozycja) + ' / ' + mmss(dl);
+}
+$('utGraj').onclick = () => gra ? pauzaUtwor() : grajUtwor();
+$('utStop').onclick = stopUtwor;
+$('utPostep').onclick = e => { if (!UTWOR) return; const r = e.currentTarget.getBoundingClientRect(); przewin((e.clientX - r.left) / r.width * UTWOR.dl); };
+// lista utworów: folder „Midiala” obok organów
+const lista = $('utLista'), MIDIALA = 'Midiala/';
+let PIESNI = [];                                        // nazwy plików w Midiala
+const tytulZPliku = n => n.replace(/\.(mid|midi|kar)$/i, '').replace(/_+/g, ' ').trim();
+const czyMidi = n => /\.(mid|midi|kar)$/i.test(n);
+// GitHub: organy z adresu „ktos.github.io/repo/…” pytają GitHuba o pliki w folderze (lista.txt niepotrzebny)
+async function plikiZGithuba() {
+  const h = location.hostname; if (!h.endsWith('.github.io')) return null;
+  const wlasciciel = h.split('.')[0], czesci = location.pathname.split('/').filter(Boolean);
+  if (czesci.length && /\.[a-z]+$/i.test(czesci[czesci.length - 1])) czesci.pop();         // bez nazwy pliku strony
+  let repo = wlasciciel + '.github.io', sciezka = czesci;
+  if (czesci.length) { repo = czesci[0]; sciezka = czesci.slice(1); }                         // strona projektu: ktos.github.io/repo/
+  const pytaj = async (r, sc) => { const o = await fetch(`https://api.github.com/repos/${wlasciciel}/${r}/contents/${[...sc, 'Midiala'].map(encodeURIComponent).join('/')}`);
+    return o.ok ? (await o.json()).filter(f => f.type === 'file' && czyMidi(f.name)).map(f => f.name) : null; };
+  try { return (await pytaj(repo, sciezka)) || (czesci.length ? await pytaj(wlasciciel + '.github.io', czesci) : null); } catch (e) { return null; }
+}
+// każdy inny serwer: spis w Midiala/lista.txt
+async function plikiZListy() {
+  try { const o = await fetch(MIDIALA + 'lista.txt', { cache: 'no-cache' }); if (!o.ok) return null;
+    return (await o.text()).split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#') && czyMidi(l)); }
+  catch (e) { return null; }
+}
+async function wczytajMidiala() {
+  if (location.protocol === 'file:') { lista.innerHTML = '<option value="">— pieśni z Midiala tylko na serwerze —</option>'; return; }
+  PIESNI = (await plikiZGithuba()) || (await plikiZListy()) || [];
+  lista.innerHTML = PIESNI.length
+    ? '<option value="">— wybierz utwór —</option>' + PIESNI.map((n, i) => `<option value="${i}">${esc(tytulZPliku(n))}</option>`).join('')
+    : '<option value="">— brak pieśni w folderze Midiala —</option>';
+}
+lista.innerHTML = '<option value="">— szukam pieśni… —</option>';
+wczytajMidiala();
+// plik z Midiala — wczytany raz, potem pamiętany
+const wczytane = {};
+lista.onchange = async () => {
+  if (lista.value === '') return;
+  const n = PIESNI[+lista.value], tytul = tytulZPliku(n);
+  $('stopka').textContent = '⏳ Wczytuję ' + tytul + '…';
+  try {
+    if (!wczytane[n]) { const o = await fetch(MIDIALA + encodeURIComponent(n)); if (!o.ok) throw new Error('Nie znalazłem pliku „' + n + '” w folderze Midiala.'); wczytane[n] = czytajMidi(await o.arrayBuffer()); }
+    wybierzUtwor({ tytul, autor: '', ...wczytane[n] });
+    $('stopka').textContent = '🎵 ' + tytul + ' — kliknij ▶.';
+  } catch (e) { $('stopka').textContent = '✖ ' + e.message; }
+};
+// własny plik MIDI
+const midiPlik = $('midiPlik');
+$('utWczytaj').onclick = () => midiPlik.click();
+midiPlik.onchange = async () => {
+  const f = midiPlik.files[0]; midiPlik.value = ''; if (!f) return;
+  try { const W = czytajMidi(await f.arrayBuffer()), ile = W.ev.filter(e => e.typ === 1).length;
+    wybierzUtwor({ tytul: f.name.replace(/\.(mid|midi|kar)$/i, ''), autor: 'twój plik MIDI', ...W }); lista.value = '';
+    $('stopka').textContent = '🎵 Wczytany ' + f.name + ' · ' + ile + ' nut · ' + mmss(W.dl) + '. Kliknij ▶.'; }
+  catch (e) { $('stopka').textContent = '✖ ' + e.message; }
+};
+
+
+
+/* ===== pogłos: suwak zmienia wnętrze po puszczeniu, ptaszek wyłącza ===== */
+$('poglos').onchange = ustawPoglos; $('poglosWl').onchange = ustawPoglos;
+
+/* ===== kliknięty przycisk oddaje „fokus”: granie na klawiaturze komputera nie obrysowuje go ramką, a spacja nie przełącza go jeszcze raz ===== */
+KORZEN.addEventListener('click', e => { const b = e.target.closest('button'); if (b) b.blur(); });
+
+/* ===== głośność ===== */
+$('glosnosc').oninput = () => { $('glosNap').textContent = $('glosnosc').value + '%'; if (wyjscieGl) wyjscieGl.gain.value = +$('glosnosc').value / 100 * 0.9; };
+
+/* ===== SZTYWNA RAMKA: układ zawsze 1040 px — za mało miejsca? zmniejszamy w całości, jak obrazek =====
+   · w ramce (iframe) i wklejone w cudzą stronę: szerokość miejsca, najwyżej 1040 px
+   · osobna strona (np. index.html z ZIP-a): organy w naturalnym rozmiarze, na środku okna */
+const W_RAMCE = window.top !== window.self;            // organy w ramce na cudzej stronie
+const OSOBNA = !W_RAMCE && !WKLEJONE;                  // organy jako cała strona
+function dopasuj() {
+  const m = $('mini'), c = $('cialo');
+  const szer = WKLEJONE ? GOSPODARZ.clientWidth : document.documentElement.clientWidth;
+  const H = m.offsetHeight + 12;
+  let k = Math.min(1, szer / 1040), gora = 6 * k, lewo = 6 * k;
+  if (OSOBNA) {
+    const wys = document.documentElement.clientHeight;
+    k = Math.min(1, szer / 1040, wys / H);             // naturalny rozmiar — mniejsze tylko, gdy okno za małe
+    lewo = (szer - 1028 * k) / 2; gora = Math.max(6, (wys - (H - 12) * k) / 2);
+  } else if (k >= 1) lewo = (szer - 1028) / 2;          // szerzej niż 1040: stół na środku
+  m.style.transform = k !== 1 ? `scale(${k})` : '';
+  m.style.marginLeft = lewo + 'px'; m.style.marginTop = gora + 'px';
+  c.style.height = OSOBNA ? document.documentElement.clientHeight + 'px' : H * Math.min(1, k) + 'px';
+  c.classList.toggle('waskie', szer < 700);
+  // za wąsko: w ramce — przycisk do organów w nowej karcie; osobna strona i wklejone — prośba o obrócenie telefonu
+  $('otworzPelne').hidden = !W_RAMCE;
+  $('zaWaskieNap').textContent = W_RAMCE ? 'tu jest za mało miejsca do grania' : 'obróć telefon poziomo, żeby zagrać';
+}
+addEventListener('resize', dopasuj); dopasuj();
+if (WKLEJONE && window.ResizeObserver) new ResizeObserver(dopasuj).observe(GOSPODARZ);
+if (document.fonts) document.fonts.ready.then(dopasuj);
+
+/* ===== strona, która ma organy w ramce, dostaje ich wysokość ===== */
+function wyslijWysokosc() { if (!W_RAMCE) return; try { parent.postMessage({ organyAlicji: 'wysokosc', h: document.documentElement.scrollHeight }, '*'); } catch (e) {} }
+addEventListener('resize', wyslijWysokosc); addEventListener('load', wyslijWysokosc);
+</script>
+</body>
+</html>
