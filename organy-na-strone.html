@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Organy Alicji na Twoją stronę</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ORGANY ALICJI NA TWOJĄ STRONĘ — najpierw wybór wzoru (mini organy albo mini mini), potem dwa przyciski:
+     ⬇ ZIP: gotowe organy (index.html) + folder Midiala + instrukcja CZYTAJ-MNIE.txt
+     ⬇ Kod do wklejenia: cały kod organów jednym blokiem, w pliku dla Notatnika
+     Obie rzeczy składają się w chwili kliknięcia z plików leżących obok tej strony:
+     wybrany plik organów (mini-organy.html / mini-mini-organy.html) i folder Midiala (z lista.txt) — poprawiasz organy raz, a ZIP i kod są od razu świeże. */
+  :root { --zloto: #d8b46a; --kosc: #f3ead6; }
+  * { box-sizing: border-box; }
+  html { background: #0d0b14 radial-gradient(ellipse at 50% 0%, #2a2238, #0d0b14 70%) no-repeat fixed; }
+  body { margin: 0; padding: 24px 16px 40px; color: var(--kosc); font: 16px/1.55 'Outfit', system-ui, sans-serif; }
+  .stol { max-width: 900px; margin: 0 auto; padding: 26px 28px 30px; border-radius: 16px;
+          background: linear-gradient(180deg, #4a2a17, #2e190d); box-shadow: 0 30px 80px rgba(0,0,0,.7), inset 0 2px 0 rgba(255,255,255,.08); }
+  h1 { margin: 0; font: 700 clamp(24px, 4vw, 32px) 'Cinzel', serif; letter-spacing: .1em; color: var(--zloto); }
+  .pod { margin: 6px 0 22px; color: #c9b48c; }
+  .karty { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .karta { border-radius: 12px; padding: 18px 20px 20px; background: linear-gradient(180deg, #1c120b, #2b1a0e); box-shadow: inset 0 2px 10px rgba(0,0,0,.7);
+           display: flex; flex-direction: column; gap: 10px; }
+  .karta h2 { margin: 0; font: 700 18px 'Cinzel', serif; letter-spacing: .06em; color: var(--zloto); }
+  .karta p { margin: 0; color: #e3d5b8; font-size: 15px; }
+  .karta pre { margin: 0; padding: 10px 12px; border-radius: 8px; background: #0b0805; color: #9fd6a6; font: 13px/1.45 Consolas, 'JetBrains Mono', monospace; overflow-x: auto; }
+  .karta ul { margin: 0; padding-left: 20px; color: #c9b48c; font-size: 14px; }
+  button { margin-top: auto; align-self: flex-start; font: 700 15px 'Outfit', sans-serif; color: #3a1f10; cursor: pointer; border: 0; border-radius: 999px; padding: 11px 20px;
+           background: radial-gradient(circle at 38% 32%, #fffaf0, var(--kosc) 45%, #cdbf9f 100%); box-shadow: 0 6px 14px rgba(0,0,0,.5); }
+  button:disabled { opacity: .5; cursor: default; }
+  .stan { min-height: 1.4em; font-size: 14px; color: #ffd98a; }
+  .stan.zle { color: #ff9f8f; }
+  .dol { margin-top: 20px; font-size: 14px; color: #b59f78; }
+  .dol a { color: var(--zloto); }
+  /* wybór wzoru organów */
+  .wzory { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .wzor { position: relative; display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; cursor: pointer;
+          background: linear-gradient(180deg, #1c120b, #2b1a0e); box-shadow: inset 0 2px 10px rgba(0,0,0,.7); border: 2px solid transparent; }
+  .wzor:has(input:checked) { border-color: var(--zloto); }
+  .wzor input { accent-color: var(--zloto); width: 18px; height: 18px; margin: 0; }
+  .wzor b { display: block; font: 700 15px 'Cinzel', serif; color: var(--zloto); letter-spacing: .04em; }
+  .wzor small { display: block; color: #c9b48c; font-size: 13px; }
+  .wzor a { margin-left: auto; font-size: 13px; color: var(--kosc); white-space: nowrap; }
+  .krok { margin: 0 0 8px; font: 700 13px 'Outfit', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #c9b48c; }
+</style>
+</head>
+<body>
+<div class="stol">
+  <h1>Organy Alicji na Twoją stronę</h1>
+  <div class="pod">Darmowe organy kościelne w przeglądarce: 16 głosów, klawiatura USB i Twoje pieśni z plików MIDI. Bez instalowania i bez rejestracji.</div>
+
+  <div class="krok">1. Wybierz wygląd organów</div>
+  <div class="wzory">
+    <label class="wzor"><input type="radio" name="wzor" value="mini" checked><span><b>Mini organy</b><small>3 oktawy, okrągłe gałki · 1040 × 446 px</small></span><a href="mini-organy.html" target="_blank" rel="noopener">▶ zobacz</a></label>
+    <label class="wzor"><input type="radio" name="wzor" value="minimini"><span><b>Mini mini</b><small>1 oktawa, głosy w dwóch kolumnach · 600 × 468 px</small></span><a href="mini-mini-organy.html" target="_blank" rel="noopener">▶ zobacz</a></label>
+  </div>
+  <div class="krok">2. Pobierz</div>
+  <div class="karty">
+    <div class="karta">
+      <h2>⬇ Organy w ZIP-ie</h2>
+      <p>Gotowe organy jako osobna strona. Pobierz, rozpakuj i zobacz, jak to wygląda w środku:</p>
+<pre>Organy Alicji/
+├── index.html       ← organy
+├── Midiala/         ← pieśni .mid + lista.txt
+└── CZYTAJ-MNIE.txt  ← instrukcja</pre>
+      <p>Wrzuć cały folder na swój serwer, a na swojej stronie zrób przycisk <b>„Organy”</b>, który do niego prowadzi.</p>
+      <button id="bZip">⬇ Pobierz organy (ZIP)</button>
+      <div class="stan" id="sZip"></div>
+    </div>
+    <div class="karta">
+      <h2>⬇ Kod do wklejenia</h2>
+      <p>Organy w środku Twojej strony, w miejscu, które sam wybierzesz. Dostajesz plik dla Notatnika z całym kodem organów.</p>
+      <ul>
+        <li>wklej cały tekst w kod swojej strony tam, gdzie mają stać organy,</li>
+        <li>obok swojej strony połóż folder <b>Midiala</b> z pieśniami (jest w ZIP-ie),</li>
+        <li>zostaw miejsce na szerokość <b id="szerTxt">1040 pikseli</b> (mniej też działa — organy się zmniejszą).</li>
+      </ul>
+      <button id="bKod">⬇ Pobierz kod do wklejenia</button>
+      <div class="stan" id="sKod"></div>
+    </div>
+  </div>
+
+  <div class="dol">Chcesz najpierw zagrać? <a id="zagraj" href="mini-organy.html" target="_blank" rel="noopener">Otwórz wybrane organy</a>. · <a href="index.html">← Wróć do Organów Alicji</a></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const MIDIALA = 'Midiala/';
+// wzory organów: każdy to osobny plik obok tej strony (ten sam silnik, inny wygląd)
+const WZORY = {
+  mini:     { plik: 'mini-organy.html',      szer: 1040, wys: 446, zip: 'Organy Alicji.zip',           kod: 'Organy Alicji - kod do wklejenia.txt' },
+  minimini: { plik: 'mini-mini-organy.html', szer: 600,  wys: 468, zip: 'Organy Alicji mini mini.zip', kod: 'Organy Alicji mini mini - kod do wklejenia.txt' }
+};
+const wzor = () => WZORY[document.querySelector('input[name=wzor]:checked').value];
+document.querySelectorAll('input[name=wzor]').forEach(r => r.onchange = () => {
+  const W = wzor(); $('szerTxt').textContent = W.szer + ' pikseli'; $('zagraj').href = W.plik; $('sZip').textContent = $('sKod').textContent = '';
+});
+
+/* ===== pobieranie plików leżących obok tej strony ===== */
+async function pobierzTekst(url) { const o = await fetch(url, { cache: 'no-cache' }); if (!o.ok) throw new Error('Nie znalazłem pliku ' + url); return o.text(); }
+async function pobierzBajty(url) { const o = await fetch(url, { cache: 'no-cache' }); if (!o.ok) throw new Error('Nie znalazłem pliku ' + url); return new Uint8Array(await o.arrayBuffer()); }
+// pieśni z Midiala: najpierw lista.txt, a na GitHubie (bez lista.txt) — spis plików od GitHuba
+async function piesni() {
+  try { const t = await pobierzTekst(MIDIALA + 'lista.txt'); return { lista: t, pliki: t.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#') && /\.(mid|midi|kar)$/i.test(l)) }; }
+  catch (e) {
+    const h = location.hostname; if (!h.endsWith('.github.io')) throw new Error('W folderze Midiala brakuje pliku lista.txt.');
+    const wl = h.split('.')[0], cz = location.pathname.split('/').filter(Boolean); if (cz.length && /\.[a-z]+$/i.test(cz[cz.length - 1])) cz.pop();
+    const repo = cz.length ? cz[0] : wl + '.github.io', sc = cz.length ? cz.slice(1) : [];
+    const o = await fetch(`https://api.github.com/repos/${wl}/${repo}/contents/${[...sc, 'Midiala'].map(encodeURIComponent).join('/')}`);
+    if (!o.ok) throw new Error('Nie widzę folderu Midiala obok tej strony.');
+    const pliki = (await o.json()).filter(f => f.type === 'file' && /\.(mid|midi|kar)$/i.test(f.name)).map(f => f.name);
+    return { lista: pliki.join('\r\n') + '\r\n', pliki };
+  }
+}
+function zapiszPlik(dane, nazwa, typ) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([dane], { type: typ })); a.download = nazwa;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+const crlf = t => t.replace(/\r?\n/g, '\r\n');          // Notatnik w starszych Windowsach lubi końce linii \r\n
+
+/* ===== ZIP bez dodatkowych bibliotek: pliki zapisane bez kompresji ===== */
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zrobZip(pliki) {                               // pliki: [{ nazwa, dane: Uint8Array }]
+  const enc = new TextEncoder(), czesci = [], spis = []; let poz = 0;
+  const d = new Date(), czas = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), data = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  for (const p of pliki) {
+    const n = enc.encode(p.nazwa), c = crc32(p.dane), l = new DataView(new ArrayBuffer(30));
+    l.setUint32(0, 0x04034b50, true); l.setUint16(4, 20, true); l.setUint16(6, 0x0800, true); l.setUint16(8, 0, true);   // 0x0800: nazwy w UTF-8 (polskie litery)
+    l.setUint16(10, czas, true); l.setUint16(12, data, true); l.setUint32(14, c, true); l.setUint32(18, p.dane.length, true); l.setUint32(22, p.dane.length, true);
+    l.setUint16(26, n.length, true); l.setUint16(28, 0, true);
+    czesci.push(new Uint8Array(l.buffer), n, p.dane);
+    const g = new DataView(new ArrayBuffer(46));
+    g.setUint32(0, 0x02014b50, true); g.setUint16(4, 20, true); g.setUint16(6, 20, true); g.setUint16(8, 0x0800, true); g.setUint16(10, 0, true);
+    g.setUint16(12, czas, true); g.setUint16(14, data, true); g.setUint32(16, c, true); g.setUint32(20, p.dane.length, true); g.setUint32(24, p.dane.length, true);
+    g.setUint16(28, n.length, true); g.setUint32(38, p.nazwa.endsWith('/') ? 0x10 : 0, true); g.setUint32(42, poz, true);
+    spis.push(new Uint8Array(g.buffer), n);
+    poz += 30 + n.length + p.dane.length;
+  }
+  const dlSpisu = spis.reduce((s, x) => s + x.length, 0), k = new DataView(new ArrayBuffer(22));
+  k.setUint32(0, 0x06054b50, true); k.setUint16(8, pliki.length, true); k.setUint16(10, pliki.length, true); k.setUint32(12, dlSpisu, true); k.setUint32(16, poz, true);
+  return new Blob([...czesci, ...spis, new Uint8Array(k.buffer)], { type: 'application/zip' });
+}
+
+const CZYTAJ_MNIE = `ORGANY ALICJI — jak wstawić organy na swoją stronę
+==================================================
+
+W tym folderze:
+  index.html        – organy (tego pliku nie musisz ruszać)
+  Midiala           – folder z pieśniami (pliki .mid) i spisem lista.txt
+  CZYTAJ-MNIE.txt   – ta instrukcja
+
+
+1. ORGANY NA SERWERZE
+   Wrzuć cały folder "Organy Alicji" na swój serwer
+   (GitHub, Netlify, hosting parafii – obojętnie).
+   Organy otworzą się pod adresem tego folderu, np.:
+      https://twoja-strona.pl/Organy Alicji/
+   Na swojej stronie zrób przycisk albo link "Organy", który prowadzi pod ten adres.
+
+
+2. PIEŚNI – folder Midiala
+   • Pliki .mid wrzucasz do folderu Midiala.
+   • Nazwę każdego pliku dopisujesz w Midiala/lista.txt – jedna linijka = jeden plik:
+        Barka.mid
+        Cicha noc.mid
+   • Nazwa w lista.txt musi być DOKŁADNIE taka sama jak nazwa pliku,
+     łącznie z wielkimi i małymi literami (serwery w internecie je odróżniają).
+   • Tytuł na liście w organach = nazwa pliku bez ".mid".
+   • Folder musi się nazywać dokładnie: Midiala
+
+   Na GitHubie (adres …github.io) organy same widzą pliki w Midiala,
+   ale lista.txt nie zaszkodzi – zostaw go.
+
+
+3. UWAGA – OTWIERANIE Z DYSKU
+   Gdy otworzysz index.html podwójnym kliknięciem na swoim komputerze,
+   organy grają, ale NIE widzą pieśni z Midiala (tak działa zabezpieczenie
+   przeglądarki). Pieśń z dysku wczytasz przyciskiem "Wczytaj MIDI".
+   Po wrzuceniu na serwer pieśni z Midiala pojawią się same.
+
+
+4. ORGANY W ŚRODKU TWOJEJ STRONY
+   Chcesz, żeby organy stały w środku Twojej strony, a nie osobno?
+   Na stronie Organów Alicji pobierz "Kod do wklejenia".
+
+
+5. PRAWA DO PIEŚNI
+   Pieśni w Midiala to utwory kompozytorów, którzy zmarli ponad 70 lat temu.
+   Dodając własne pliki MIDI, upewnij się, że możesz je udostępniać –
+   aranżacje i nagrania MIDI też bywają chronione prawem autorskim.
+
+Organy Alicji · https://miniklik.github.io/organy/
+`;
+
+$('bZip').onclick = async () => {
+  const b = $('bZip'), s = $('sZip'); b.disabled = true; s.className = 'stan'; s.textContent = '⏳ Pakuję organy i pieśni…';
+  try {
+    const enc = new TextEncoder(), P = 'Organy Alicji/';
+    const W = wzor(), organy = await pobierzBajty(W.plik), { lista, pliki } = await piesni();
+    const zip = [{ nazwa: P, dane: new Uint8Array(0) }, { nazwa: P + 'index.html', dane: organy },
+                 { nazwa: P + 'CZYTAJ-MNIE.txt', dane: enc.encode(crlf(CZYTAJ_MNIE)) },
+                 { nazwa: P + 'Midiala/', dane: new Uint8Array(0) }, { nazwa: P + 'Midiala/lista.txt', dane: enc.encode(crlf(lista)) }];
+    for (const n of pliki) zip.push({ nazwa: P + 'Midiala/' + n, dane: await pobierzBajty(MIDIALA + encodeURIComponent(n)) });
+    zapiszPlik(zrobZip(zip), W.zip, 'application/zip');
+    s.textContent = `✔ Gotowe: organy i ${pliki.length} ${pliki.length === 1 ? 'pieśń' : pliki.length < 5 ? 'pieśni' : 'pieśni'} w ZIP-ie.`;
+  } catch (e) { s.className = 'stan zle'; s.textContent = '✖ ' + (location.protocol === 'file:' ? 'Ta strona musi być otwarta z serwera (adres http… / https…).' : e.message); }
+  b.disabled = false;
+};
+
+/* ===== kod do wklejenia: te same organy, zamknięte we własnym „pokoju” (shadow root) ===== */
+function zrobKod(html, W) {
+  const css = html.slice(html.indexOf('<style>') + 7, html.indexOf('</style>'))
+    .split('\n').filter(l => !/^\s*(html|body)\b/.test(l)).join('\n')        // tło i marginesy całej strony — nie w cudzej stronie
+    .replace(/:root\b/g, ':host')
+    + '\n  /* wklejone w cudzą stronę: delikatniejszy cień, żeby wokół organów nie było szarej ramki */\n  .mini { box-shadow: 0 2px 4px rgba(0,0,0,.25), inset 0 2px 0 rgba(255,255,255,.08); }\n';
+  const ciaA = html.indexOf('<div class="cialo"'), ciaB = html.indexOf('<\/div><\!-- /cialo -->') + '</div>'.length;
+  const znacznik = html.indexOf('<script>', ciaB);   // bez komentarza „/cialo”
+  const js = html.slice(znacznik + 8, html.lastIndexOf('<\/script>'));
+  const LINIA = /const KORZEN = document, GOSPODARZ = null;[^\n]*/;
+  if (ciaA < 0 || !LINIA.test(js)) throw new Error('Nie rozpoznaję pliku organów (mini-organy.html).');
+  const wnetrze = JSON.stringify('<style>' + css + '</style>' + html.slice(ciaA, ciaB)).replace(/<\//g, '<\\/');
+  const nowyKorzen = 'const GOSPODARZ = document.currentScript.previousElementSibling, KORZEN = GOSPODARZ.attachShadow({ mode: \'open\' });\n' +
+                     'KORZEN.innerHTML = ' + wnetrze + ';';
+  return `<\!-- ═══════════════ ORGANY ALICJI — początek ═══════════════
+  Kod do wklejenia na Twoją stronę:
+   1. Wklej CAŁY ten tekst w kod HTML swojej strony, tam gdzie mają stać organy.
+   2. Obok swojej strony połóż folder "Midiala" z pieśniami (.mid) i spisem lista.txt
+      (jedna linijka = jedna nazwa pliku; wielkość liter ma znaczenie).
+   3. Organy mają ${W.szer} × ${W.wys} pikseli; na węższym miejscu zmniejszą się w całości.
+  Organy mają własny "pokój": wygląd Twojej strony ich nie zmienia, a one nie zmieniają Twojej strony.
+  Klawiatura komputera gra po kliknięciu w organy. Organy Alicji · https://miniklik.github.io/organy/
+-->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<div class="organy-alicji" style="display:block;width:100%;max-width:${W.szer}px;margin:0 auto"></div>
+<\script>
+(() => {
+${js.replace(LINIA, nowyKorzen).trim()}
+})();
+<\/script>
+<\!-- ═══════════════ ORGANY ALICJI — koniec ═══════════════ -->
+`;
+}
+$('bKod').onclick = async () => {
+  const b = $('bKod'), s = $('sKod'); b.disabled = true; s.className = 'stan'; s.textContent = '⏳ Składam kod…';
+  try { const W = wzor(), kod = zrobKod(await pobierzTekst(W.plik), W);
+    zapiszPlik('﻿' + crlf(kod), W.kod, 'text/plain;charset=utf-8');
+    s.textContent = '✔ Gotowe: otwórz plik w Notatniku, zaznacz wszystko (Ctrl+A) i skopiuj (Ctrl+C).'; }
+  catch (e) { s.className = 'stan zle'; s.textContent = '✖ ' + (location.protocol === 'file:' ? 'Ta strona musi być otwarta z serwera (adres http… / https…).' : e.message); }
+  b.disabled = false;
+};
+</script>
+</body>
+</html>
