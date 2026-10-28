@@ -18,14 +18,15 @@
   header { text-align: center; margin-bottom: 26px; }
   h1 { margin: 0; font: 700 clamp(26px, 4vw, 38px) 'Cinzel', serif; letter-spacing: .1em; color: var(--zloto); }
   header p { margin: 8px auto 0; max-width: 760px; color: #c9b48c; }
-  .wersja { padding: 26px 28px 30px; border-radius: 16px; background: linear-gradient(180deg, #4a2a17, #2e190d);
-            box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,255,255,.08); }
+  /* opisy i przyciski stoją osobno, na tle strony — drewno ma tylko same organy, żeby nikt nie wziął opisów za część organów */
+  .wersja { padding: 0; }
   .wersja h2 { margin: 0; font: 700 clamp(20px, 3vw, 26px) 'Cinzel', serif; letter-spacing: .08em; color: var(--zloto); }
   .opis { margin: 6px 0 18px; color: #e3d5b8; max-width: 820px; }
   .opis b { color: var(--kosc); }
-  iframe.organy { display: block; width: 100%; margin: 0 auto 22px; border: 0; contain: inline-size; border-radius: 14px; background: transparent; }
+  iframe.organy { display: block; width: 100%; margin: 0 auto 30px; border: 0; contain: inline-size; border-radius: 14px; background: transparent; }
   .karty { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-  .karta { border-radius: 12px; padding: 18px 20px 20px; background: linear-gradient(180deg, #1c120b, #2b1a0e); box-shadow: inset 0 2px 10px rgba(0,0,0,.7);
+  .pobierz { margin: 0 0 12px; font: 700 13px 'Outfit', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #c9b48c; }
+  .karta { border-radius: 12px; padding: 18px 20px 20px; background: rgba(255,255,255,.035); border: 1px solid rgba(216,180,106,.28);
            display: flex; flex-direction: column; gap: 10px; }
   .karta h3 { margin: 0; font: 700 17px 'Cinzel', serif; letter-spacing: .06em; color: var(--zloto); }
   .karta p { margin: 0; color: #e3d5b8; font-size: 15px; }
@@ -37,7 +38,7 @@
   button:disabled { opacity: .5; cursor: default; }
   .stan { min-height: 1.4em; font-size: 14px; color: #ffd98a; }
   .stan.zle { color: #ff9f8f; }
-  .rozdzielacz { display: flex; align-items: center; gap: 16px; margin: 40px 0; color: #8d7a5c; font: 700 13px 'Outfit', sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+  .rozdzielacz { display: flex; align-items: center; gap: 16px; margin: 56px 0 40px; color: #8d7a5c; font: 700 13px 'Outfit', sans-serif; letter-spacing: .14em; text-transform: uppercase; }
   .rozdzielacz::before, .rozdzielacz::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(216,180,106,.5), transparent); }
   .dol { margin-top: 28px; text-align: center; font-size: 14px; color: #b59f78; }
   .dol a { color: var(--zloto); }
@@ -55,6 +56,7 @@
     <h2>Organy Alicji</h2>
     <p class="opis">Lżejsza wersja Organów Alicji z <b>pełnymi dźwiękami</b>: 16 głosów, trzy oktawy, klawiatura USB i Twoje pieśni z plików MIDI. Bez możliwości nagrywania.</p>
     <iframe class="organy" src="organy-wzor-1.html" title="Organy Alicji" style="max-width:1040px;aspect-ratio:1040/446" allow="midi; autoplay"></iframe>
+    <div class="pobierz">⬇ Pobierz te organy</div>
     <div class="karty">
       <div class="karta">
         <h3>⬇ Organy w ZIP-ie</h3>
@@ -93,6 +95,7 @@
     <h2>Organy Alicji — wersja mniejsza</h2>
     <p class="opis">Jeśli na Twojej stronie jest mniej miejsca: te same <b>pełne dźwięki</b> i wszystkie 16 głosów, ale głosy jako małe przyciski w dwóch kolumnach i klawiatura z jedną oktawą. Pieśni z folderu Midiala, klawiatura USB, bez nagrywania.</p>
     <iframe class="organy" src="organy-wzor-2.html" title="Organy Alicji — wersja mniejsza" style="max-width:600px;aspect-ratio:600/468" allow="midi; autoplay"></iframe>
+    <div class="pobierz">⬇ Pobierz te organy</div>
     <div class="karty">
       <div class="karta">
         <h3>⬇ Organy w ZIP-ie</h3>
