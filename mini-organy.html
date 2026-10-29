@@ -164,7 +164,7 @@
   <p>Mniejsza wersja Organów Alicji z <b>pełnymi dźwiękami</b>: 16 głosów, trzy oktawy, klawiatura USB i Twoje pieśni z plików MIDI.
      Możesz <b>nagrać</b> swoje granie i zapisać je jako WAV, a <b>pogłos</b> wybrać: kościół Alicji albo <b>Twój własny kościół</b> — nagranie pogłosu wczytane z pliku.
      Organy wstawisz też na swoją stronę.</p></div>
-<div class="za-waskie" id="zaWaskie"><b>Organy Alicji</b><a id="otworzPelne" href="https://miniklik.github.io/organy/organy-alicji-mini.html" target="_blank" rel="noopener">🎹 Otwórz Organy Alicji</a><small id="zaWaskieNap">tu jest za mało miejsca do grania</small></div>
+<div class="za-waskie" id="zaWaskie"><b>Organy Alicji</b><a id="otworzPelne" href="https://miniklik.github.io/organy/mini-organy.html" target="_blank" rel="noopener">🎹 Otwórz Organy Alicji</a><small id="zaWaskieNap">tu jest za mało miejsca do grania</small></div>
 <div class="mini" id="mini">
   <div class="gora"><div class="tyt"><h1>Organy Alicji</h1><span class="wstaw"><button id="wstaw" title="Skopiuj kod i wklej organy na swoją stronę">📋 <em>Wstaw na swoją stronę</em></button>
     <div class="okno" id="okno" hidden><b id="oknoTyt">✔ Kod skopiowany</b> — wklej go na swojej stronie tam, gdzie mają stać organy:
@@ -216,13 +216,13 @@
     <p>Te same organy jako wtyczka do <b>FL Studio</b> i innych programów muzycznych obsługujących VST3 (Windows, 64 bit):
        16 rejestrów, pogłos kościoła, własne okienko z gałkami. Darmowa dla pasjonatów muzyki organowej.
        W paczce jest folder do wrzucenia w <i>C:\Program Files\Common Files\VST3</i> i krótka instrukcja.</p>
-    <a class="przycisk" href="pobierz/Organy-Alicji-VST3.zip" download>⬇ Pobierz wtyczkę VST3 (ZIP)</a></div>
-  <div class="karta"><h3>⛪ Przykładowe pogłosy (IR)</h3>
-    <p>Nagrania pogłosu do wypróbowania przycisku <b>📂 Twój kościół</b>: trzy pogłosy Alicji zapisane jako WAV
-       (kaplica, kościół, katedra). Pobierz, rozpakuj, kliknij 📂 i wybierz plik.
+    <a class="przycisk" href="Organy-Alicji-VST3.zip" download>⬇ Pobierz wtyczkę VST3 (ZIP)</a></div>
+  <div class="karta"><h3>⛪ Przykładowy pogłos (IR)</h3>
+    <p>Przykładowe nagranie pogłosu <b>„Alicja”</b> do wypróbowania przycisku <b>📂 Twój kościół</b>: prawdziwe nagranie
+       jednego trzasku we wnętrzu i jego echa, zrobione telefonem. Pobierz, rozpakuj, kliknij 📂 i wybierz plik.
        Więcej darmowych nagrań wnętrz znajdziesz w bibliotekach <a href="https://www.openairlib.net/" target="_blank" rel="noopener">OpenAIR</a>
        i <a href="http://www.echothief.com/" target="_blank" rel="noopener">EchoThief</a>.</p>
-    <a class="przycisk" href="pobierz/Poglosy-przyklady.zip" download>⬇ Pobierz przykładowe pogłosy (ZIP)</a></div>
+    <a class="przycisk" href="Poglosy-przyklady.zip" download>⬇ Pobierz przykładowy pogłos (ZIP)</a></div>
 </div>
 </div><!-- /cialo -->
 <script>
@@ -706,7 +706,7 @@ $('infoZamknij').onclick = () => $('info').classList.remove('widac');
 przypomnijKosciol();
 
 /* ===== wstaw na swoją stronę: gotowa linijka z okienkiem (iframe) ===== */
-const KOD = '<iframe src="https://miniklik.github.io/organy/organy-alicji-mini.html" title="Organy Alicji" style="display:block;width:100%;max-width:1040px;aspect-ratio:1040/446;margin:0 auto;border:0;contain:inline-size" allow="midi; autoplay"></iframe>';
+const KOD = '<iframe src="https://miniklik.github.io/organy/mini-organy.html" title="Organy Alicji" style="display:block;width:100%;max-width:1040px;aspect-ratio:1040/446;margin:0 auto;border:0;contain:inline-size" allow="midi; autoplay"></iframe>';
 $('kod').value = KOD;
 $('wstaw').onclick = async e => {
   e.stopPropagation(); const o = $('okno');
