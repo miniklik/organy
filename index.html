@@ -684,7 +684,6 @@
     <button class="powBtn" data-link="sample"><i>⬇</i><span>Pobierz sample Alicji<small>gotowy zestaw .organy do banku „Moje sample”</small></span></button>
     <button class="powBtn" data-link="piszczalka"><i>🎺</i><span>Jak gra piszczałka<small>zobacz i posłuchaj, jak powstaje dźwięk</small></span></button>
     <button class="powBtn" data-link="mini"><i>🎹</i><span>Mini organy Alicji<small>zmniejszona wersja organów, gotowa do gry</small></span></button>
-    <button class="powBtn" data-link="nastrone"><i>🌐</i><span>Organy na Twoją stronę<small>pobierz organy (ZIP) albo kod do wklejenia</small></span></button>
     <button class="powBtn" data-link="alicja"><i>🏠</i><span>Alicja<small>moja główna strona</small></span></button>
   </div>
 </div>
@@ -2406,10 +2405,9 @@ const LINKI_POWITANIA = {
   sample: '',                     // np. 'sample-alicji.html' albo plik 'Glosy-Alicji.organy'
   piszczalka: 'jak-gra-piszczalka.html',  // jak powstaje dźwięk jednej piszczałki
   mini:   'mini-organy.html',     // mini organy: same głosy Alicji, do wstawienia na inne strony
-  nastrone: 'organy-na-strone.html',  // Organy na Twoją stronę — wybór wyglądu, ZIP i kod do wklejenia
   alicja: 'https://miniklik.github.io/alicja/'   // Alicja — główna strona
 };
-const W_TEJ_KARCIE = new Set(['mini', 'nastrone', 'alicja']);   // te przyciski przechodzą w tej samej karcie — bez mnożenia kart
+const W_TEJ_KARCIE = new Set(['mini', 'alicja']);   // te przyciski przechodzą w tej samej karcie — bez mnożenia kart
 document.querySelectorAll('#powitanie .powBtn').forEach(b => b.addEventListener('click', e => {
   e.stopPropagation();                                            // przycisk nie wchodzi do organów
   const adres = LINKI_POWITANIA[b.dataset.link];
