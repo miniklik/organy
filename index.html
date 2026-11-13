@@ -257,7 +257,7 @@
   #mtUsun.pewny { background: #a8322a; color: #fff; border-color: transparent; }
   #mtStart.gra { background: linear-gradient(180deg, #c0443b, #842720); color: #fff; }
   .ulNapis { text-align: center; font: 700 13px 'Outfit', sans-serif; color: #e8dcc2; letter-spacing: .02em; }
-  .ulSloty { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .ulSloty { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
   .ulSlot { position: relative; height: 30px; border-radius: 7px; border: 1.5px dashed rgba(216,180,106,.28); background: rgba(255,255,255,.025);
             font: 600 12.5px/27px 'Outfit', sans-serif; color: #f3ead6; text-align: center; padding: 0 22px 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ulSlot .nr { position: absolute; left: 7px; top: 0; font-size: 10px; color: rgba(216,180,106,.35); }
@@ -482,6 +482,7 @@
         <div class="szafa" id="szafaL"><div class="rejOrg" id="rejOrg"></div></div>
         <div class="mojeRejestry" id="mojeRejestry" hidden></div>
         <div class="sfRejestry" id="sfRejestry" hidden></div>
+        <div class="mojeRejestry" id="noweRejestry" hidden></div>
         <div class="opisRej" id="sfPodpowiedz" hidden>Wczytaj plik <b>.sf2</b> po prawej.<br>Jego brzmienia staną tu<br>jako gałki do wyciągania.</div>
       </div>
 
@@ -495,16 +496,7 @@
 </div>
             <div class="czytKartka" id="czytKartka" hidden></div>
             <div class="obrazStrony" id="czytObraz" hidden><img alt="Strona pieśni"></div>
-            <div class="wpisStrzalki" id="czytStrzalki" hidden><button id="czytLewo" title="Poprzednia strona (←)">◀</button><span id="czytIle"></span><button id="czytPrawo" title="Następna strona (→)">▶</button><button class="czytPopraw" id="czytPopraw" title="Popraw tę pieśń (otwiera Wpisywanie)">✏️</button><button class="czytPopraw czytPelny" id="czytPelny" title="Nuty na cały ekran">⛶</button><button class="czytPopraw czytPol" id="czytPol" title="Pół-pełny ekran: większe nuty, bez klawiatury i spisu — pieśni z ulubionych">◱</button></div>
-          </div>
-          <div class="wpisStrona" id="wpisStrona" hidden>
-            <div class="wpisNapis" id="wpisNapis">&nbsp;</div>
-            <textarea id="wpisPole" spellcheck="true" placeholder="Wpisz tekst tej strony…"></textarea>
-            <div class="obrazStrony" id="wpisObraz" hidden><img alt="Strona pieśni"><button class="obrazUsun" id="obrazUsun" title="Usuń obrazek (wraca tekst strony)">✕</button><button class="obrazUsun obrazCofnij" id="obrazCofnij" title="Cofnij przycięcie — wróć do kadrowania" hidden>↶</button></div>
-            <div class="kadr" id="kadr" hidden><div class="kadrOkno" id="kadrOkno"><img alt="" draggable="false"></div>
-              <div class="kadrDol"><span>kółko: powiększ · przeciągnij: przesuń</span><button id="kadrTnij" class="kadrGlowny" title="Zapisz do strony to, co widać w okienku (Enter)" hidden>✂ Przytnij</button><button id="kadrAnuluj" title="Zostaw stronę bez zmian (Esc)">Anuluj</button></div></div>
-            <div class="wpisStrzalki"><button id="wpisLewo" title="Poprzednia strona">◀</button><span id="wpisIle"></span><button id="wpisPrawo" title="Następna strona">▶</button>
-              <div class="czcionka"><button id="czcMniej" title="Mniejsze litery">−</button><button id="czcWiecej" title="Większe litery">+</button></div></div>
+            <div class="wpisStrzalki" id="czytStrzalki" hidden><button id="czytLewo" title="Poprzednia strona (←)">◀</button><span id="czytIle"></span><button id="czytPrawo" title="Następna strona (→)">▶</button><button class="czytPopraw czytPelny" id="czytPelny" title="Nuty na cały ekran">⛶</button><button class="czytPopraw czytPol" id="czytPol" title="Pół-pełny ekran: większe nuty, bez klawiatury i spisu — pieśni z ulubionych">◱</button></div>
           </div>
         </div>
         <div class="prospekt" id="prospekt" title="Kliknij — wróć do konsoli"><svg class="rysProspekt" viewBox="0 0 452 410"></svg></div>
@@ -513,7 +505,7 @@
         <div class="banki" id="banki"><button data-bank="moje">🎼 Moje sample</button><button data-bank="alicja">📜 Głosy Alicji</button><button data-bank="sf">📂 Bank zewnętrzny</button></div>
         <div class="nuta" id="nuta">—<small>zagraj coś</small></div>
         <div class="rzad">
-          <label id="poglosEtyk">Pogłos: kaplica <input type="range" id="poglos" min="0" max="100" value="33"> katedra</label><label class="poglosWl" title="Odznacz, żeby grać bez pogłosu — tak jak w edytorze zestawu"><input type="checkbox" id="poglosWl" checked> pogłos</label>
+          <label id="poglosEtyk">Pogłos: przy organach <input type="range" id="poglos" min="0" max="100" value="50"> w głębi kościoła</label>
         </div>
         <div class="rzad">
           <button id="midi">🔌 Podłącz klawiaturę MIDI</button>
@@ -529,25 +521,6 @@
             <select class="spisWybor" id="spisWybor" title="Wybierz część śpiewnika" hidden></select>
             <div class="spisLista" id="spisLista"></div>
           </div>
-          <div class="metronom" id="metronom" hidden>
-            <div class="mtNapis">Metronom</div>
-            <div class="mtTempo"><button id="mtMniej" title="Wolniej">−</button><div><b id="mtBpm">80</b><small>uderzeń na minutę</small></div><button id="mtWiecej" title="Szybciej">+</button></div>
-            <input type="range" id="mtSuwak" min="30" max="240" value="80" title="Tempo">
-            <div class="mtMetrum" id="mtMetrum"><button data-m="1">—</button><button data-m="2">2/4</button><button data-m="3">3/4</button><button data-m="4">4/4</button><button data-m="6">6/8</button></div>
-            <div class="mtKropki" id="mtKropki"></div>
-            <label class="mtGlos">Głośność <input type="range" id="mtGlos" min="0" max="100" value="60"></label>
-            <button class="sfBtn" id="mtStart">▶ Start</button>
-            <div class="mtNagranie"><button class="sfBtn cichy" id="mtDodaj" title="Zapisz nagranie razem z pieśnią">💾 Dodaj do pieśni</button><button class="sfBtn cichy" id="mtUsun" title="Usuń nagranie z tej pieśni (kliknij dwa razy)">🗑 Usuń nagranie</button></div>
-          </div>
-          <div class="wpisPola" id="wpisPola" hidden>
-            <label>Tytuł śpiewnika<input id="wpisSpiewnik" maxlength="80" placeholder="np. Śpiewnik parafialny"></label>
-            <label>Tytuł pieśni<input id="wpisTytul" maxlength="120" placeholder="np. Kiedy ranne wstają zorze"></label>
-            <label>Kategoria<input id="wpisKat" list="kategorie" maxlength="60" placeholder="wybierz albo wpisz nową"></label>
-            <datalist id="kategorie"></datalist>
-            <button class="sfBtn" id="wpisZapisz">💾 Zapisz do kategorii</button>
-            <button class="sfBtn cichy" id="wpisNowa">✚ Nowa pieśń</button>
-            <button class="sfBtn cichy" id="wpisEksport" title="Pobierz cały śpiewnik jako plik .json">📥 Zapisz śpiewnik</button>
-          </div>
         </div>
         <h3>Bank brzmień</h3>
         <div class="opisRej opisBanku" id="opisBanku"></div>
@@ -557,8 +530,15 @@
           <button class="sfBtn cichy" id="mojeOstatni" hidden>↺ Ostatni</button>
           <button class="sfBtn cichy" id="mojeEdytor">🛠 Edytor zestawu</button>
         </div>
+        <div class="mojeKol" id="noweKol" hidden>
+          <button class="sfBtn cichy" id="nowyInny">📂 Inny plik</button>
+          <button class="sfBtn cichy" id="nowyZamknij">✕ Odłóż plik</button>
+        </div>
+        <input type="file" id="nowyPlik" accept=".txt,text/plain" hidden>
+        <input type="file" id="zewPlik" accept=".txt,text/plain,.sf2,.sf3" hidden>
         <div id="sfPusty" class="sfKol" hidden>
           <div class="opisRej"><b>Bank zewnętrzny</b><br>Twój plik SoundFont (.sf2 / .sf3).<br>Jego brzmienia staną się rejestrami.</div>
+          <button class="sfBtn" id="nowyOtworz">📂 Nowe głosy Alicji</button>
           <button class="sfBtn" id="sfUzyj">📂 Użyj SoundFontu</button>
           <button class="sfBtn cichy" id="sfSzukaj">🔎 Znajdź darmowe</button>
           <div class="opisRej maly">albo przeciągnij plik na stół gry</div>
@@ -574,7 +554,6 @@
 
     <div class="utwory">
       <div class="warstwaPulpitu" id="pulpitPasek">
-        <div class="tryby"><button class="tryb czyt wybrany" data-tryb="czyt">📖 Czytanie</button><button class="tryb wpis" data-tryb="wpis">✍️ Wpisywanie</button></div>
         <div class="pliki">
           <button class="plikBtn" id="wczytajSp" title="Wczytaj śpiewnik z pliku .json (zastępuje obecny)">📂 Wczytaj śpiewnik</button>
           <button class="plikBtn" id="wczytajUl" title="Wczytaj ulubione z pliku .json">⭐ Wczytaj ulubione</button>
@@ -582,8 +561,6 @@
           <input type="file" id="wczytajSpPlik" accept=".json,application/json" hidden>
           <input type="file" id="wczytajUlPlik" accept=".json,application/json" hidden>
         </div>
-        <button class="edycjaBtn" id="edycjaBtn" title="Nagraj melodię do tej pieśni (przyciski odtwarzacza przechodzą tutaj)">🎹 Edycja MIDI</button>
-        <div class="edycjaMidi" id="edycjaMidi"></div>
         <div class="ulubione" id="ulubione">
           <div class="ulNapis">Przeciągnij pieśni do ulubionych</div>
           <div class="ulSloty" id="ulSloty"></div>
@@ -608,6 +585,12 @@
     <div class="manual"><div class="klawisze" id="klawisze"></div></div>
     <div class="pomoc">Graj myszką albo klawiaturą komputera: dolny rząd <b>Z S X D C V G B H N J M ,</b> (od c) · górny rząd <b>Q 2 W 3 E R 5 T 6 Y 7 U I</b> (od c¹)</div>
   </div>
+</div>
+<div class="pelny" id="pelny" hidden>
+  <div class="pelnyTytul" id="pelnyTytul"></div>
+  <div class="pelnyStrona" id="pelnyStrona"></div>
+  <div class="pelnyDol"><button id="pelnyLewo" title="Poprzednia strona (←)">◀</button><span id="pelnyIle"></span><button id="pelnyPrawo" title="Następna strona (→)">▶</button>
+    <button id="pelnyZamknij" title="Zamknij (Esc)">✕</button></div>
 </div>
 
 
@@ -680,7 +663,7 @@
   </div>
   <div class="powPrawa">
     <button class="powBtn glowny" data-link="demo"><i>▶</i><span>Zobacz demo<small>organy zagrają i pokażą, co potrafią</small></span></button>
-    <button class="powBtn" data-link="edytor"><i>🎵</i><span>Edytor MIDI → PNG<small>z pliku .mid robisz nuty do śpiewnika</small></span></button>
+    <button class="powBtn" data-link="edytor"><i>🎵</i><span>Śpiewnik Alicji - Edytor<small>Utwórz śpiewnik z nutami i midi</small></span></button>
     <button class="powBtn" data-link="sample"><i>⬇</i><span>Pobierz sample Alicji<small>gotowy zestaw .organy do banku „Moje sample”</small></span></button>
     <button class="powBtn" data-link="piszczalka"><i>🎺</i><span>Jak gra piszczałka<small>zobacz i posłuchaj, jak powstaje dźwięk</small></span></button>
     <button class="powBtn" data-link="mini"><i>🎹</i><span>Mini organy Alicji<small>zmniejszona wersja organów, gotowa do gry</small></span></button>
@@ -688,14 +671,248 @@
     <button class="powBtn" data-link="alicja"><i>🏠</i><span>Alicja<small>moja główna strona</small></span></button>
   </div>
 </div>
-<div class="pelny" id="pelny" hidden>
-  <div class="pelnyTytul" id="pelnyTytul"></div>
-  <div class="pelnyStrona" id="pelnyStrona"></div>
-  <div class="pelnyDol"><button id="pelnyLewo" title="Poprzednia strona (←)">◀</button><span id="pelnyIle"></span><button id="pelnyPrawo" title="Następna strona (→)">▶</button>
-    <button id="pelnyZamknij" title="Zamknij (Esc)">✕</button></div>
-</div>
+<script id="silnikPiszczalki">
+// ===================== MODEL DŹWIĘKU — silnik z Piszczałki 3D (liczenie próbki bez zmian) =====================
+// Słup powietrza = pętla opóźniająca (fala biegnie do końca piszczałki i wraca). Otwarty koniec odbija falę bez zmiany znaku
+// w tej pętli, zakryty — ze zmianą (dlatego kryta gra oktawę niżej i ma tylko nieparzyste alikwoty).
+// Strumień ze szczeliny: drgania w ustach go odchylają, on leci do górnej wargi (opóźnienie) i tam „przełącza się”
+// raz do środka, raz na zewnątrz piszczałki — to podtrzymuje drgania.
+// Jedyna różnica wobec Piszczałki 3D: bufor ma długość dobraną do piszczałki (N), bo tu stoi ich 61 na głos.
+class Piszczalka {
+  constructor(sr, N = 1 << 16) { this.sr = sr; this.N = N; this.bufor = new Float32Array(this.N); this.jet = new Float32Array(this.N); this.w = 0;
+    this.lp = 0; this.dc1 = 0; this.dc2 = 0; this.wy1 = 0; this.cisn = 0; this.szum = 0; this.jlp = 0; this.jlp2 = 0; this.obw = 0; this.p = null; this.D = 0; this.Dj = 0; this.wyLp = 0; }
+  ustaw(p) { if (!this.p) { this.D = p.D; this.Dj = p.Dj; } this.p = p; }
+  cisza() { this.bufor.fill(0); this.jet.fill(0); this.lp = this.dc1 = this.dc2 = this.wy1 = this.cisn = this.szum = this.jlp = this.jlp2 = this.obw = this.wyLp = 0; if (this.p) { this.D = this.p.D; this.Dj = this.p.Dj; } }
+  czytaj(buf, d) { let r = this.w - d; while (r < 0) r += this.N; const i = Math.floor(r), f = r - i; return buf[i & (this.N - 1)] * (1 - f) + buf[(i + 1) & (this.N - 1)] * f; }
+  krok() {
+    const P = this.p;
+    this.D += (P.D - this.D) * 0.002; this.Dj += (P.Dj - this.Dj) * 0.002;   // płynna zmiana długości (strojenie bez trzasków)
+    this.cisn += (P.cel - this.cisn) * P.narast;                              // zawór: wiatr narasta / opada
+    const wraca = this.czytaj(this.bufor, this.D);                            // fala wróciła do ust
+    this.lp += (wraca - this.lp) * (1 - P.a);                                 // straty: ścianki i promieniowanie
+    const odbita = P.znak * P.g * this.lp;
+    this.jet[this.w] = odbita;
+    const odchS = this.czytaj(this.jet, this.Dj);                             // strumień doleciał do wargi
+    this.jlp += (odchS - this.jlp) * P.bj; this.jlp2 += (this.jlp - this.jlp2) * P.bj;   // za szybkich drgań strumień nie nadąża
+    const odch = this.jlp2;
+    this.szum += ((Math.random() * 2 - 1) - this.szum) * 0.5;                // turbulencja
+    this.obw += (Math.abs(odch) - this.obw) * 0.0005;
+    const przeplyw = Math.tanh(P.K * (odch + P.offset * (this.obw * 1.6 + 0.02)) + this.szum * P.szumG) * P.amp * this.cisn;
+    let nowa = odbita - przeplyw;
+    const y = nowa - this.dc1 + 0.9995 * this.dc2; this.dc1 = nowa; this.dc2 = y; nowa = y;
+    this.bufor[this.w] = nowa; this.w = (this.w + 1) & (this.N - 1);
+    const zrodlo = nowa + P.mixUsta * przeplyw, wy = zrodlo - this.wy1; this.wy1 = zrodlo;   // promieniowanie: zmiany przepływu w ustach…
+    this.wyLp += (wy - this.wyLp) * P.lpWy;                                    // …ale ponad „szerokością” piszczałki już nie rośnie
+    return this.wyLp;
+  }
+}
+</script>
+<script id="procesorOrganow" type="text/plain">
+// ===================== NOWY BANK W WĄTKU DŹWIĘKU =====================
+// Każdy głos to rząd piszczałek (od kontra C1 do c4), każda z własnym modelem. Liczone są tylko te, które akurat grają albo jeszcze wybrzmiewają.
+// Piszczałki stoją w przestrzeni jak na wiatrownicy: strona C po lewej, strona Cis po prawej, bas na zewnątrz, góra bliżej środka.
+// Wyjście 0 — dźwięk bezpośredni (lewy, prawy); wyjście 1 — to samo bez rozstawienia, jako posyłka do pogłosu.
+class ProcOrganow extends AudioWorkletProcessor {
+  constructor() { super(); this.tab = []; this.od = 36; this.aktywne = []; this.port.onmessage = e => this.odbierz(e.data); }
+  odbierz(d) {
+    if (d.typ === 'wyczysc') { this.tab = []; this.aktywne = []; }
+    else if (d.typ === 'tabela') {                               // d.g — numer głosu, d.od — najniższa nuta, d.pary — piszczałki: { n, p, N, wzm }
+      this.od = d.od;
+      this.tab[d.g] = d.pary.map(q => { const m = new Piszczalka(sampleRate, q.N); q.p.cel = 0; m.ustaw(q.p);
+        const k = q.n - 36, strona = (k % 2 === 0) ? -1 : 1, miejsce = strona * Math.min(0.85, 0.7 * (1 - 0.75 * k / 60)), kat = (miejsce + 1) * Math.PI / 4;   // −1 = całkiem z lewej, +1 = całkiem z prawej
+        const spozn = Math.round(Math.abs(miejsce) * 0.0005 * sampleRate);                                                                    // do dalszego ucha dźwięk dociera odrobinę później (do 0,35 ms)
+        return { m, p: q.p, wzm: q.wzm, akt: false, cicho: 0, gL: Math.cos(kat), gR: Math.sin(kat), dL: miejsce > 0 ? spozn : 0, dR: miejsce < 0 ? spozn : 0, linia: new Float32Array(64), w: 0 }; });
+    }
+    else if (d.typ === 'pisz') {                                 // klawisz n w głosie g: wiatr dochodzi (wl) albo nie
+      const t = this.tab[d.g], q = t && t[d.n - this.od]; if (!q) return; q.p.cel = d.wl ? 1 : 0;
+      if (d.wl && !q.akt) { q.akt = true; q.cicho = 0; this.aktywne.push(q); }
+    }
+    else if (d.typ === 'cisza') { for (const t of this.tab) if (t) for (const q of t) q.p.cel = 0; }
+  }
+  process(_, wy) {
+    const oL = wy[0][0], oR = wy[0][1], oP = wy[1][0], L = oL.length;
+    for (let k = this.aktywne.length - 1; k >= 0; k--) { const q = this.aktywne[k], m = q.m, wz = q.wzm, lin = q.linia, gL = q.gL, gR = q.gR, dL = q.dL, dR = q.dR; let w = q.w, szczyt = 0;
+      for (let i = 0; i < L; i++) { const v = m.krok() * wz; lin[w] = v; oL[i] += lin[(w - dL) & 63] * gL; oR[i] += lin[(w - dR) & 63] * gR; oP[i] += v; w = (w + 1) & 63; const a = v < 0 ? -v : v; if (a > szczyt) szczyt = a; }
+      q.w = w;
+      if (q.p.cel === 0 && szczyt < 2e-5) { if (++q.cicho > 40) { q.akt = false; m.cisza(); lin.fill(0); this.aktywne.splice(k, 1); } } else q.cicho = 0; }   // wybrzmiała — odpoczywa
+    return true;
+  }
+}
+registerProcessor('organy-z-piszczalek', ProcOrganow);
+</script>
+<script>
+// ===================== POGŁOS KOŚCIOŁA =====================
+// Zbudowany tak, żeby zachowywał się jak zmierzony wzorzec: najpierw gęste, mocne pierwsze odbicia (do 0,15 s — w nich jest ok. 92% energii),
+// potem cichy, długi ogon, który gaśnie w ok. 3,3 s (wysokie tony szybciej). Lewy i prawy kanał są od siebie niezależne — pogłos otacza.
+// Zawsze ten sam (ziarno stałe), żeby organy brzmiały identycznie przy każdym uruchomieniu.
+function zbudujPoglos(sr) {
+  let s = 20261112; const los = () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const dl = Math.floor(sr * 4.4), kan = [new Float32Array(dl), new Float32Array(dl)], n150 = Math.round(sr * 0.15), MOC = 0.42, CZESC_OGONA = 0.08;
+  const a1 = Math.exp(-2 * Math.PI * 400 / sr), a2 = Math.exp(-2 * Math.PI * 2500 / sr), RT = [3.6, 3.3, 1.8];        // czas gaśnięcia: niskie, średnie, wysokie
+  for (const d of kan) {
+    const ogon = new Float32Array(dl), odb = new Float32Array(dl); let l1 = 0, l2 = 0;
+    for (let i = Math.round(sr * 0.02); i < dl; i++) { const t = i / sr, w = los() * 2 - 1; l1 = l1 * a1 + w * (1 - a1); l2 = l2 * a2 + w * (1 - a2);
+      const wej = Math.min(1, (t - 0.02) / 0.06), kon = Math.min(1, (dl - i) / (sr * 0.2));
+      ogon[i] = wej * kon * (l1 * Math.pow(10, -3 * t / RT[0]) + (l2 - l1) * Math.pow(10, -3 * t / RT[1]) + (w - l2) * Math.pow(10, -3 * t / RT[2])); }
+    for (let k = 0; k < 44; k++) { const t = 0.004 + 0.146 * Math.pow(los(), 1.15), i = Math.round(t * sr); odb[i] += (los() < 0.5 ? -1 : 1) * Math.exp(-t / 0.075) * (0.55 + 0.45 * los()); }
+    let eOd = 0, eOgPrzed = 0, eOgPo = 0; for (let i = 0; i < dl; i++) { eOd += odb[i] * odb[i]; if (i < n150) eOgPrzed += ogon[i] * ogon[i]; else eOgPo += ogon[i] * ogon[i]; }
+    const sOg = Math.sqrt(CZESC_OGONA * MOC / eOgPo), sOd = Math.sqrt(Math.max(1e-9, ((1 - CZESC_OGONA) * MOC - sOg * sOg * eOgPrzed) / eOd));
+    for (let i = 0; i < dl; i++) d[i] = sOd * odb[i] + sOg * ogon[i];
+  }
+  return kan;
+}
+
+/* =====================================================================
+   NOWY BANK: głosy liczone na żywo z modelu piszczałki (silnik z Piszczałki 3D).
+   Każdy klawisz ma własną piszczałkę; głos jest zapisany jedną linijką tekstu (plik .txt).
+   Stary silnik (Głosy Alicji, Moje sample, Bank zewnętrzny) działa obok bez zmian — dla porównania.
+   ===================================================================== */
+const NOWY = (() => {
+  // ===================== CZYTNIK ZAPISU — INTONACJA WZGLĘDEM NUTY =====================
+  // Głos = jedna linijka: kilka piszczałek wzorcowych (np. C1, C, c, c1, c2), a przy każdej jej intonacja — dziewięć liczb.
+  // Wszystkie liczone są względem granej nuty (w okresach drgań albo wielokrotnościach tonu), więc ta sama liczba znaczy to samo na każdym klawiszu.
+  // Między wzorcami czytnik przechodzi płynnie; poniżej pierwszego i powyżej ostatniego trzyma wartości skrajnego wzorca.
+  const NUTY = ['C', 'Cis', 'D', 'Dis', 'E', 'F', 'Fis', 'G', 'Gis', 'A', 'B', 'H'];
+  const NUTA_OD = 36, NUTA_DO = 96;        // od wielkiego C do c⁴ — dokładnie tyle, ile ma klawiatura na ekranie i manuał organowy
+  const nazwaNuty = n => { const o = Math.floor(n / 12) - 1, z = NUTY[(n % 12 + 12) % 12]; return o <= 1 ? z + '₁' : o === 2 ? z : o === 3 ? z.toLowerCase() : z.toLowerCase() + ['¹', '²', '³', '⁴', '⁵', '⁶'][o - 4]; };
+  const hz = n => 440 * Math.pow(2, (n - 69) / 12);
+  const ogr = (v, a, b) => Math.max(a, Math.min(b, v));
+  function nutaZNazwy(s) { const m = /^([A-Za-z]+)([0-9]?)$/.exec(s.trim()); if (!m) return null; const lit = m[1], i = NUTY.findIndex(z => z.toLowerCase() === lit.toLowerCase()); if (i < 0) return null;
+    if (lit[0] === lit[0].toUpperCase()) return m[2] === '1' ? 24 + i : m[2] ? null : 36 + i; return 48 + i + 12 * (m[2] ? +m[2] : 0); }   // C1 = kontra, C = wielka, c = mała, c1, c2…
+  // słowo, najmniejsza i największa dozwolona wartość, czy zmienia się „o stały ułamek” (logarytmicznie) między wzorcami
+  const INTONACJA = [['straty', 0.1, 40, 1], ['filtr', 1.2, 80, 1], ['lot', 0.05, 1.3, 1], ['bezwl', 0.3, 40, 1], ['ostrosc', 0.2, 30, 1], ['warga', 0, 1.6, 0], ['usta', 0, 2.5, 0], ['wylot', 1, 80, 1], ['zawor', 0.2, 10, 1]];
+  function czytajZapis(tekst) {
+    const glosy = [], bledy = [];
+    tekst.split('\n').forEach((linia, nr) => {
+      const t = linia.trim(); if (!t || t.startsWith('#')) return;
+      const cz = t.split(';').map(s => s.trim()).filter(Boolean), g = { nazwa: cz[0], kryta: false, glosnosc: 1, spadek: 2, szum: 0.1, wzorce: [] };
+      for (const c of cz.slice(1)) {
+        if (c === 'kryta') g.kryta = true; else if (c === 'otwarta') g.kryta = false;
+        else if (c.includes(':')) { const [nn, reszta] = c.split(':'), n = nutaZNazwy(nn); if (n === null) { bledy.push(`linia ${nr + 1}: nie znam nuty „${nn.trim()}”`); continue; }
+          const w = { n }; for (const kv of reszta.trim().split(/\s+/)) { const [k, v] = kv.split('='), x = parseFloat(String(v).replace(',', '.')); if (!k || !isFinite(x)) { bledy.push(`linia ${nr + 1}: nie rozumiem „${kv}”`); continue; } w[k] = x; } g.wzorce.push(w); }
+        else if (c.includes('=')) { const [k, v] = c.split('='), x = parseFloat(v.replace(',', '.')); if (!isFinite(x)) bledy.push(`linia ${nr + 1}: nie rozumiem „${c}”`); else g[k.trim()] = x; }
+        else bledy.push(`linia ${nr + 1}: nie rozumiem „${c}”`);
+      }
+      g.wzorce.sort((a, b) => a.n - b.n);
+      if (!g.wzorce.length) { bledy.push(`linia ${nr + 1}: głos „${g.nazwa}” nie ma żadnej piszczałki wzorcowej (np. C: …)`); return; }
+      let ok = true; for (const w of g.wzorce) for (const [k, a, b] of INTONACJA) { if (!isFinite(w[k])) { bledy.push(`linia ${nr + 1}: piszczałce ${nazwaNuty(w.n)} brakuje „${k}”`); ok = false; } else w[k] = ogr(w[k], a, b); }
+      if (ok) glosy.push(g);
+    });
+    return { glosy, bledy };
+  }
+  function intonacjaDlaNuty(g, n) {
+    const wz = g.wzorce, q = { szum: g.szum }; let a = wz[0], b = wz[0], t = 0;
+    if (n >= wz[wz.length - 1].n) a = b = wz[wz.length - 1]; else if (n > wz[0].n) { let i = 0; while (n > wz[i + 1].n) i++; a = wz[i]; b = wz[i + 1]; t = (n - a.n) / (b.n - a.n); }
+    for (const [k, , , lg] of INTONACJA) q[k] = lg ? a[k] * Math.pow(b[k] / a[k], t) : a[k] + (b[k] - a[k]) * t;
+    return q;
+  }
+  // intonacja → liczby silnika (silnik ten sam co w Piszczałce 3D)
+  function parametryQ(f, sr, kor, q, kryta) {
+    const T = sr / f, lim = sr / 3, a = Math.exp(-2 * Math.PI * Math.min(lim, f * q.filtr) / sr), gd = a / (1 - a);
+    return { D: Math.max(4, T * (kryta ? 0.5 : 1) * kor - gd), znak: kryta ? -1 : 1, a, g: 1 - q.straty / 100, Dj: Math.max(1, T * q.lot), K: q.ostrosc, amp: 0.3, offset: q.warga, szumG: 0.08 * q.szum,
+      bj: 1 - Math.exp(-2 * Math.PI * Math.min(lim, f * q.bezwl) / sr), mixUsta: q.usta, lpWy: 1 - Math.exp(-2 * Math.PI * Math.min(lim, f * q.wylot) / sr), cel: 1, narast: 1 - Math.exp(-1 / Math.max(2, q.zawor * T)) };
+  }
+  const dlugoscBufora = p => { let N = 256; const trzeba = Math.max(p.D, p.Dj) * 1.25 + 16; while (N < trzeba) N <<= 1; return N; };
+  // pomiar tonu: najpierw zgrubnie (pierwszy mocny szczyt autokorelacji), potem dokładnie na wielu okresach naraz
+  function zmierzTon(x, sr, fOcz) {
+    const T = sr / fOcz, W = Math.round(Math.max(sr * 0.12, 8 * T)), minL = Math.max(2, Math.floor(T / 3.4)), maxL = Math.ceil(T * 1.35);
+    const zapas = Math.ceil(Math.max(maxL + 2, Math.max(sr * 0.06, 6 * T) + 2 * T)), od = x.length - W - zapas - 2; if (od < 0) return 0;
+    let e0 = 0; for (let i = 0; i < W; i++) e0 += x[od + i] * x[od + i]; if (e0 < 1e-14) return 0;
+    const ak = L => { let s = 0; for (let i = 0; i < W; i++) s += x[od + i] * x[od + i + L]; return s / e0; };
+    const ac = new Float64Array(maxL + 2); let mx = 0; for (let L = minL; L <= maxL + 1; L++) { ac[L] = ak(L); if (L <= maxL) mx = Math.max(mx, ac[L]); }
+    let T0 = 0; for (let L = minL + 1; L <= maxL; L++) if (ac[L] > ac[L - 1] && ac[L] >= ac[L + 1] && ac[L] > 0.85 * mx) { const a = ac[L - 1], b = ac[L], c = ac[L + 1]; T0 = L + 0.5 * (a - c) / (a - 2 * b + c || 1); break; }
+    if (!T0 || mx < 0.3) return 0;
+    const m = Math.max(1, Math.floor(Math.max(sr * 0.05, 6 * T0) / T0)); if (m === 1) return sr / T0;   // dokładny pomiar na co najmniej 6 okresach (ważne w oktawie kontra)
+    const sr0 = Math.round(m * T0), pol = Math.max(2, Math.ceil(T0 * 0.4)); let nL = sr0, nV = -2;
+    for (let L = sr0 - pol; L <= sr0 + pol; L++) { const v = ak(L); if (v > nV) { nV = v; nL = L; } }
+    const a = ak(nL - 1), b = nV, c = ak(nL + 1), Lm = nL + 0.5 * (a - c) / (a - 2 * b + c || 1);
+    return m * sr / Lm;
+  }
+  // strojenie jednej piszczałki: gram ją po cichu, mierzę ton i poprawiam długość pętli, aż trafi w nutę; na koniec mierzę głośność
+  function strojPiszczalke(g, n, SR, Klasa) {
+    const f = hz(n), q = intonacjaDlaNuty(g, n), ile = Math.round(SR * (0.5 + 45 / f)), x = new Float32Array(ile);
+    let kor = 1, fg = 0, stan = 'ok', rms = 0;
+    for (let it = 0; it < 7; it++) {
+      const p = parametryQ(f, SR, kor, q, g.kryta), m = new Klasa(SR, dlugoscBufora(p)); m.ustaw(p);
+      for (let i = 0; i < ile; i++) x[i] = m.krok();
+      const k0 = ile - Math.round(SR * 0.15); let e = 0; for (let i = k0; i < ile; i++) e += x[i] * x[i]; rms = Math.sqrt(e / (ile - k0));
+      fg = zmierzTon(x, SR, f); if (!fg || rms < 1e-6) { stan = 'nie mówi'; break; }
+      const r = fg / f; if (r < 0.88 || r > 1.12) { stan = r > 1.5 ? 'przedmuchuje' : 'niestabilnie'; break; }
+      if (Math.abs(1200 * Math.log2(r)) < 0.5) break;
+      kor = ogr(kor * r, 0.75, 1.25);
+    }
+    return { q, kor, f: fg, centy: fg ? 1200 * Math.log2(fg / f) : 0, stan, rms, p: parametryQ(f, SR, kor, q, g.kryta) };
+  }
+
+  // ----- bank w organach -----
+  let glosy = [], wezel = null, modul = null, plik = '', strojCt = 0;
+  const wlaczone = new Set();
+  const kod = () => document.getElementById('silnikPiszczalki').textContent + '\n' + document.getElementById('procesorOrganow').textContent;
+  async function przygotuj() {
+    startAudio(); if (wezel) return;
+    if (!modul) modul = (async () => { try { await audio.audioWorklet.addModule(URL.createObjectURL(new Blob([kod()], { type: 'application/javascript' }))); }
+      catch (e) { await audio.audioWorklet.addModule('data:application/javascript;charset=utf-8,' + encodeURIComponent(kod())); } })();   // z dysku (file://) czasem tylko tak
+    await modul; if (wezel) return;
+    wezel = new AudioWorkletNode(audio, 'organy-z-piszczalek', { numberOfInputs: 0, numberOfOutputs: 2, outputChannelCount: [2, 1] });
+    wezel.connect(sucho, 0); wezel.connect(mokro, 1);            // prosto do głośnika i przez pogłos kościoła — tak jak Głosy Alicji
+  }
+  const przerwa = () => new Promise(r => setTimeout(r, 0));
+  let stroiSie = false;
+  async function wczytaj(tekst, nazwaPliku) {
+    if (stroiSie) return; const { glosy: nowe, bledy } = czytajZapis(tekst);
+    if (!nowe.length) { status('✖ W tym pliku nie ma żadnego głosu. ' + esc(bledy.join(' · '))); return; }
+    stroiSie = true;
+    try {
+      await przygotuj();
+      [...wlaczone].forEach(i => { wlaczone.delete(i); if (bank === 'nowy') przelaczGlosy('pz' + i, false); });
+      wezel.port.postMessage({ typ: 'cisza' }); wezel.port.postMessage({ typ: 'wyczysc' });
+      const SR = audio.sampleRate, razem = nowe.length * (NUTA_DO - NUTA_OD + 1), klopoty = []; let zrobione = 0, maxCt = 0;
+      for (let gi = 0; gi < nowe.length; gi++) { const g = nowe[gi], pary = [], glosnosc = g.glosnosc > 0 ? g.glosnosc : 1, spadek = isFinite(g.spadek) ? g.spadek : 2;   // spadek: o ile dB ciszej na każdą oktawę w górę
+        for (let n = NUTA_OD; n <= NUTA_DO; n++) {
+          const w = strojPiszczalke(g, n, SR, Piszczalka), p = w.p; p.cel = 0;
+          if (w.stan !== 'ok') klopoty.push(`${g.nazwa} ${nazwaNuty(n)} (${w.stan})`); else maxCt = Math.max(maxCt, Math.abs(w.centy));
+          const cel = 0.05 * glosnosc * Math.pow(10, -spadek * (n - 36) / 12 / 20);
+          pary.push({ n, p, N: dlugoscBufora(p), wzm: (w.stan === 'ok' && w.rms > 1e-6) ? cel / w.rms : 0 });
+          if (++zrobione % 4 === 0) { status(`🌬 Stroję piszczałki… ${zrobione} / ${razem}`); await przerwa(); }
+        }
+        wezel.port.postMessage({ typ: 'tabela', g: gi, od: NUTA_OD, pary });
+      }
+      glosy = nowe; plik = nazwaPliku || ''; strojCt = maxCt; wlaczone.add(0); rysuj();
+      if (bank === 'nowy') { przelaczGlosy('pz0', true); pokazNute(); }
+      status(`🌬 Nowy bank gotowy: ${glosy.length} ${odmiana(glosy.length, 'głos', 'głosy', 'głosów')}, strój co do ${maxCt.toFixed(1).replace('.', ',')} centa.`
+        + (klopoty.length ? ' ⚠ Nie mówią czysto: ' + esc(klopoty.join(', ')) + '.' : '') + (bledy.length ? ' Nie zrozumiałam: ' + esc(bledy.join(' · ')) : ''));
+    } finally { stroiSie = false; }
+  }
+  // granie: organy mówią „klawisz n w głosie i”, a wątek dźwięku puszcza wiatr do tej jednej piszczałki
+  function graj(i, n) {
+    if (!wezel || !glosy[i] || n < NUTA_OD || n > NUTA_DO) return () => {};
+    wezel.port.postMessage({ typ: 'pisz', g: i, n, wl: 1 });
+    return () => { if (wezel) wezel.port.postMessage({ typ: 'pisz', g: i, n, wl: 0 }); };
+  }
+  function opis() {
+    if (!glosy.length) return '<b>Nowy bank</b><br>Głosy liczone na żywo z modelu piszczałki: każdy klawisz ma własną piszczałkę.<br><br>Otwórz plik z zapisem głosów (<b>.txt</b> — jedna linijka to jeden głos). Możesz też przeciągnąć go na stół gry.';
+    return `<b>Nowy bank</b><br>Plik: <b>${esc(plik || 'bez nazwy')}</b><br>${glosy.length} ${odmiana(glosy.length, 'głos', 'głosy', 'głosów')}, w każdym ${NUTA_DO - NUTA_OD + 1} ${odmiana(NUTA_DO - NUTA_OD + 1, 'piszczałka', 'piszczałki', 'piszczałek')} (C – c⁴).<br>Strój co do ${strojCt.toFixed(1).replace('.', ',')} centa.<br><br>Poza tym zakresem klawisze w tym banku milczą.`;
+  }
+  function rysuj() {
+    document.getElementById('noweRejestry').innerHTML = glosy.map((g, i) => `<button class="rejestr maly${wlaczone.has(i) ? ' wyciagniety' : ''}" data-pz="${i}" title="${esc(g.nazwa)}">
+      <span class="tuleja"></span><span class="galka"><span><b>${esc(g.nazwa)}</b></span></span><span class="wczyt"></span></button>`).join('');
+    if (bank === 'nowy') { document.getElementById('opisBanku').innerHTML = opis(); pokazNute(); }
+  }
+  function wyciagnij(i, wl) { if (wl) wlaczone.add(i); else wlaczone.delete(i); rysuj(); if (bank === 'nowy') przelaczGlosy('pz' + i, wl); pokazNute(); }
+  document.getElementById('noweRejestry').addEventListener('click', e => { const b = e.target.closest('[data-pz]'); if (!b) return; startAudio(); const i = +b.dataset.pz; wyciagnij(i, !wlaczone.has(i)); });
+  const wybor = document.getElementById('nowyPlik');
+  document.getElementById('nowyOtworz').onclick = () => wybor.click();
+  // odłożenie banku: piszczałki milkną, gałki znikają
+  function odloz() { wlaczone.clear(); glosy = []; plik = ''; if (wezel) { wezel.port.postMessage({ typ: 'cisza' }); wezel.port.postMessage({ typ: 'wyczysc' }); } rysuj(); }
+  return { wlaczone, graj, opis, wczytaj, rysuj, odloz, ile: () => glosy.length, nazwa: i => glosy[i] ? glosy[i].nazwa : '' };
+})();
+</script>
 <script>
 /* =====================================================================
+   ORGANY ALICJI 2 — wersja uproszczona: bez śpiewnika (pulpit z tekstami, spis treści, ulubione, metronom),
+   z nowym pogłosem i z czwartym bankiem „Nowy bank” (głosy z modelu piszczałki, plik .txt).
+   Zbudowane z Organów Alicji (index.html), które zostają bez zmian.
+   =====================================================================
    ORGANY KOŚCIELNE — stół gry z jednym rejestrem: Pryncypał 8'
    Dźwięk liczony na żywo w przeglądarce (Web Audio), bez nagrań.
    ===================================================================== */
@@ -771,27 +988,14 @@ function startAudio() {
   ustawPoglos();
 }
 
-// pogłos kościoła: wyliczone „echo wnętrza” — szum, który powoli cichnie i ciemnieje
+// pogłos kościoła (nowy): mocne pierwsze odbicia i cichy, długi ogon — budowany raz, zawsze taki sam (zbudujPoglos, wyżej).
+// Jeden suwak: nie robi głośniej, tylko płynnie zamienia dźwięk bezpośredni na kościół.
+// Początek — same piszczałki z bliska; połowa — organy w kościele; koniec — organy słyszane z głębi nawy.
 function ustawPoglos() {
   if (!audio) return;
-  const p = +document.getElementById('poglos').value / 100;   // 0 = kaplica, 1 = katedra
-  const sekundy = 1.2 + p * 5.3, sr = audio.sampleRate, dl = Math.floor(sr * sekundy);
-  const imp = audio.createBuffer(2, dl, sr);
-  for (let k = 0; k < 2; k++) {
-    const d = imp.getChannelData(k); let ciemny = 0;
-    for (let i = 0; i < dl; i++) {
-      const t = i / sr, gasnie = Math.pow(1 - i / dl, 2.2) * Math.exp(-t * 1.1);
-      const jasnosc = Math.max(0.04, 0.55 * Math.exp(-t * 0.9));              // im później, tym ciemniej
-      ciemny += ((Math.random() * 2 - 1) - ciemny) * jasnosc;
-      d[i] = t < 0.018 ? 0 : ciemny * gasnie;                                   // 18 ms ciszy: dźwięk leci do ściany
-    }
-  }
-  poglos.buffer = imp;
-  // fajeczka „pogłos” odznaczona: bez pogłosu, sam czysty dźwięk (jak w edytorze zestawu), suwak przyciemniony
-  const wl = document.getElementById('poglosWl').checked;
-  document.getElementById('poglos').disabled = !wl; document.getElementById('poglosEtyk').classList.toggle('wylaczony', !wl);
-  sucho.gain.value = wl ? 0.85 - p * 0.35 : 1;
-  mokro.gain.value = wl ? 0.9 + p * 1.6 : 0;
+  if (!poglos.buffer) { const kan = zbudujPoglos(audio.sampleRate), imp = audio.createBuffer(2, kan[0].length, audio.sampleRate); imp.copyToChannel(kan[0], 0); imp.copyToChannel(kan[1], 1); poglos.normalize = false; poglos.buffer = imp; }
+  const m = +document.getElementById('poglos').value / 100, t = audio.currentTime;
+  sucho.gain.setTargetAtTime(Math.pow(1 - m, 0.75), t, 0.03); mokro.gain.setTargetAtTime(Math.pow(m, 0.75), t, 0.03);   // potęga 0,75: w połowie suwaka całość jest ok. 3 dB ciszej
 }
 const glosnosc = () => +document.getElementById('glosnosc').value / 100 * 0.9;
 
@@ -965,18 +1169,22 @@ function glosAlicji(R, n) {
 const BANKI = {
   moje:   { nazwa: '🎼 Moje sample', opis: '' },
   alicja: { nazwa: '📜 Głosy Alicji', opis: '<b>Głosy Alicji</b> — bez nagrań: każdy głos to przepis w kodzie. Na dole guziki kombinacji.' },
-  sf:     { nazwa: '📂 Bank zewnętrzny', opis: '' }
+  sf:     { nazwa: '📂 Bank zewnętrzny', opis: '' },
+  nowy:   { nazwa: '🌬 Nowy bank', opis: '' }       // głosy liczone z modelu piszczałki (NOWY, wyżej) — plik .txt otwierany w Banku zewnętrznym; nie ma własnego przycisku w rzędzie banków
 };
-let bank = (() => { try { const b = localStorage.getItem('organy-alicji-bank'); return BANKI[b] ? b : 'alicja'; } catch (e) { return 'alicja'; } })();
+let bank = (() => { try { const b = localStorage.getItem('organy-alicji-bank'); return BANKI[b] && b !== 'nowy' ? b : 'alicja'; } catch (e) { return 'alicja'; } })();
 try { const z = JSON.parse(localStorage.getItem('organy-alicji-org')); if (Array.isArray(z)) { orgWlaczone.clear(); z.forEach(id => REJESTRY.some(R => R.id === id) && orgWlaczone.add(id)); } } catch (e) {}
-const zapiszBank = () => { try { localStorage.setItem('organy-alicji-bank', bank); localStorage.setItem('organy-alicji-org', JSON.stringify([...orgWlaczone])); } catch (e) {} };
+const zapiszBank = () => { try { localStorage.setItem('organy-alicji-bank', bank === 'nowy' ? 'alicja' : bank);   // nowy bank trzeba za każdym razem wczytać z pliku, więc go nie pamiętam
+   localStorage.setItem('organy-alicji-org', JSON.stringify([...orgWlaczone])); } catch (e) {} };
+let zewOstatni = 'sf';                                      // co Bank zewnętrzny pokazał ostatnio: 'sf' (SoundFont) czy 'nowy' (głosy z piszczałek)
 function rysujBank() {
-  document.querySelectorAll('[data-bank]').forEach(b => b.classList.toggle('wybrany', b.dataset.bank === bank));
+  document.querySelectorAll('[data-bank]').forEach(b => b.classList.toggle('wybrany', b.dataset.bank === bank || (b.dataset.bank === 'sf' && bank === 'nowy')));
   const zew = bank === 'sf';
-  const moje = bank === 'moje';
-  document.getElementById('szafaL').hidden = zew || moje; document.getElementById('szafaP').hidden = bank !== 'alicja'; document.getElementById('mojeRejestry').hidden = !moje; document.getElementById('mojeKol').hidden = !moje;
+  const moje = bank === 'moje', nowy = bank === 'nowy';
+  document.getElementById('noweRejestry').hidden = !nowy; document.getElementById('noweKol').hidden = !nowy;
+  document.getElementById('szafaL').hidden = zew || moje || nowy; document.getElementById('szafaP').hidden = bank !== 'alicja'; document.getElementById('mojeRejestry').hidden = !moje; document.getElementById('mojeKol').hidden = !moje;
   document.getElementById('sfRejestry').hidden = !zew || !SF; document.getElementById('sfPodpowiedz').hidden = !zew || !!SF;
-  document.getElementById('opisBanku').hidden = zew; document.getElementById('opisBanku').innerHTML = moje ? opisMoich() : BANKI[bank].opis;
+  document.getElementById('opisBanku').hidden = zew; document.getElementById('opisBanku').innerHTML = moje ? opisMoich() : nowy ? NOWY.opis() : BANKI[bank].opis;
   document.getElementById('sfPusty').hidden = !zew || !!SF; document.getElementById('sfPelny').hidden = !zew || !SF;
 }
 // zmiana banku w trakcie grania: trzymane nuty od razu grają nowym brzmieniem
@@ -985,11 +1193,12 @@ function odswiezGlosy() {
   pokazNute();
 }
 async function ustawBank(b) {
+  if (b === 'sf' || b === 'nowy') zewOstatni = b;
   bank = b; zapiszBank(); rysujBank();
   if (audio) odswiezGlosy();
-  status(b === 'sf' ? (SF ? 'Bank zewnętrzny: <b>' + esc(SF.info.INAM || SF.plik) + '</b>' : 'Bank zewnętrzny: wczytaj plik .sf2 po prawej.') : 'Bank: <b>' + BANKI[b].nazwa + '</b>');
+  status(b === 'sf' ? (SF ? 'Bank zewnętrzny: <b>' + esc(SF.info.INAM || SF.plik) + '</b>' : '') : 'Bank: <b>' + BANKI[b].nazwa + '</b>');
 }
-document.getElementById('banki').addEventListener('click', e => { const b = e.target.closest('[data-bank]'); if (b) { startAudio(); ustawBank(b.dataset.bank); } });
+document.getElementById('banki').addEventListener('click', e => { const b = e.target.closest('[data-bank]'); if (b) { startAudio(); ustawBank(b.dataset.bank === 'sf' && zewOstatni === 'nowy' && NOWY.ile() ? 'nowy' : b.dataset.bank); } });
 
 const NAZWY = ['C', 'Cis', 'D', 'Dis', 'E', 'F', 'Fis', 'G', 'Gis', 'A', 'B', 'H'];
 // polski zapis oktaw: C (wielka), c (mała), c¹, c², c³…
@@ -999,10 +1208,10 @@ function nazwaPolska(n) {
   const male = nz.toLowerCase();
   return o === 3 ? male : male + ['', '¹', '²', '³', '⁴', '⁵'][o - 3];
 }
-const aktywneRejestry = () => bank === 'sf' ? (SF ? [...sfWlaczone].map(i => 'sf' + i) : []) : bank === 'moje' ? [...mojeWlaczone].map(i => 'ms' + i) : [...orgWlaczone].map(id => 'org:' + id);
+const aktywneRejestry = () => bank === 'nowy' ? [...NOWY.wlaczone].map(i => 'pz' + i) : bank === 'sf' ? (SF ? [...sfWlaczone].map(i => 'sf' + i) : []) : bank === 'moje' ? [...mojeWlaczone].map(i => 'ms' + i) : [...orgWlaczone].map(id => 'org:' + id);
 const rejestr = id => REJESTRY.find(R => R.id === id);
-const nazwaRejestru = k => k.startsWith('ms') ? EZ.nazwaRej(+k.slice(2)) : k.startsWith('org:') ? rejestr(k.slice(4)).nazwa + ' ' + rejestr(k.slice(4)).stopy : SF.presety[+k.slice(2)].nazwa;
-function glos(k, n) { if (k.startsWith('ms')) return mojeGraj(+k.slice(2), n); if (!k.startsWith('org:')) return sfGraj(SF.presety[+k.slice(2)], n); return glosAlicji(rejestr(k.slice(4)), n); }
+const nazwaRejestru = k => k.startsWith('pz') ? NOWY.nazwa(+k.slice(2)) : k.startsWith('ms') ? EZ.nazwaRej(+k.slice(2)) : k.startsWith('org:') ? rejestr(k.slice(4)).nazwa + ' ' + rejestr(k.slice(4)).stopy : SF.presety[+k.slice(2)].nazwa;
+function glos(k, n) { if (k.startsWith('pz')) return NOWY.graj(+k.slice(2), n); if (k.startsWith('ms')) return mojeGraj(+k.slice(2), n); if (!k.startsWith('org:')) return sfGraj(SF.presety[+k.slice(2)], n); return glosAlicji(rejestr(k.slice(4)), n); }
 const zrodla = {};                    // nuta → kto ją trzyma: mysz, klawiatura (kl), klawiatura MIDI (midi), odtwarzacz (odtw)
 const trzymaTy = n => zrodla[n] && [...zrodla[n]].some(z => z !== 'odtw');
 function wcisnij(n, z = 'mysz') {
@@ -1031,6 +1240,7 @@ let ostatniaNuta = null;
 function pokazNute(n) {
   if (n == null) n = ostatniaNuta; if (n == null) return; ostatniaNuta = n;
   const el = document.getElementById('nuta'), r = aktywneRejestry();
+  if (bank === 'nowy' && !r.length) { el.innerHTML = 'cisza…<small>' + (NOWY.ile() ? 'wyciągnij gałkę z głosem' : 'otwórz plik z nowym bankiem — przycisk po prawej') + '</small>'; return; }
   if (bank === 'moje' && !r.length) { el.innerHTML = 'cisza…<small>' + (mojeIle() ? 'wyciągnij gałkę z Twoim rejestrem' : 'otwórz zestaw albo zbuduj go w 🛠 Edytorze zestawu') + '</small>'; return; }
   if (!r.length) { el.innerHTML = 'cisza…<small>żaden rejestr nie jest wyciągnięty — kliknij którąś gałkę</small>'; return; }
   el.innerHTML = `${nazwaPolska(n)} <span style="opacity:.55;font-size:15px">· ${hz(n).toFixed(1).replace('.', ',')} Hz</span><small>${opoznienie()}</small>`;
@@ -1940,7 +2150,23 @@ rysujBank();
 
 // przyciski: wybierz plik, przeciągnij na stół, znajdź darmowe, odłóż
 const plikInput = document.getElementById('sfPlik');
-document.getElementById('sfUzyj').onclick = document.getElementById('sfInny').onclick = () => plikInput.click();
+document.getElementById('sfUzyj').onclick = () => plikInput.click();
+// nowy bank (głosy z piszczałek, plik .txt) otwiera się w Banku zewnętrznym — w tym samym miejscu co SoundFont
+async function otworzNowyBank(tekst, nazwa) {
+  startAudio(); const byl = bank; await ustawBank('nowy'); await NOWY.wczytaj(tekst, nazwa);
+  if (!NOWY.ile()) { const co = document.getElementById('status').innerHTML; await ustawBank(byl === 'nowy' ? 'sf' : byl); document.getElementById('status').innerHTML = co; }   // plik bez głosów: wracam, komunikat o błędzie zostaje
+}
+const nowyPlikInput = document.getElementById('nowyPlik'), zewPlikInput = document.getElementById('zewPlik');
+document.getElementById('nowyOtworz').onclick = () => nowyPlikInput.click();
+nowyPlikInput.onchange = async () => { const f = nowyPlikInput.files[0]; nowyPlikInput.value = ''; if (f) await otworzNowyBank(await f.text(), f.name); };
+// „Inny plik” — gdy coś jest już wczytane: jeden wybór dla obu rodzajów, rozpoznaję po końcówce
+document.getElementById('sfInny').onclick = document.getElementById('nowyInny').onclick = () => zewPlikInput.click();
+zewPlikInput.onchange = async () => { const f = zewPlikInput.files[0]; zewPlikInput.value = ''; if (!f) return;
+  if (/\.txt$/i.test(f.name)) await otworzNowyBank(await f.text(), f.name); else await uzyjPliku(await f.arrayBuffer(), f.name); };
+document.getElementById('nowyZamknij').onclick = () => {
+  for (const n in grajace) pusc(+n);
+  NOWY.odloz(); ustawBank('sf').then(() => status('Nowy bank odłożony.'));
+};
 plikInput.onchange = async () => { const f = plikInput.files[0]; if (f) await uzyjPliku(await f.arrayBuffer(), f.name); plikInput.value = ''; };
 document.getElementById('sfSzukaj').onclick = () => window.open('https://www.polyphone.io/en/soundfonts/organs', '_blank', 'noopener');
 document.getElementById('sfZamknij').onclick = () => {
@@ -1953,7 +2179,8 @@ addEventListener('drop', async e => {
   e.preventDefault(); document.body.classList.remove('upusc');
   const f = [...(e.dataTransfer.files || [])][0]; if (!f) return;
   if (/\.(mid|midi|kar)$/i.test(f.name)) { await wczytajMidi(await f.arrayBuffer(), f.name); return; }
-  if (!/\.sf[23]$/i.test(f.name)) { status('✖ Przeciągnij plik SoundFont (.sf2 / .sf3) albo MIDI (.mid).'); return; }
+  if (/\.txt$/i.test(f.name)) { await otworzNowyBank(await f.text(), f.name); return; }
+  if (!/\.sf[23]$/i.test(f.name)) { status('✖ Przeciągnij plik SoundFont (.sf2 / .sf3), nowy bank (.txt) albo MIDI (.mid).'); return; }
   await uzyjPliku(await f.arrayBuffer(), f.name);
 });
 
@@ -1967,8 +2194,8 @@ const usunPamiec = () => bazaZrob('readwrite', s => s.delete('ostatni'));
 (async () => { const z = await bazaZrob('readonly', s => s.get('ostatni')); if (z && z.dane) { await uzyjPliku(z.dane, z.nazwa, z); if (bank !== 'sf') status('Bank: <b>' + BANKI[bank].nazwa + '</b> · w zapasie plik ' + esc(z.nazwa)); else status(document.getElementById('status').innerHTML + '<br>(zapamiętany z poprzedniego razu)'); } })();
 
 
-// ===== klawiatura na ekranie: c (C3) do c³ (C6) =====
-const OD = 48, DO = 84;
+// ===== klawiatura na ekranie: pięć oktaw, od wielkiego C do c⁴ — jak manuał organowy (61 klawiszy). Litery komputera jak dotąd: Z gra c, Q gra c¹ =====
+const OD = 36, DO = 96;
 const KOMPUTER = { KeyZ: 48, KeyS: 49, KeyX: 50, KeyD: 51, KeyC: 52, KeyV: 53, KeyG: 54, KeyB: 55, KeyH: 56, KeyN: 57, KeyJ: 58, KeyM: 59, Comma: 60,
                    KeyQ: 60, Digit2: 61, KeyW: 62, Digit3: 63, KeyE: 64, KeyR: 65, Digit5: 66, KeyT: 67, Digit6: 68, KeyY: 69, Digit7: 70, KeyU: 71, KeyI: 72 };
 const LITERA = {}; for (const [k, n] of Object.entries(KOMPUTER)) if (k !== 'Comma') LITERA[n] = k.replace(/^Key|^Digit/, '');
@@ -2007,7 +2234,6 @@ addEventListener('keyup', e => { const n = KOMPUTER[e.code]; if (n == null) retu
 addEventListener('blur', () => { for (const g in zrodla) { pusc(+g, 'kl'); pusc(+g, 'mysz'); } wcisnieteKlawiszem.clear(); });
 
 document.getElementById('poglos').oninput = ustawPoglos;
-document.getElementById('poglosWl').onchange = ustawPoglos;
 document.getElementById('glosnosc').oninput = () => { if (wyjscieGl) wyjscieGl.gain.value = glosnosc(); };
 
 // ===== klawiatura MIDI (organy nie reagują na siłę uderzenia — każda nuta gra tak samo) =====
@@ -2233,7 +2459,6 @@ function zakonczNagranie() {
   const N = nagr; nagr = null; const koniec = audio.currentTime - N.start;
   for (const n in zrodla) if ([...zrodla[n]].some(z => z !== 'odtw')) N.ev.push({ t: koniec, typ: 0, n: +n });
   nagrMidi = { tytul: 'Moje nagranie', autor: new Date().toLocaleString('pl-PL'), rejestryStart: N.rejestryStart, ...posortuj(N.ev) };
-  if (edycjaMidi) przypnijNagranie(nagrMidi);           // w Edycji MIDI nagranie należy do pieśni
   document.getElementById('nagraj').classList.remove('nagrywa'); document.getElementById('nagraj').textContent = '🔴 Nagraj';
   document.getElementById('nagrPliki').hidden = false;
   const gotowe = () => status(`✔ Nagrane: ${N.ev.filter(e => e.typ === 1).length} ${odmiana(N.ev.filter(e => e.typ === 1).length, 'nuta', 'nuty', 'nut')}, ${mmss(koniec)}. Odsłuchaj albo zapisz jako MIDI lub WAV.`);
@@ -2436,7 +2661,6 @@ document.getElementById('domOrg').onclick = () => location.reload();
 
 // ===== PRZEŁĄCZNIK: konsola ⇄ pulpit. Środek → tekst, prawy panel → spis treści, podłużny pasek → (na razie pusty) =====
 document.getElementById('przelacznik').onclick = () => {
-  if (typeof wylaczEdycje === 'function') wylaczEdycje();
   const pulpit = document.body.classList.toggle('trybPulpit');
   if (!pulpit && typeof polEkran === 'function') polEkran(false);   // powrót do konsoli: znowu z klawiaturą
   const b = document.getElementById('przelacznik');
@@ -2444,95 +2668,24 @@ document.getElementById('przelacznik').onclick = () => {
   b.title = pulpit ? 'Wróć do konsoli' : 'Pulpit z tekstami';
 };
 
-// ===== PULPIT: tryby Czytanie (zielony) i Wpisywanie (czerwony) =====
+// ===== ŚPIEWNIK: organy tylko go pokazują. Pieśni wpisuje się i zapisuje w osobnym programie; tutaj wczytujesz gotowy plik .json =====
 const KATEGORIE_START = ['Adwent', 'Boże Narodzenie', 'Wielki Post', 'Wielkanoc', 'Maryjne', 'Do Serca Jezusowego', 'Na wejście', 'Na komunię', 'Na zakończenie', 'Okolicznościowe'];
-let trybPulpitu = 'czyt';
-// pieśń, którą właśnie wpisujesz: strona 0 = tytułowa, potem 1, 2, 3…
-let wpis = { id: null, strony: [''], i: 0, obrazy: [] };
-// obrazki stron pieśni: obrazy[i] to obrazek strony i (albo pusto — wtedy tekst); stare pieśni miały jeden „obraz” na stronie tytułowej
 const obrazyPiesni = p => Array.isArray(p.obrazy) ? [...p.obrazy] : p.obraz ? [p.obraz] : [];
 const $ = id => document.getElementById(id);
+const CZCIONKA = { start: 20 };                       // wielkość liter, gdy pieśń w pliku nie ma własnej
+const dobreNagranie = n => !!(n && Array.isArray(n.ev) && typeof n.dl === 'number');
 
 function polEkran(wl) {
   document.body.classList.toggle('polEkran', wl);
   $('czytPol').title = wl ? 'Wróć do zwykłego widoku' : 'Pół-pełny ekran: większe nuty, bez klawiatury i spisu — pieśni z ulubionych';
 }
-function ustawTrybPulpitu(t) {
-  if (t !== 'czyt') polEkran(false);                    // Wpisywanie potrzebuje prawego panelu
-  kadrZakoncz();                                         // kadrowanie przerwane zmianą trybu — zostaje to, co widać w okienku
-  trybPulpitu = t;
-  document.querySelectorAll('#pulpitPasek .tryb').forEach(b => b.classList.toggle('wybrany', b.dataset.tryb === t));
-  const w = t === 'wpis';
-  document.body.classList.toggle('trybWpis', w);
-  if (!w && typeof wylaczEdycje === 'function') wylaczEdycje();
-  $('wpisStrona').hidden = !w; $('wpisPola').hidden = !w;
-  $('ulubione').classList.toggle('ukryte', w);          // ulubione działają tylko w Czytaniu
-  $('czytStrona').hidden = w; $('spis').hidden = w;
-  pokazNaglowek();
-  if (w) { odswiezKategorie(); pokazStrone(); } else rysujSpis();
-}
-document.querySelectorAll('#pulpitPasek .tryb').forEach(b => b.onclick = () => ustawTrybPulpitu(b.dataset.tryb));
-
-function pokazStrone() {
-  $('wpisNapis').textContent = $('wpisTytul').value.trim() || '\u00a0';           // nad każdą stroną tylko tytuł pieśni
-  $('wpisPole').value = wpis.strony[wpis.i] || '';
-  const obraz = wpis.obrazy[wpis.i];
-  $('wpisPole').hidden = !!obraz; $('wpisObraz').hidden = !obraz; if (obraz) $('wpisObraz').querySelector('img').src = obraz;
-  $('obrazCofnij').hidden = !(kadrCofnij && kadrCofnij.wpis === wpis && kadrCofnij.i === wpis.i && kadrCofnij.wynik === obraz);
-  $('wpisLewo').disabled = wpis.i === 0;
-  $('wpisIle').textContent = `${wpis.i + 1} z ${wpis.strony.length}`;
-}
-$('wpisPole').addEventListener('input', () => { wpis.strony[wpis.i] = $('wpisPole').value; $('wpisIle').textContent = `${wpis.i + 1} z ${wpis.strony.length}`; });
-$('wpisLewo').onclick = () => { if (wpis.i > 0) { wpis.i--; pokazStrone(); } };
-// strzałka w prawo za ostatnią stroną zakłada nową, pustą
-$('wpisPrawo').onclick = () => { wpis.i++; if (wpis.i >= wpis.strony.length) wpis.strony.push(''); pokazStrone(); $('wpisPole').focus(); };
-
 const wszystkiePiesni = () => bazaZrob('readonly', s => s.getAll(), 'piesni').then(w => w || []);
-async function odswiezKategorie() {
-  const swoje = (await wszystkiePiesni()).map(p => p.kategoria);
-  const lista = [...new Set([...KATEGORIE_START, ...swoje])];
-  $('kategorie').innerHTML = lista.map(k => `<option value="${esc(k)}">`).join('');
-}
 // krótki błysk na przycisku zamiast opisu: np. „✔ Zapisano”, po chwili wraca zwykły napis
 function blysk(btn, tekst) {
   if (!btn.dataset.napis) btn.dataset.napis = btn.textContent;
   btn.textContent = tekst; clearTimeout(btn._blysk);
   btn._blysk = setTimeout(() => { btn.textContent = btn.dataset.napis; }, 1600);
 }
-// puste pole: czerwona ramka, znika przy pisaniu
-function brakPola(pole) { pole.classList.add('brak'); pole.focus(); }
-['wpisTytul', 'wpisKat'].forEach(id => $(id).addEventListener('input', () => $(id).classList.remove('brak')));
-$('wpisTytul').addEventListener('input', () => { $('wpisNapis').textContent = $('wpisTytul').value.trim() || '\u00a0'; });
-
-// zapis pieśni — wspólny dla „Zapisz do kategorii” i „Dodaj nagranie do pieśni”; zwraca true, gdy się udało
-async function zapiszPiesn(btn) {
-  kadrZakoncz();                                         // obrazek w trakcie kadrowania: zapisuje się to, co widać w okienku
-  const tytul = $('wpisTytul').value.trim(), kategoria = $('wpisKat').value.trim();
-  if (!tytul || !kategoria) {
-    if (edycjaMidi) wylaczEdycje();                     // pola są schowane pod metronomem — pokaż je
-    brakPola($(tytul ? 'wpisKat' : 'wpisTytul')); return false;
-  }
-  // puste strony na końcu nie są zapisywane (tytułowa zostaje zawsze)
-  const strony = [...wpis.strony]; while (strony.length > 1 && !strony[strony.length - 1].trim() && !wpis.obrazy[strony.length - 1]) strony.pop();   // strona z obrazkiem nie jest pusta
-  const piesn = { tytul, kategoria, strony, czcionka, zmieniono: Date.now() };
-  if (wpis.nagranie) piesn.nagranie = wpis.nagranie;
-  const obrazy = strony.map((_, i) => wpis.obrazy[i] || null);
-  if (obrazy.some(Boolean)) piesn.obrazy = obrazy;
-  if (wpis.id != null) piesn.id = wpis.id;
-  const id = await bazaZrob('readwrite', s => s.put(piesn), 'piesni');
-  if (id == null) { blysk(btn, '✖ Nie udało się zapisać'); return false; }
-  wpis.id = id;
-  if (czyt.piesn && czyt.piesn.id === id) czyt = { piesn: { ...piesn, id }, i: Math.min(czyt.i, strony.length - 1) }, pokazCzytanie();
-  wybranaKat = kategoria;
-  odswiezKategorie();
-  return true;
-}
-$('wpisZapisz').onclick = async () => { if (await zapiszPiesn($('wpisZapisz'))) blysk($('wpisZapisz'), '✔ Zapisano'); };
-$('wpisNowa').onclick = () => {
-  if (!$('kadr').hidden) zamknijKadr();
-  wpis = { id: null, strony: [''], i: 0, nagranie: null, obrazy: [] };
-  $('wpisTytul').value = ''; $('wpisKat').value = ''; pokazStrone(); $('wpisTytul').focus();
-};
 
 // ===== CZYTANIE: spis treści (kategorie rozwijane) + kartka z tekstem =====
 let spisPiesni = [], czyt = { piesn: null, i: 0 };
@@ -2544,7 +2697,7 @@ async function rysujSpis() {
   spisPiesni = await wszystkiePiesni();
   pokazNaglowek();
   const lista = $('spisLista'), wybor = $('spisWybor');
-  if (!spisPiesni.length) { rysujUlubione(); wybor.hidden = true; lista.innerHTML = '<div class="spisPusty">Śpiewnik jest jeszcze pusty.<br>Dodaj pierwszą pieśń przyciskiem<br><b>✍️ Wpisywanie</b> na dole.</div>'; return; }
+  if (!spisPiesni.length) { rysujUlubione(); wybor.hidden = true; lista.innerHTML = '<div class="spisPusty">Śpiewnik jest pusty.<br>Wczytaj go przyciskiem<br><b>📂 Wczytaj śpiewnik</b> na dole.</div>'; return; }
   const grupy = {};
   for (const p of spisPiesni) (grupy[p.kategoria] = grupy[p.kategoria] || []).push(p);
   const kat = Object.keys(grupy).sort((a, b) => kolejnoscKat(a) - kolejnoscKat(b) || a.localeCompare(b, 'pl'));
@@ -2554,13 +2707,11 @@ async function rysujSpis() {
   const piesni = grupy[wybranaKat].sort((a, b) => a.tytul.localeCompare(b.tytul, 'pl', { numeric: true }));
   rysujUlubione();
   lista.innerHTML = piesni.map(p => `<div class="spisPiesn${czyt.piesn && czyt.piesn.id === p.id ? ' aktywna' : ''}" draggable="true" data-id="${p.id}" title="${esc(p.tytul)}">` +
-    `<span class="tyt">${esc(p.tytul)}${p.nagranie ? ' <span class="nuta8" title="Ma nagranie MIDI">♪</span>' : ''}</span><button class="usunP" title="Usuń pieśń (kliknij dwa razy)">✕</button></div>`).join('');
+    `<span class="tyt">${esc(p.tytul)}${p.nagranie ? ' <span class="nuta8" title="Ma nagranie MIDI">♪</span>' : ''}</span></div>`).join('');
 }
 $('spisWybor').addEventListener('change', e => { wybranaKat = e.target.value; $('spisLista').scrollTop = 0; rysujSpis(); });
 $('spisLista').addEventListener('click', e => {
   const p = e.target.closest('.spisPiesn');
-  const x = e.target.closest('.usunP');
-  if (x) { usunPiesn(+p.dataset.id, x); return; }
   if (p) { czyt = { piesn: spisPiesni.find(x => x.id === +p.dataset.id), i: 0 }; pokazCzytanie(); rysujSpis(); }
 });
 
@@ -2573,7 +2724,7 @@ function pokazCzytanie() {
   $('czytKartka').textContent = p.strony[czyt.i] || '';
   const obraz = obrazyPiesni(p)[czyt.i];
   $('czytKartka').hidden = !!obraz; $('czytObraz').hidden = !obraz; if (obraz) $('czytObraz').querySelector('img').src = obraz;
-  $('czytKartka').style.fontSize = (p.czcionka || CZCIONKA.start) + 'px';   // wielkość ustawiona przy wpisywaniu
+  $('czytKartka').style.fontSize = (p.czcionka || CZCIONKA.start) + 'px';   // wielkość liter zapisana w śpiewniku
   $('czytKartka').scrollTop = 0;
   $('czytLewo').disabled = czyt.i === 0;
   $('czytPrawo').disabled = czyt.i >= p.strony.length - 1;
@@ -2585,9 +2736,9 @@ function pokazCzytanie() {
 const czytPrzewin = d => { const p = czyt.piesn; if (!p) return; const i = czyt.i + d; if (i < 0 || i >= p.strony.length) return; czyt.i = i; pokazCzytanie(); };
 $('czytLewo').onclick = () => czytPrzewin(-1);
 $('czytPrawo').onclick = () => czytPrzewin(1);
-// strzałki ← → i PageUp/PageDown przewracają strony (tylko na pulpicie, w czytaniu, gdy nie piszesz)
+// strzałki ← → i PageUp/PageDown przewracają strony (tylko na pulpicie)
 addEventListener('keydown', e => {
-  if (!document.body.classList.contains('trybPulpit') || trybPulpitu !== 'czyt' || piszeTekst(e)) return;
+  if (!document.body.classList.contains('trybPulpit') || piszeTekst(e)) return;
   const d = { ArrowRight: 1, PageDown: 1, ArrowLeft: -1, PageUp: -1 }[e.key]; if (!d) return;
   e.preventDefault(); czytPrzewin(d);
 });
@@ -2622,53 +2773,15 @@ $('pelnyLewo').onclick = () => czytPrzewin(-1);
 $('pelnyPrawo').onclick = () => czytPrzewin(1);
 document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && !$('pelny').hidden) zamknijPelny(); });   // Esc w przeglądarce
 addEventListener('keydown', e => { if (e.key === 'Escape' && !$('pelny').hidden) { e.preventDefault(); zamknijPelny(); } });
-// ✏️ popraw: pieśń trafia do Wpisywania, zapis nadpisze tę samą
-$('czytPopraw').onclick = () => {
-  const p = czyt.piesn; if (!p) return;
-  wpis = { id: p.id, strony: [...p.strony], i: czyt.i, nagranie: p.nagranie || null, obrazy: obrazyPiesni(p) };
-  ustawCzcionke(p.czcionka || CZCIONKA.start);
-  $('wpisTytul').value = p.tytul; $('wpisKat').value = p.kategoria; ustawTrybPulpitu('wpis');
-};
 // po wejściu na pulpit odśwież to, co widać
-$('przelacznik').addEventListener('click', () => { if (document.body.classList.contains('trybPulpit')) ustawTrybPulpitu(trybPulpitu); });
+$('przelacznik').addEventListener('click', () => { if (document.body.classList.contains('trybPulpit')) rysujSpis(); });
 
-// ===== TYTUŁ ŚPIEWNIKA: zapamiętany w przeglądarce, pokazuje się zamiast „Spis treści” =====
-const zapiszNazwe = () => { nazwaSpiewnika = $('wpisSpiewnik').value.trim(); return bazaZrob('readwrite', s => s.put(nazwaSpiewnika, 'nazwaSpiewnika'), 'ustawienia'); };
-$('wpisSpiewnik').addEventListener('change', zapiszNazwe);
-// nagłówek prawego panelu: tytuł śpiewnika (w obu trybach); bez tytułu — „Spis treści” albo „Śpiewnik” przy wpisywaniu
-function pokazNaglowek() {
-  const t = trybPulpitu === 'wpis' ? $('wpisSpiewnik').value.trim() : nazwaSpiewnika;
-  $('spisNaglowek').textContent = t || (trybPulpitu === 'wpis' ? 'Śpiewnik' : 'Spis treści');
-}
-$('wpisSpiewnik').addEventListener('input', pokazNaglowek);
-(async () => { const n = await bazaZrob('readonly', s => s.get('nazwaSpiewnika'), 'ustawienia'); if (n) { nazwaSpiewnika = n; $('wpisSpiewnik').value = n; } })();
-$('wpisZapisz').addEventListener('click', zapiszNazwe);
+// ===== TYTUŁ ŚPIEWNIKA: przychodzi z wczytanego pliku, zapamiętany w przeglądarce, pokazuje się zamiast „Spis treści” =====
+const zapiszNazwe = n => { nazwaSpiewnika = (n || '').trim(); return bazaZrob('readwrite', s => s.put(nazwaSpiewnika, 'nazwaSpiewnika'), 'ustawienia'); };
+function pokazNaglowek() { $('spisNaglowek').textContent = nazwaSpiewnika || 'Spis treści'; }
+(async () => { const n = await bazaZrob('readonly', s => s.get('nazwaSpiewnika'), 'ustawienia'); if (n) { nazwaSpiewnika = n; pokazNaglowek(); } })();
 
-// ===== ZAPISZ ŚPIEWNIK: cały śpiewnik do jednego pliku .json =====
-$('wpisEksport').onclick = async () => {
-  await zapiszNazwe();
-  const piesni = (await wszystkiePiesni()).sort((a, b) => kolejnoscKat(a.kategoria) - kolejnoscKat(b.kategoria) || a.kategoria.localeCompare(b.kategoria, 'pl') || a.tytul.localeCompare(b.tytul, 'pl', { numeric: true }));
-  if (!piesni.length) { blysk($('wpisEksport'), '✖ Śpiewnik jest pusty'); return; }
-  const dane = { format: 'spiewnik-organy-alicji', wersja: 1, nazwa: nazwaSpiewnika, zapisano: new Date().toISOString(),
-                 piesni: piesni.map(p => ({ tytul: p.tytul, kategoria: p.kategoria, strony: p.strony, czcionka: p.czcionka || CZCIONKA.start, ...(p.nagranie ? { nagranie: p.nagranie } : {}), ...(obrazyPiesni(p).some(Boolean) ? { obrazy: obrazyPiesni(p) } : {}) })) };
-  const tekst = JSON.stringify(dane, null, 2), plik = nazwaJson(nazwaSpiewnika || 'Spiewnik');
-  if (window.showSaveFilePicker) {                 // Chrome, Edge: wybierasz folder i nazwę, jak przy zestawie sampli
-    let h; try { h = await showSaveFilePicker({ suggestedName: plik, id: 'spiewnik-organow', types: [{ description: 'Śpiewnik Organów Alicji', accept: { 'application/json': ['.json'] } }] }); }
-    catch (e) { if (e.name === 'AbortError') return; h = null; }
-    if (h) {
-      try {
-        const wr = await h.createWritable(); await wr.write(tekst); await wr.close();
-        const spr = JSON.parse(await (await h.getFile()).text());          // sprawdzenie: czytam zapisany plik z powrotem
-        if (spr.format !== 'spiewnik-organy-alicji' || spr.piesni.length !== piesni.length) throw new Error('plik się nie zgadza');
-        blysk($('wpisEksport'), `✔ Zapisano ${piesni.length} ${odmiana(piesni.length, 'pieśń', 'pieśni', 'pieśni')}`);
-      } catch (e) { blysk($('wpisEksport'), '✖ Nie udało się zapisać'); }
-      return;
-    }
-  }
-  pobierzJson(dane, nazwaSpiewnika || 'Spiewnik');  // inne przeglądarki: do folderu Pobrane
-  blysk($('wpisEksport'), '✔ Pobrano plik');
-};
-// pobranie pliku .json — wspólne dla śpiewnika i ulubionych
+// pobranie pliku .json (ulubione)
 // w nazwie pliku bez polskich liter — niektóre przeglądarki zamieniają wtedy nazwę na „download” (w środku pliku nazwa zostaje pełna)
 function nazwaJson(nazwa) {
   const PL = { ą: 'a', ć: 'c', ę: 'e', ł: 'l', ń: 'n', ó: 'o', ś: 's', ź: 'z', ż: 'z', Ą: 'A', Ć: 'C', Ę: 'E', Ł: 'L', Ń: 'N', Ó: 'O', Ś: 'S', Ź: 'Z', Ż: 'Z' };
@@ -2681,7 +2794,7 @@ function pobierzJson(dane, nazwa) {
   a.download = plik; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
-// ===== WCZYTAJ ŚPIEWNIK: plik .json (zapisany przyciskiem „Zapisz śpiewnik”) — zastępuje obecny, bez pytania =====
+// ===== WCZYTAJ ŚPIEWNIK: plik .json — zastępuje obecny =====
 $('wczytajSp').onclick = async () => {
   const b = $('wczytajSp');
   if (!b.classList.contains('pewny') && (await wszystkiePiesni()).length) {   // pierwszy klik: „Zastąpić?”, drugi: wybór pliku
@@ -2703,16 +2816,15 @@ $('wczytajSpPlik').onchange = async e => {
     s.clear();
     for (const p of d.piesni) s.put({ tytul: p.tytul, kategoria: p.kategoria, strony: p.strony.map(String), czcionka: typeof p.czcionka === 'number' ? p.czcionka : CZCIONKA.start, ...(dobreNagranie(p.nagranie) ? { nagranie: p.nagranie } : {}), ...(dobreObrazy(p, p.strony.length) ? { obrazy: dobreObrazy(p, p.strony.length) } : {}), zmieniono: Date.now() });
   }, 'piesni');
-  $('wpisSpiewnik').value = d.nazwa || ''; await zapiszNazwe(); pokazNaglowek();
+  await zapiszNazwe(d.nazwa || ''); pokazNaglowek();
   czyt = { piesn: null, i: 0 }; wybranaKat = null; pokazCzytanie();
-  wpis = { id: null, strony: [''], i: 0, obrazy: [] }; $('wpisTytul').value = ''; $('wpisKat').value = ''; pokazStrone();
-  if (trybPulpitu === 'czyt') rysujSpis(); else odswiezKategorie();
+  rysujSpis();
   blysk($('wczytajSp'), '✔ Wczytano');
 };
 
-// ===== ULUBIONE: 8 ramek na pasku — przeciągasz pieśń ze spisu, klikasz i od razu jest na pulpicie =====
+// ===== ULUBIONE: 10 ramek na pasku — przeciągasz pieśń ze spisu, klikasz i od razu jest na pulpicie =====
 // pieśń zapamiętana po tytule i kategorii (numery w bazie zmieniają się po wczytaniu śpiewnika)
-const ILE_ULUBIONYCH = 8;
+const ILE_ULUBIONYCH = 10;
 let ulubione = Array(ILE_ULUBIONYCH).fill(null);
 const znajdzPiesn = u => u && spisPiesni.find(p => p.tytul === u.tytul && p.kategoria === u.kategoria);
 const zapamietajUlubione = () => bazaZrob('readwrite', s => s.put(ulubione, 'ulubione'), 'ustawienia');
@@ -2783,121 +2895,6 @@ $('wczytajUlPlik').onchange = async e => {
   blysk($('wczytajUl'), '✔ Wczytano');
 };
 
-// ===== WIELKOŚĆ LITER przy wpisywaniu (− / +): zapisuje się z pieśnią, Czytanie pokazuje ją tak samo =====
-const CZCIONKA = { min: 14, max: 44, krok: 2, start: 20 };
-let czcionka = CZCIONKA.start;
-function ustawCzcionke(px, zapamietaj = true) {
-  czcionka = Math.max(CZCIONKA.min, Math.min(CZCIONKA.max, px));
-  $('wpisPole').style.fontSize = czcionka + 'px';
-  $('czcMniej').disabled = czcionka <= CZCIONKA.min; $('czcWiecej').disabled = czcionka >= CZCIONKA.max;
-  $('czcMniej').title = `Mniejsze litery (teraz ${czcionka})`; $('czcWiecej').title = `Większe litery (teraz ${czcionka})`;
-  if (zapamietaj) bazaZrob('readwrite', s => s.put(czcionka, 'czcionka'), 'ustawienia');
-}
-$('czcMniej').onclick = () => ustawCzcionke(czcionka - CZCIONKA.krok);
-$('czcWiecej').onclick = () => ustawCzcionke(czcionka + CZCIONKA.krok);
-(async () => { const c = await bazaZrob('readonly', s => s.get('czcionka'), 'ustawienia'); ustawCzcionke(typeof c === 'number' ? c : CZCIONKA.start, false); })();
-
-// ===== USUWANIE PIEŚNI: ✕ przy tytule w spisie — dwa kliknięcia (pierwsze pyta „Usuń?”, po 3 s wraca ✕) =====
-async function usunPiesn(id, btn) {
-  if (!btn.classList.contains('pewny')) {
-    btn.classList.add('pewny'); btn.textContent = 'Usuń?';
-    clearTimeout(btn._czas); btn._czas = setTimeout(() => { btn.classList.remove('pewny'); btn.textContent = '✕'; }, 3000);
-    return;
-  }
-  const p = spisPiesni.find(x => x.id === id); if (!p) return;
-  await bazaZrob('readwrite', s => s.delete(id), 'piesni');
-  if (czyt.piesn && czyt.piesn.id === id) { czyt = { piesn: null, i: 0 }; pokazCzytanie(); }
-  if (wpis.id === id) wpis.id = null;                       // przy poprawianiu: zapis zrobi z niej nową pieśń
-  // z ulubionych też znika
-  if (ulubione.some(u => u && u.tytul === p.tytul && u.kategoria === p.kategoria)) {
-    ulubione = ulubione.map(u => u && u.tytul === p.tytul && u.kategoria === p.kategoria ? null : u); zapamietajUlubione();
-  }
-  rysujSpis();
-}
-
-// ===== EDYCJA MIDI (przy Wpisywaniu): nagranie przypięte do pieśni + metronom =====
-// Przyciski odtwarzacza (▶ ⏹ postęp, tempo, Nagraj) nie są kopiowane — przechodzą z konsoli na pasek i wracają.
-let edycjaMidi = false;
-const PRZENOSZONE = ['utGraj', 'utStop', 'ut-srodek', 'ut-prawa'];
-const miejscaOdtwarzacza = [];
-const elOdtw = k => document.getElementById(k) || document.querySelector('.' + k);
-const dobreNagranie = n => !!(n && Array.isArray(n.ev) && typeof n.dl === 'number');
-
-function wlaczEdycje() {
-  if (edycjaMidi) return; edycjaMidi = true;
-  if (nagr) zakonczNagranie();
-  for (const k of PRZENOSZONE) { const el = elOdtw(k); miejscaOdtwarzacza.push([el, el.parentNode, el.nextSibling]); $('edycjaMidi').appendChild(el); }
-  document.body.classList.add('edycjaMidiWl'); $('edycjaBtn').classList.add('wlaczona');
-  $('wpisPola').hidden = true; $('metronom').hidden = false;
-  // nagranie zaczyna się od strony tytułowej pieśni (nowej, jeśli żadnej nie otwarto)
-  wpis.i = 0; pokazStrone();
-  zaladujNagranieWpisu();
-}
-function wylaczEdycje() {
-  if (!edycjaMidi) return; edycjaMidi = false;
-  if (nagr) zakonczNagranie();
-  stopUtwor(); metroStop();
-  while (miejscaOdtwarzacza.length) { const [el, rodzic, nast] = miejscaOdtwarzacza.pop(); rodzic.insertBefore(el, nast); }
-  document.body.classList.remove('edycjaMidiWl'); $('edycjaBtn').classList.remove('wlaczona');
-  $('metronom').hidden = true; $('wpisPola').hidden = trybPulpitu !== 'wpis';
-  // nowa pieśń z nagraniem jeszcze nie zapisana: przypomnienie na przycisku
-  if (wpis.nagranie && wpis.id == null && trybPulpitu === 'wpis') blysk($('wpisZapisz'), '💾 Zapisz — nagranie czeka');
-}
-$('edycjaBtn').onclick = () => edycjaMidi ? wylaczEdycje() : wlaczEdycje();
-
-function zaladujNagranieWpisu() {
-  const tytul = $('wpisTytul').value.trim() || 'nowa pieśń';
-  if (dobreNagranie(wpis.nagranie)) { wybierzUtwor({ tytul: '♪ ' + tytul, autor: 'nagranie pieśni', piesnId: wpis.id, ...wpis.nagranie }); }
-  else { stopUtwor(); UTWOR = null; $('utTytul').innerHTML = `<b>${esc(tytul)}</b> · brak nagrania — kliknij 🔴 Nagraj`; pokazPostep(); }
-}
-// po skończonym nagraniu: należy do pieśni; jeśli pieśń jest już w śpiewniku — od razu się tam zapisuje
-async function przypnijNagranie(N) {
-  wpis.nagranie = { ev: N.ev.map(e => ({ ...e, t: Math.round(e.t * 1000) / 1000 })), dl: Math.round(N.dl * 1000) / 1000, rejestryStart: N.rejestryStart };
-  zaladujNagranieWpisu();
-  if (wpis.id != null) {
-    const id = wpis.id, nag = wpis.nagranie;
-    await bazaZrob('readwrite', s => { const r = s.get(id); r.onsuccess = () => { if (r.result) { r.result.nagranie = nag; s.put(r.result); } }; }, 'piesni');
-    if (czyt.piesn && czyt.piesn.id === id) czyt.piesn.nagranie = nag;
-  }
-}
-
-// ----- METRONOM: kliknięcia planowane z wyprzedzeniem (równe co do milisekundy), osobno od organów — nie trafia do nagrania -----
-const metro = { bpm: 80, metrum: 4, glos: 0.6, gra: false, nast: 0, takt: 0, petla: 0 };
-function metroKlik(t, akcent) {
-  const o = audio.createOscillator(), g = audio.createGain();
-  o.frequency.value = akcent ? 1760 : 1100;
-  g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(Math.max(0.0002, metro.glos * (akcent ? 0.9 : 0.55)), t + 0.002);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
-  o.connect(g); g.connect(audio.destination); o.start(t); o.stop(t + 0.06);
-}
-function metroPlanuj() {
-  while (metro.nast < audio.currentTime + 0.12) {
-    const nr = metro.takt;
-    if (metro.glos > 0) metroKlik(metro.nast, metro.metrum > 1 && nr === 0);
-    setTimeout(() => pokazUderzenie(nr), Math.max(0, (metro.nast - audio.currentTime) * 1000));
-    metro.takt = (metro.takt + 1) % metro.metrum;
-    metro.nast += 60 / metro.bpm * (metro.metrum === 6 ? 0.5 : 1);   // 6/8: liczy ósemki
-  }
-}
-function metroStart() { startAudio(); metro.gra = true; metro.takt = 0; metro.nast = audio.currentTime + 0.06; metroPlanuj(); metro.petla = setInterval(metroPlanuj, 25); $('mtStart').textContent = '⏹ Stop'; $('mtStart').classList.add('gra'); }
-function metroStop() { metro.gra = false; clearInterval(metro.petla); $('mtStart').textContent = '▶ Start'; $('mtStart').classList.remove('gra'); pokazUderzenie(-1); }
-function pokazUderzenie(nr) { document.querySelectorAll('#mtKropki i').forEach((k, i) => k.classList.toggle('bije', metro.gra && i === nr)); }
-function rysujMetronom() {
-  $('mtBpm').textContent = metro.bpm; $('mtSuwak').value = metro.bpm; $('mtGlos').value = Math.round(metro.glos * 100);
-  document.querySelectorAll('#mtMetrum button').forEach(b => b.classList.toggle('wybrane', +b.dataset.m === metro.metrum));
-  $('mtKropki').innerHTML = Array.from({ length: metro.metrum }, (_, i) => `<i class="${i === 0 && metro.metrum > 1 ? 'akcent' : ''}"></i>`).join('');
-}
-const zapamietajMetronom = () => bazaZrob('readwrite', s => s.put({ bpm: metro.bpm, metrum: metro.metrum, glos: metro.glos }, 'metronom'), 'ustawienia');
-function ustawBpm(b) { metro.bpm = Math.max(30, Math.min(240, Math.round(b))); rysujMetronom(); zapamietajMetronom(); }
-$('mtMniej').onclick = () => ustawBpm(metro.bpm - 1);
-$('mtWiecej').onclick = () => ustawBpm(metro.bpm + 1);
-$('mtSuwak').oninput = e => ustawBpm(+e.target.value);
-$('mtGlos').oninput = e => { metro.glos = +e.target.value / 100; zapamietajMetronom(); };
-$('mtMetrum').onclick = e => { const b = e.target.closest('button[data-m]'); if (!b) return; metro.metrum = +b.dataset.m; metro.takt = 0; rysujMetronom(); zapamietajMetronom(); };
-$('mtStart').onclick = () => metro.gra ? metroStop() : metroStart();
-(async () => { const m = await bazaZrob('readonly', s => s.get('metronom'), 'ustawienia'); if (m) Object.assign(metro, { bpm: m.bpm || 80, metrum: m.metrum || 4, glos: typeof m.glos === 'number' ? m.glos : 0.6 }); rysujMetronom(); })();
-
 // ===== CZYTANIE: ▶ ⏸ ⏹ — nagranie MIDI pieśni (z jej rejestrami); strony przewracasz sam =====
 const toNagraniePiesni = p => UTWOR && p && UTWOR.piesnId === p.id;
 function odswiezOdtwCzyt() {
@@ -2913,134 +2910,13 @@ $('czGraj').onclick = () => {
 $('czPauza').onclick = () => { if (toNagraniePiesni(czyt.piesn)) pauzaUtwor(); };
 $('czStop').onclick = () => { if (toNagraniePiesni(czyt.piesn)) stopUtwor(); };
 
-// „Dodaj nagranie do pieśni” (pod metronomem): to samo co Zapisz do kategorii, bez wychodzenia z Edycji MIDI
-$('mtDodaj').onclick = async () => {
-  if (nagr) zakonczNagranie();
-  if (!wpis.nagranie) { blysk($('mtDodaj'), '✖ Najpierw nagraj'); return; }
-  if (await zapiszPiesn($('mtDodaj'))) blysk($('mtDodaj'), '✔ Dodano do pieśni');
-};
-
-// ===== OBRAZEK NA STRONIE: przeciągnij plik (PNG, JPG…) na kartkę albo wklej Ctrl+V — na każdą stronę pieśni =====
-// kilka obrazków naraz układa się po kolei (według nazw plików) od bieżącej strony; nowe strony wchodzą przed dalszy tekst, nic się nie nadpisuje
-// ✕ usuwa obrazek ze strony i wraca jej tekst
-const czytajObraz = plik => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(plik); });
-async function ustawObrazStrony(pliki) {
-  pliki = [...pliki].filter(f => f && /^image\//.test(f.type)).sort((a, b) => a.name.localeCompare(b.name, 'pl', { numeric: true }));
-  if (!pliki.length) return false;
-  if (pliki.length === 1) { otworzKadr(await czytajObraz(pliki[0])); return true; }   // jeden obrazek: najpierw kadrowanie
-  const dane = await Promise.all(pliki.map(czytajObraz));
-  dane.forEach((d, k) => {
-    const i = wpis.i + k, pusta = i < wpis.strony.length && !wpis.obrazy[i] && !(wpis.strony[i] || '').trim();
-    if (k === 0 || pusta) { if (i >= wpis.strony.length) wpis.strony.push(''); wpis.obrazy[i] = d; }   // bieżąca albo pusta strona (tekst bieżącej czeka pod ✕)
-    else { wpis.strony.splice(i, 0, ''); wpis.obrazy.splice(i, 0, d); }        // nowa strona — dalsze przesuwają się
-  });
-  pokazStrone();
-  return true;
-}
 // stare i nowe zapisy: tablica obrazków dla stron (albo jeden obraz strony tytułowej) — tylko prawdziwe obrazki
 function dobreObrazy(p, ile) {
   const o = Array.isArray(p.obrazy) ? p.obrazy : typeof p.obraz === 'string' ? [p.obraz] : [];
   const w = Array.from({ length: ile }, (_, i) => typeof o[i] === 'string' && o[i].startsWith('data:image/') ? o[i] : null);
   return w.some(Boolean) ? w : null;
 }
-const strefa = $('wpisStrona');
-strefa.addEventListener('dragover', e => { if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); strefa.classList.add('upuszczanie'); } });
-strefa.addEventListener('dragleave', e => { if (!strefa.contains(e.relatedTarget)) strefa.classList.remove('upuszczanie'); });
-strefa.addEventListener('drop', e => { strefa.classList.remove('upuszczanie'); document.body.classList.remove('upusc'); const ob = [...e.dataTransfer.files].filter(f => /^image\//.test(f.type)); if (ob.length) { e.preventDefault(); e.stopPropagation(); ustawObrazStrony(ob); } });
-// Ctrl+V z obrazkiem w schowku — na dowolnej stronie Wpisywania (także gdy na stronie już jest obrazek)
-document.addEventListener('paste', e => {
-  if (!document.body.classList.contains('trybPulpit') || trybPulpitu !== 'wpis' || (piszeTekst(e) && e.target !== $('wpisPole'))) return;
-  const ob = [...(e.clipboardData && e.clipboardData.files || [])].filter(x => /^image\//.test(x.type));
-  if (ob.length) { e.preventDefault(); ustawObrazStrony(ob); }
-});
 $('czytPol').onclick = () => polEkran(!document.body.classList.contains('polEkran'));
-$('obrazUsun').onclick = () => { wpis.obrazy[wpis.i] = null; pokazStrone(); };
-
-// ===== KADROWANIE OBRAZKA STRONY =====
-// Okienko ma kształt kartki. Obrazek leży pod nim: kółko powiększa (w miejscu kursora), przeciąganie przesuwa.
-// ✂ Przytnij zapisuje to, co widać — w rozdzielczości oryginału (nuty zostają ostre na pełnym ekranie).
-var kadrCofnij = null;                                   // ostatnie przycięcie: można wrócić do kadrowania tego samego obrazka
-const kadr = { src: null, x: 0, y: 0, s: 1, min: .1, max: 8, poprzedni: null };
-const kadrImg = () => $('kadrOkno').querySelector('img');
-const kadrSkala = () => { const o = $('kadrOkno'); return o.getBoundingClientRect().width / o.offsetWidth || 1; };   // organy są przeskalowane do okna
-function kadrRysuj() { kadrImg().style.transform = `translate(${kadr.x}px, ${kadr.y}px) scale(${kadr.s})`; }
-function otworzKadr(src, poprzedni) {
-  kadr.src = src; kadr.poprzedni = poprzedni !== undefined ? poprzedni : (wpis.obrazy[wpis.i] || null);
-  $('kadr').hidden = false; $('wpisStrona').classList.add('kadruje');
-  const img = kadrImg();
-  img.onload = () => {
-    const W = $('kadrOkno').offsetWidth, H = $('kadrOkno').offsetHeight, nw = img.naturalWidth, nh = img.naturalHeight;
-    const caly = Math.min(W / nw, H / nh);
-    kadr.s = W / nw; kadr.x = 0; kadr.y = 0;            // na start: szerokość kartki, od góry strony (A4 — widać górę)
-    kadr.min = caly * .5; kadr.max = Math.max(8 * caly, kadr.s * 4);
-    kadrRysuj(); kadrZapisz();                             // od razu na stronę: dokładnie to, co widać w okienku
-  };
-  $('kadrTnij').hidden = true; $('kadrTnij').classList.remove('miga');
-  img.src = src;
-}
-function zamknijKadr() { $('kadr').hidden = true; $('wpisStrona').classList.remove('kadruje'); kadrImg().removeAttribute('src'); kadr.src = null; pokazStrone(); }
-$('kadrOkno').addEventListener('wheel', e => {
-  e.preventDefault(); if (!kadr.src) return;
-  const r = $('kadrOkno').getBoundingClientRect(), k = kadrSkala(), cx = (e.clientX - r.left) / k, cy = (e.clientY - r.top) / k;
-  const s2 = Math.max(kadr.min, Math.min(kadr.max, kadr.s * Math.pow(1.0015, -e.deltaY)));
-  kadr.x = cx - (cx - kadr.x) * s2 / kadr.s; kadr.y = cy - (cy - kadr.y) * s2 / kadr.s; kadr.s = s2; kadrRysuj(); kadrRuszony();
-}, { passive: false });
-$('kadrOkno').addEventListener('pointerdown', e => {
-  if (!kadr.src) return; e.preventDefault();
-  const o = $('kadrOkno'), k = kadrSkala(), x0 = e.clientX, y0 = e.clientY, kx = kadr.x, ky = kadr.y;
-  o.setPointerCapture(e.pointerId); o.classList.add('ciagnie');
-  const ruch = ev => { kadr.x = kx + (ev.clientX - x0) / k; kadr.y = ky + (ev.clientY - y0) / k; kadrRysuj(); kadrRuszony(); };
-  const koniec = () => { o.classList.remove('ciagnie'); o.removeEventListener('pointermove', ruch); o.removeEventListener('pointerup', koniec); o.removeEventListener('pointercancel', koniec); };
-  o.addEventListener('pointermove', ruch); o.addEventListener('pointerup', koniec); o.addEventListener('pointercancel', koniec);
-});
-// zapis tego, co widać w okienku, na stronę pieśni (okienko zostaje otwarte)
-function kadrZapisz() {
-  const img = kadrImg(); if (!kadr.src || !img.naturalWidth) return;
-  const W = $('kadrOkno').offsetWidth, H = $('kadrOkno').offsetHeight;
-  const sw = W / kadr.s, sh = H / kadr.s, k = Math.min(1, 3000 / Math.max(sw, sh));   // piksele oryginału, najwyżej 3000 na dłuższym boku
-  const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(sw * k)); c.height = Math.max(1, Math.round(sh * k));
-  const g = c.getContext('2d'); g.fillStyle = '#f3ead6'; g.fillRect(0, 0, c.width, c.height);   // poza kartką: kolor strony
-  g.drawImage(img, kadr.x / kadr.s * k, kadr.y / kadr.s * k, img.naturalWidth * k, img.naturalHeight * k);
-  const wynik = c.toDataURL('image/png');
-  kadrCofnij = { wpis, i: wpis.i, src: kadr.src, poprzedni: kadr.poprzedni, wynik };
-  if (wpis.i >= wpis.strony.length) wpis.strony.push('');
-  wpis.obrazy[wpis.i] = wynik;
-}
-// wyjście z kadrowania inną drogą (zapis pieśni, zmiana trybu): zostaje to, co widać w okienku
-function kadrZakoncz() { if ($('kadr').hidden) return; kadrZapisz(); zamknijKadr(); }
-$('kadrTnij').onclick = () => { kadrZapisz(); zamknijKadr(); };
-$('kadrAnuluj').onclick = () => {                       // Anuluj: strona wraca do tego, co było przed wrzuceniem obrazka
-  if (kadr.src) { wpis.obrazy[wpis.i] = kadr.poprzedni; if (kadrCofnij && kadrCofnij.i === wpis.i) kadrCofnij = null; }
-  zamknijKadr();
-};
-// pierwszy ruch obrazka: pokazuje migające ✂ Przytnij — przypomnienie, żeby zapisać nowy kadr
-function kadrRuszony() { const b = $('kadrTnij'); if (b.hidden) { b.hidden = false; b.classList.add('miga'); } }
-$('obrazCofnij').onclick = () => { const c = kadrCofnij; if (!c) return; wpis.obrazy[wpis.i] = c.poprzedni; kadrCofnij = null; otworzKadr(c.src, c.poprzedni); };
-addEventListener('keydown', e => {
-  if ($('kadr').hidden) return;
-  if (e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); $('kadrTnij').click(); }
-  else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); $('kadrAnuluj').click(); }
-}, true);
-
-// „Usuń nagranie” (pod metronomem): pierwsze kliknięcie pyta „Usunąć?”, drugie usuwa nagranie z pieśni
-$('mtUsun').onclick = async () => {
-  const b = $('mtUsun');
-  if (nagr) zakonczNagranie();
-  if (!wpis.nagranie) { blysk(b, '✖ Brak nagrania'); return; }
-  if (!b.classList.contains('pewny')) {
-    b.classList.add('pewny'); b.textContent = 'Usunąć?';
-    clearTimeout(b._czas); b._czas = setTimeout(() => { b.classList.remove('pewny'); b.textContent = '🗑 Usuń nagranie'; }, 3000);
-    return;
-  }
-  clearTimeout(b._czas); b.classList.remove('pewny'); b.textContent = '🗑 Usuń nagranie';
-  stopUtwor(); wpis.nagranie = null; zaladujNagranieWpisu();
-  if (wpis.id != null) {                                  // pieśń w śpiewniku: nagranie znika też tam
-    const id = wpis.id;
-    await bazaZrob('readwrite', s => { const r = s.get(id); r.onsuccess = () => { if (r.result) { delete r.result.nagranie; s.put(r.result); } }; }, 'piesni');
-    if (czyt.piesn && czyt.piesn.id === id) delete czyt.piesn.nagranie;
-  }
-  blysk(b, '✔ Usunięto');
-};
 </script>
 </body>
 </html>
