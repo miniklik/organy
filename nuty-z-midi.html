@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Śpiewnik Alicji — Edytor</title>
+<title>Edytor śpiewnika</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root { --drewno1: #4a2a17; --drewno2: #2e190d; --kosc: #f3ead6; --zloto: #d8b46a; }
@@ -510,7 +510,8 @@
                border-radius: 999px; background: #2a1a10; border: 1px solid rgba(216,180,106,.45); box-shadow: 0 4px 14px rgba(0,0,0,.5);
                font: 600 14px 'Outfit', sans-serif; color: #f3ead6; }
   .pytanieSp[hidden] { display: none; }
-  #pytanieKartka { top: auto; bottom: 0; }
+  #pytanieKartka { left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 30; height: auto; gap: 14px; padding: 14px 16px 14px 24px; font-size: 18px; box-shadow: 0 10px 34px rgba(0,0,0,.6); }   /* pytanie na środku ekranika */
+  #pytanieKartka button { font-size: 15px; height: 32px; padding: 0 20px; }
   .pytanieSp button { font: 700 13px 'Outfit', sans-serif; color: #f3ead6; cursor: pointer; border-radius: 999px; height: 22px; padding: 0 14px;
                       background: rgba(255,255,255,.07); border: 1px solid rgba(216,180,106,.45); }
   .pytanieSp button:hover { background: rgba(255,255,255,.15); }
@@ -577,7 +578,9 @@
   /* w podglądzie nic się nie edytuje: bez pól, panelu nut, słów, liter − +, obrazkowych przycisków */
   body.podgladWl #nutyPanel, body.podgladWl #metronom, body.podgladWl .slowaPasek, body.podgladWl #wpisStrona .czcionka,
   body.podgladWl #obrazUsun, body.podgladWl #obrazCofnij { display: none !important; }
+  body.edycjaMidiWl #obrazUsun, body.edycjaMidiWl #obrazCofnij { display: none !important; }   /* Dograj melodię: stron się tu nie zmienia */
   body.podgladWl #nutyKartka { cursor: default; }
+  #nutyPanel, .slowaPasek { display: none !important; }   /* panel pisania nut wyłączony — program nie edytuje nut */
   /* Połącz klawiaturę — pod klawiaturą, w rzędzie z podpowiedzią (nie zasłania już Przytnij / Anuluj przy obrazku) */
   .pomocKl { display: flex; align-items: center; justify-content: center; gap: 16px; }
   .kadrDol span { white-space: nowrap; font-size: 11px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -604,11 +607,25 @@
   body.podgladWl .podgladOdtw { order: 2; margin-top: auto; border-top: 1px solid rgba(216,180,106,.22); }
   /* EDYTOR TEKSTU/PNG: prawy panel z krótką instrukcją i przyciskiem Dodaj PNG */
   .tekstPanel { display: none; flex-direction: column; gap: 10px; padding: 14px 18px; }
-  body.trybWpis:not(.podgladWl):not(.nutyWl):not(.edycjaMidiWl) .tekstPanel { display: flex; }
+  body.trybWpis:not(.podgladWl):not(.edycjaMidiWl) .tekstPanel { display: flex; }   /* ten sam panel na każdej stronie pieśni: tekst, PNG, nuty */
   .tekstPanel .mtNapis { text-align: center; }
   .tekstPanel p { margin: 0; font: 14px/1.45 'Outfit', sans-serif; color: #d9c9a8; }
   .tekstPanel p b { color: var(--zloto); }
   .tekstPanel #dodajPng { margin-top: 6px; }
+  .tekstPanel #czyscStroneBtn { padding-top: 10px; padding-bottom: 10px; line-height: 1.25; }
+  .tekstPanel #czyscStroneBtn small { display: block; font-weight: 500; font-size: 12.5px; }
+  .tekstPanel #cofnijStroneBtn { width: auto; align-self: center; padding: 5px 18px; font-size: 12.5px; }
+  .tekstPanel #cofnijStroneBtn:disabled { opacity: .4; cursor: default; }
+  /* ===== DŁUGI PANEL: pięć przycisków w jednym rzędzie u góry, pod nimi opis trybu (w „Dograj melodię” jeszcze odtwarzacz) ===== */
+  #pulpitPasek { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 8px; padding: 12px 16px 10px; }
+  #pulpitPasek .pliki { display: flex; flex-direction: row; gap: 8px; }
+  #pulpitPasek .pliki #wczytajSp, body.trybWpis #pulpitPasek .pliki .edycjaBtn { width: 170px; }
+  #pulpitPasek .pliki #wczytajSp { color: #f3ead6; cursor: pointer; background: rgba(255,255,255,.07); border: 1px solid rgba(216,180,106,.45); margin: 0; }
+  #pulpitPasek .pliki #wczytajSp:hover { background: rgba(255,255,255,.15); }
+  .trybOpis { display: none; min-height: 0; align-items: flex-start; font: 400 13.5px/1.45 'Outfit', sans-serif; color: #d9cdb4; }
+  body.trybWpis .trybOpis { display: flex; }
+  .trybOpis .pytanieSp { position: static; }
+  body.edycjaMidiWl .edycjaMidi { flex: none; flex-wrap: nowrap; }
 </style>
 </head>
 <body class="trybPulpit bezPrzejsc">
@@ -641,10 +658,6 @@
             <select class="spisWybor" id="spisWybor" title="Wybierz część śpiewnika" hidden></select>
             <div class="spisLista" id="spisLista"></div>
           </div>
-          <div class="spisDol">
-            <div class="pytanieSp" id="pytanieSp" hidden><span>Wczytać nowy śpiewnik w miejsce obecnego?</span><button id="pytTak">Tak</button><button id="pytWyjdz">Wyjdź</button></div>
-            <button class="plikBtn" id="wczytajSp" title="Wczytaj śpiewnik z pliku .json (zastępuje obecny)">Wczytaj śpiewnik</button>
-          </div>
         </div>
         <h3>Rejestry</h3>
         <div class="szafa" id="szafaL"><div class="rejOrg" id="rejOrg"></div></div>
@@ -669,6 +682,7 @@
             <div class="wpisNapis" id="wpisNapis">&nbsp;</div>
             <textarea id="wpisPole" spellcheck="true" placeholder="Wpisz tekst tej strony…"></textarea>
             <div class="nutyKartka" id="nutyKartka" hidden></div>
+            <div class="pytanieSp" id="pytanieKartka" hidden><span>Zastąpić?</span><button id="pytKTak">Tak</button><button id="pytKWyjdz">Wyjdź</button></div>
             <div class="komunikat" id="komunikat" hidden></div>
             <div class="obrazStrony" id="wpisObraz" hidden><img alt="Strona pieśni"><button class="obrazUsun" id="obrazUsun" title="Usuń obrazek (wraca tekst strony)">✕</button><button class="obrazUsun obrazCofnij" id="obrazCofnij" title="Cofnij przycięcie — wróć do kadrowania" hidden>↶</button></div>
             <div class="kadr" id="kadr" hidden><div class="kadrOkno" id="kadrOkno"><img alt="" draggable="false"></div>
@@ -705,12 +719,13 @@
             <div class="mtNagranie"><button class="sfBtn cichy" id="mtDodaj" title="Zapisz nagranie razem z pieśnią">💾 Dodaj do pieśni</button><button class="sfBtn cichy" id="mtUsun" title="Usuń nagranie z tej pieśni (kliknij dwa razy)">🗑 Usuń nagranie</button></div>
           </div>
           <div class="tekstPanel" id="tekstPanel">
-            <div class="mtNapis">Edytor tekstu/png</div>
-            <p>Pisz tekst pieśni.</p>
-            <p>Rozmiar czcionki zmieniaj <b>−</b> <b>+</b>.</p>
-            <p>Kliknij <b>Dodaj PNG</b> albo przeciągnij obrazek bezpośrednio na ekranik.</p>
+            <div class="mtNapis">Edytor tekstu/zdjęcia</div>
             <button class="sfBtn" id="dodajPng">🖼 Dodaj PNG</button>
             <input type="file" id="dodajPngPlik" accept="image/*" hidden>
+            <button class="sfBtn" id="midiZEdytora">Pieśń z edytora</button>
+            <input type="file" id="midiZEdytoraPlik" accept=".piesn,.mid,.midi,.kar,application/json,audio/midi" hidden>
+            <button class="sfBtn" id="czyscStroneBtn">Wyczyść stronę<small>pisz tekst</small></button>
+            <button class="sfBtn cichy" id="cofnijStroneBtn" disabled>↶ Cofnij</button>
           </div>
           <div class="podgladOdtw" id="podgladOdtw">
             <div class="mtNapis">Melodia pieśni</div>
@@ -767,17 +782,20 @@
       <div class="warstwaPulpitu" id="pulpitPasek">
         <div class="tryby"><button class="tryb czyt wybrany" data-tryb="czyt">📖 Czytanie</button><button class="tryb wpis" data-tryb="wpis">✍️ Wpisywanie</button></div>
         <div class="pliki">
+          <button class="plikBtn" id="wczytajSp" title="Wczytaj śpiewnik z pliku .json (zastępuje obecny)">Wczytaj śpiewnik</button>
           <button class="edycjaBtn podgladBtn" id="podgladBtn" title="Przeglądaj pieśń strzałkami bez edycji — grasz z nut, które widzisz">Podgląd pieśni</button>
-          <button class="edycjaBtn wlaczona" id="tekstBtn" title="Pisz tekst pieśni albo wrzuć obrazek strony (PNG, JPG)">Edytor tekstu/png</button>
+          <button class="edycjaBtn wlaczona" id="tekstBtn" title="Pisz tekst pieśni albo wrzuć obrazek strony (PNG, JPG)">Edytor tekstu/zdjęcia</button>
           <button class="edycjaBtn" id="edycjaBtn" title="Nagraj melodię do tej pieśni">Dograj melodię</button>
-          <button class="edycjaBtn" id="nutyBtn" title="Dopisz nuty do tej pieśni">Dopisz nuty</button>
+          <button class="edycjaBtn" id="nutyBtn">Edytor pieśni</button>
           <button class="plikBtn" id="wczytajUl" title="Wczytaj ulubione z pliku .json">⭐ Wczytaj ulubione</button>
           <button class="plikBtn" id="zapiszUl" title="Zapisz ulubione do pliku .json">💾 Zapisz ulubione</button>
-          <div class="pytanieSp" id="pytanieKartka" hidden><span>Wyczyścić kartkę?</span><button id="pytKTak">Tak</button><button id="pytKWyjdz">Wyjdź</button></div>
           <input type="file" id="wczytajSpPlik" accept=".json,application/json" hidden>
           <input type="file" id="wczytajUlPlik" accept=".json,application/json" hidden>
         </div>
         
+        <div class="trybOpis" id="trybOpis">
+          <div class="pytanieSp" id="pytanieSp" hidden><span>Wczytać nowy śpiewnik w miejsce obecnego?</span><button id="pytTak">Tak</button><button id="pytWyjdz">Wyjdź</button></div>
+        </div>
         <div class="edycjaMidi" id="edycjaMidi"></div>
         <div class="slowaPasek" id="slowaPasek">
           <div class="slowaNr" id="slowaNr"><button data-l="0">1</button><button data-l="1">2</button><button data-l="2">3</button><button data-l="3">4</button></div>
@@ -2222,6 +2240,10 @@ document.getElementById('midi').onclick = async () => {
       const wejscia = [...m.inputs.values()];
       wejscia.forEach(we => we.onmidimessage = e => {
         const [s, n, v] = e.data, typ = s & 0xf0;
+        /* klawiatura sterująca przewija strony pieśni: cis³ (85) = poprzednia, dis³ (87) = następna; te dwa klawisze wtedy nie grają i nie idą do nagrania */
+        if ((n === 85 || n === 87) && (typ === 0x90 || typ === 0x80) && !EZ.otwarty() && document.body.classList.contains('trybWpis')) {
+          if (typ === 0x90 && v > 0 && typeof wpis !== 'undefined') { if (n === 85) { if (wpis.i > 0) document.getElementById('wpisLewo').click(); } else if (wpis.i < wpis.strony.length - 1) document.getElementById('wpisPrawo').click(); }
+          return; }
         if (typ === 0x90 && v > 0) { if (EZ.otwarty()) { EZ.wcisnij(n); return; } midiTrzyma.add(n); wcisnij(n, 'midi'); if (window.nutyMidi) nutyMidi(n); }
         else if (typ === 0x80 || (typ === 0x90 && v === 0)) { EZ.pusc(n); midiTrzyma.delete(n); pusc(n, 'midi'); }
       });
@@ -2678,6 +2700,7 @@ function ustawTrybPulpitu(t) {
 document.querySelectorAll('#pulpitPasek .tryb').forEach(b => b.onclick = () => ustawTrybPulpitu(b.dataset.tryb));
 
 function pokazStrone() {
+  cofPrzycisk();   /* przycisk Cofnij: czynny tylko gdy jest co cofać w tej pieśni */
   $('wpisNapis').textContent = $('wpisTytul').value.trim() || '\u00a0';           // nad każdą stroną tylko tytuł pieśni
   $('wpisPole').value = wpis.strony[wpis.i] || '';
   const obraz = wpis.obrazy[wpis.i];
@@ -2739,7 +2762,7 @@ $('wpisNowa').onclick = () => {
   if (!$('kadr').hidden) zamknijKadr();
   wpis = { id: null, strony: [''], i: 0, nagranie: null, obrazy: [], nutyStrony: {} }; czyt = { piesn: null, i: 0 }; pokazCzytanie(); rysujSpis();
   nuty.str = null; if (document.body.classList.contains('nutyWl')) wylaczNuty();
-  $('wpisTytul').value = ''; $('wpisKat').value = ''; pokazStrone(); $('wpisTytul').focus();
+  $('wpisTytul').value = ''; $('wpisKat').value = ''; if (podglad) pokazPodglad(); else pokazStrone(); $('wpisTytul').focus();   /* w Podglądzie kartka też ma się wyczyścić ze starych nut */
 };
 
 // ===== CZYTANIE: spis treści (kategorie rozwijane) + kartka z tekstem =====
@@ -3127,7 +3150,13 @@ $('mtDodaj').onclick = async () => {
 // kilka obrazków naraz układa się po kolei (według nazw plików) od bieżącej strony; nowe strony wchodzą przed dalszy tekst, nic się nie nadpisuje
 // ✕ usuwa obrazek ze strony i wraca jej tekst
 const czytajObraz = plik => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(plik); });
-async function ustawObrazStrony(pliki) {
+async function ustawObrazStrony(pliki) {   /* strona już coś ma (tekst, obrazek, nuty): najpierw pytanie „Zastąpić?” */
+  pliki = [...pliki].filter(f => f && /^image\//.test(f.type)); if (!pliki.length) return false;
+  const i = wpis.i, nutowa = toStronaNut(i), zajeta = nutowa || !!wpis.obrazy[i] || !!(wpis.strony[i] || '').trim();
+  if (!zajeta) { cofZapamietaj(); return ustawObrazStrony0(pliki); }
+  pytajKartke(() => { if (nutowa) czyscStrone(); else cofZapamietaj(); ustawObrazStrony0(pliki); }); return true;
+}
+async function ustawObrazStrony0(pliki) {
   pliki = [...pliki].filter(f => f && /^image\//.test(f.type)).sort((a, b) => a.name.localeCompare(b.name, 'pl', { numeric: true }));
   if (!pliki.length) return false;
   if (pliki.length === 1) { otworzKadr(await czytajObraz(pliki[0])); return true; }   // jeden obrazek: najpierw kadrowanie
@@ -3291,7 +3320,7 @@ function pokazNutyPanel() {
 }
 function wlaczNuty() {
   if (nuty.wl) return; if (edycjaMidi) wylaczEdycje();
-  nuty.wl = true; $('nutyBtn').classList.add('wlaczona'); document.body.classList.add('nutyWl');
+  nuty.wl = true; document.body.classList.add('nutyWl');
   $('wpisPola').hidden = true; $('nutyPanel').hidden = false; $('nutyKartka').hidden = false; $('wpisStrona').classList.add('nutyOtwarte');
   otworzNutyPiesni();
 }
@@ -3399,21 +3428,23 @@ const NE = (() => {
     }
     const cx = document.createElement('canvas').getContext('2d');
     const szer = (t, fs) => { cx.font = `${fs}px ${FONT}`; return cx.measureText(t).width; };
+    const FA = () => Math.round(FS * .87), szerAk = t => { cx.font = `bold ${FA()}px ${FONT}`; return cx.measureText(t).width + G * .5; };   /* akordy nad nutami */
+    const maAk = L => L.jedn.some(j => j.sym.some(z => z.ak)), nadAk = (L, hi) => maAk(L) ? FA() / 40 * 2.4 * G + Math.max(0, Math.min(hi, 10) - 8) * G / 2 : 0;
     function jednostkiPsalmu(P) {
       const fr = []; P.nuty.forEach((x, i) => { if (i === 0 || x.b) fr.push([]); fr[fr.length - 1].push(x); });
       return fr.map(F => { const sym = []; let pos = 0;
-        F.forEach(x => { if (x.b) { sym.push({ typ: 'b', n: x.n, syl: x.syl, t: x.s }); pos = 0; return; }
+        F.forEach(x => { if (x.b) { sym.push({ typ: 'b', n: x.n, syl: x.syl, ak: x.ak, t: x.s }); pos = 0; return; }
           const cz = rozl(x.e - x.s, WARTOSCI); let tt = x.s;
-          cz.forEach((v, j) => { sym.push({ typ: 'n', n: x.n, d: v, syl: j === 0 ? x.syl : null, luk: j < cz.length - 1 || (j === cz.length - 1 && x.l), ciag: j > 0, pos, t: tt }); pos += v; tt += v; }); });
+          cz.forEach((v, j) => { sym.push({ typ: 'n', n: x.n, d: v, syl: j === 0 ? x.syl : null, ak: j === 0 ? x.ak : null, luk: j < cz.length - 1 || (j === cz.length - 1 && x.l), ciag: j > 0, pos, t: tt }); pos += v; tt += v; }); });
         return { typ: 'fraza', sym }; });
     }
     const BAZA = d => G * (2.2 + Math.sqrt(d));
     function wymiar(z) {
       if (z.typ === 'p') return z.cala ? { l: G * 3, r: G * 3 } : { l: G * .9, r: BAZA(z.d) - G * .9 };
       const P = pisownia(z.n, ust.k), acc = P.znak !== znakiTonacji(ust.k)[P.lit] && !z.ciag ? G * 1.3 : 0;
-      if (z.typ === 'b') { const lw = z.syl ? szer(z.syl.t, FS) : 0; return { l: G * 1.9 + acc, r: Math.max(G * 3.2, lw - G * 1.5 + G * 1.1) }; }
+      if (z.typ === 'b') { const lw = z.syl ? szer(z.syl.t, FS) : 0; return { l: G * 1.9 + acc, r: Math.max(G * 3.2, lw - G * 1.5 + G * 1.1, z.ak ? szerAk(z.ak) - G * .8 : 0) }; }
       const S2 = (z.syls || [z.syl]).filter(Boolean), lw = S2.reduce((m, q) => Math.max(m, szer(q.t, FS)), 0), my = S2.some(q => q.my) ? G * 1.7 : 0;
-      return { l: Math.max(G * .9 + acc, lw / 2 + G * .45), r: Math.max(BAZA(z.d) - G * .9, lw / 2 + G * .45 + my) };
+      return { l: Math.max(G * .9 + acc, lw / 2 + G * .45), r: Math.max(BAZA(z.d) - G * .9, lw / 2 + G * .45 + my, z.ak ? szerAk(z.ak) - G * .7 : 0) };
     }
     const PAD_L = G * 1.1, PAD_R = G * .5;
     /* linijka zawsze do końca kartki (jak w śpiewniku). Psalm: cały zapas idzie za brevis — recytacja z lewej, kadencja przy prawym brzegu */
@@ -3429,7 +3460,10 @@ const NE = (() => {
       if (S.klucz) o += S.klucz === 'g' ? zn('gClef', x + g * .4, y0 + 3 * g) : zn('fClef', x + g * .4, y0 + g); x += g * 4.4;
       (k > 0 ? KRZ : BEM).slice(0, ile).forEach(l => { o += `<text x="${x}" y="${Y((k > 0 ? POZ_KRZ : POZ_BEM)[l] - (S.klucz === 'f' ? 2 : 0)) + g * .55}" font-size="${g * 2}" stroke="none">${k > 0 ? '♯' : '♭'}</text>`; x += g * 1.1; });
       x += g * .6;
-      if (L.metrum) { o += zn('t' + (L.mg || ust.gora), x + g * .3, y0 + g) + zn('t' + (L.md || ust.dol), x + g * .3, y0 + 3 * g); x += g * 3; }
+      if (L.metrum) { const mg = L.mg || ust.gora, md = L.md || ust.dol;   /* cyfry spoza zestawu znaków (5, 7, 12…) — obie liczby pisane czcionką, jak w Edytorze pieśni */
+        if (GLIFY['t' + mg] && GLIFY['t' + md]) o += zn('t' + mg, x + g * .3, y0 + g) + zn('t' + md, x + g * .3, y0 + 3 * g);
+        else o += `<g font-family="${FONT}" font-weight="bold" font-size="${g * 2.4}" stroke="none" text-anchor="middle"><text x="${x + g}" y="${y0 + 2 * g - 1}">${mg}</text><text x="${x + g}" y="${y0 + 4 * g - 1}">${md}</text></g>`;
+        x += g * 3; }
       // miejsca główek
       const f = L.f;
       L.jedn.forEach((J, ji) => { x += PAD_L; J.sym.forEach(z => { z.x = x + z.w.l * f; x = z.x + z.w.r * f; }); x += PAD_R; J.kreska = x; });
@@ -3452,6 +3486,7 @@ const NE = (() => {
         J.sym.forEach((z, iz) => {
           if (z.typ === 'p') { o += pauza(z, z.x, y0, g); return; }
           const P = pisownia(z.n, k), cy = Y(P.poz), kl = P.lit + P.okt, cxN = z.x;
+          if (z.ak) o += `<text x="${cxN - g * (z.typ === 'b' ? 1.4 : .7)}" y="${y0 - 2.5 * g - Math.max(0, (L.hi || 8) - 8) * g / 2}" font-family="${FONT}" font-size="${FA()}" font-weight="bold" stroke="none">${String(z.ak).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</text>`;
           for (let q = -2; q >= P.poz; q -= 2) o += `<line x1="${cxN - g * 1.15}" x2="${cxN + g * 1.15}" y1="${Y(q)}" y2="${Y(q)}" stroke-width="2.2"/>`;
           for (let q = 10; q <= P.poz; q += 2) o += `<line x1="${cxN - g * 1.15}" x2="${cxN + g * 1.15}" y1="${Y(q)}" y2="${Y(q)}" stroke-width="2.2"/>`;
           const ob = kl in stan ? stan[kl] : zt[P.lit];
@@ -3516,12 +3551,12 @@ const NE = (() => {
       const ev = []; let t = a;
       P.nuty.forEach(x => { const s = Math.max(x.s, a), e = Math.min(x.e, b); if (e <= s) return;
         if (s > t) ev.push({ n: null, d: s - t });
-        ev.push({ n: x.n, d: e - s, syl: s === x.s ? x.syl : null, syls: s === x.s ? x.syls : null, wczesniej: x.s < a, dalej: x.e > b || (x.l && e === x.e) }); t = e; });
+        ev.push({ n: x.n, d: e - s, syl: s === x.s ? x.syl : null, syls: s === x.s ? x.syls : null, ak: s === x.s ? x.ak : null, wczesniej: x.s < a, dalej: x.e > b || (x.l && e === x.e) }); t = e; });
       if (!ost && t < b) ev.push({ n: null, d: b - t });
       if (!ev.length) ev.push({ n: null, d: b - a });
       const tk = takty(ev, T);
       tk.forEach(m => { let pos = 0; m.forEach(z => { z.pos = pos; pos += z.d; const e = ev[z.src]; if (z.typ !== 'n' || !e) return;
-        if (!z.ciag) { z.syl = e.syl; z.syls = e.syls; } if (e.wczesniej && !z.ciag) { z.ciag = true; z.syl = null; z.syls = null; } }); });
+        if (!z.ciag) { z.syl = e.syl; z.syls = e.syls; z.ak = e.ak; } if (e.wczesniej && !z.ciag) { z.ciag = true; z.syl = null; z.syls = null; z.ak = null; } }); });
       ev.forEach((e, i) => { if (!e.dalej) return; let ostS = null; tk.forEach(m => m.forEach(z => { if (z.src === i) ostS = z; })); if (ostS) ostS.luk = true; });
       tk.forEach((m, bi) => m.forEach(z => z.t = a + bi * T + z.pos));
       return tk.map(m => ({ typ: 'takt', sym: m }));
@@ -3532,7 +3567,8 @@ const NE = (() => {
       let L2 = (linie || []).map(l => ({ ...l }));
       if (!P && C.psalm) { for (let q = 0; q < 4; q++) out.push({ jedn: [{ typ: 'fraza', sym: [] }], mg: 0, md: 0, doKonca: W - M }); L2 = out.map(() => ({ gora: 0, dol: 0, takty: 1 })); }   // pusty psalm: cztery czyste pięciolinie
       else if (P && P.brevis) {                                          // psalm: linijka = fraza
-        out.push(...jednostkiPsalmu(P).slice(0, 4).map(J => ({ jedn: [J], mg: 0, md: 0 }))); while (out.length < 4) out.push({ jedn: [{ typ: 'fraza', sym: [] }], mg: 0, md: 0, doKonca: W - M }); L2 = out.map(() => ({ gora: 0, dol: 0, takty: 1 }));
+        out.push(...jednostkiPsalmu(P).slice(0, 4).map(J => ({ jedn: [J], mg: 0, md: 0 }))); while (EDYCJA_NUT && out.length < 4) out.push({ jedn: [{ typ: 'fraza', sym: [] }], mg: 0, md: 0, doKonca: W - M });   /* bez pisania nut pustych pięciolinii się nie dokłada */
+        L2 = out.map(() => ({ gora: 0, dol: 0, takty: 1 }));
       } else {
         if (!L2.length) L2 = [{ gora: mDom.gora, dol: mDom.dol, takty: 4 }];
         L2.forEach(l => { if (!l.gora) { l.gora = mDom.gora; l.dol = mDom.dol; } });
@@ -3541,7 +3577,7 @@ const NE = (() => {
         while (true) { if (i >= L2.length) break;
           const l = L2[i], T = l.gora * 16 / l.dol, b = a + l.takty * T, ost = b >= koniec;
           out.push({ jedn: P && a < koniec ? liniaTaktow(P, a, b, T, false) : Array.from({ length: l.takty }, (_, bi) => ({ typ: 'takt', sym: [{ typ: 'p', d: T, cala: true, ukryta: true, pos: 0, t: a + bi * T }] })), mg: l.gora, md: l.dol, a, b });
-          a = b; i++; if (i >= L2.length && a >= koniec) break; }
+          a = b; i++; if (i >= L2.length && a >= koniec) break; if (!EDYCJA_NUT && P && a >= koniec) break; }   /* bez pisania nut: puste pięciolinie za końcem melodii nie są rysowane */
       }
       // układ jak w druku
       let y = 10, o = '', nrT = S.taktOd || 0; const geo = [];   // numeracja taktów ciągnie się przez strony pieśni
@@ -3553,7 +3589,7 @@ const NE = (() => {
         const sym = L.jedn.reduce((s, j) => s + j.sym.reduce((q, z) => q + z.w.l + z.w.r, 0), 0), pady = L.jedn.length * (PAD_L + PAD_R);
         rozciagnij(L, sym, pady);
         let lo = 0, hi = 8; L.jedn.forEach(j => j.sym.forEach(z => { if (z.typ !== 'p') { const q = pisownia(z.n, ust.k).poz; lo = Math.min(lo, q); hi = Math.max(hi, q); } }));
-        const gora = y, nad = 2.8 * G + Math.max(0, hi - 10) * G / 2, pod = 2.6 * G + Math.max(0, -2 - lo) * G / 2 + (S.slowa.some(t => t && t.trim()) ? FS * 1.3 : 0);
+        L.hi = hi; const gora = y, nad = 2.8 * G + Math.max(0, hi - 10) * G / 2 + nadAk(L, hi), pod = 2.6 * G + Math.max(0, -2 - lo) * G / 2 + (S.slowa.some(t => t && t.trim()) ? FS * 1.3 : 0);
         L.y0 = y + nad; y = L.y0 + 4 * G + pod; geo.push({ gora, dol: y, y0: L.y0 });
         if (li === aktL) o += `<rect x="${M - 40}" y="${gora + 6}" width="${W - 2 * M + 70}" height="${y - gora - 12}" rx="18" fill="rgba(255,200,97,.14)" stroke="#e8a400" stroke-width="3"/>`;
         o += rysujLinie(L, 16);
@@ -3574,7 +3610,7 @@ const NE = (() => {
       // takty na kartce (do lupy przy przeciąganiu): x od–do, linijka
       const takty2 = []; out.forEach((L, li) => { let x0 = M + L.prefiks; const T = L.mg ? L.mg * 16 / L.md : 0;
         L.jedn.forEach((J, bi) => { takty2.push({ li, x0, x1: J.kreska, gora: geo[li].gora, dol: geo[li].dol, y0: L.y0, t0: L.a != null ? L.a + bi * T : null, t1: L.a != null ? L.a + (bi + 1) * T : null }); x0 = J.kreska; }); });
-      return { takty: takty2, zakresy, punkty: geo.punkty || [], svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><g id="wnTresc" font-family="${NUTOWY}" fill="#000" stroke="#000"><rect width="${W}" height="${H}" fill="#fff" stroke="none"/>${o}</g></svg>`, H, geo, linie: L2, psalm: !!(P && P.brevis) || (!P && !!C.psalm), y0Pusty: out.length ? out[0].y0 : null };
+      return { takty: takty2, zakresy, punkty: geo.punkty || [], svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"${S.poz === 'g' ? ' preserveAspectRatio="xMidYMin meet"' : S.poz === 'd' ? ' preserveAspectRatio="xMidYMax meet"' : ''}><g id="wnTresc" font-family="${NUTOWY}" fill="#000" stroke="#000"><rect width="${W}" height="${H}" fill="#fff" stroke="none"/>${o}</g></svg>`, H, geo, linie: L2, psalm: !!(P && P.brevis) || (!P && !!C.psalm), y0Pusty: out.length ? out[0].y0 : null };
     }
   // ===== SŁOWA: dzielenie na sylaby jak w „Szybkich nutach” (kreski z ręki — „Kie-dy” — biorę tak, jak wpisane) =====
   const SAMO = 'aąeęioóuy', DWU = ['ch', 'cz', 'sz', 'rz', 'dz', 'dź', 'dż'], DZWIECZNE = ['j', 'ł', 'l', 'r', 'm', 'n', 'ń'], PLYNNE = ['w', 'r', 'rz', 'l', 'ł', 'j'];
@@ -3645,11 +3681,12 @@ const NE = (() => {
   // nuty w szesnastkach, jak w „Szybkich nutach”
   function dane() { if (!NUTY.length) return null;
     const nuty = NUTY.map(n => { const s = Math.round(n.t / .125), k = (n.t + n.d) / .125, pelna = Math.ceil(k / 2 - 1e-6) * 2;
-      const e = pelna - k < .25 * (k - s) ? pelna : Math.round(k); return { n: n.n + TR, s, e: Math.max(s + 1, e), b: !!n.b, l: !!n.l, syl: null, syls: null }; });
+      const e = pelna - k < .25 * (k - s) ? pelna : Math.round(k); return { n: n.n + TR, s, e: Math.max(s + 1, e), b: !!n.b, l: !!n.l, ak: n.ak ? akTr(n.ak, TR, ust.k) : null, syl: null, syls: null }; });
     for (let i = 0; i + 1 < nuty.length; i++) { const a = nuty[i], nx = nuty[i + 1]; if (nx.s - a.e <= 1) a.e = nx.s; a.e = Math.max(a.s + 1, Math.min(a.e, nx.s)); }
     sylabyPodNuty(nuty);
     return { idx: 0, nazwa: '', brevis: nuty.some(x => x.b), nuty, ileZw: 1 }; }
   const gotowa = () => nuty.wl && nuty.metrum != null;
+  const EDYCJA_NUT = false, gotowaE = () => EDYCJA_NUT && gotowa();   /* program nie edytuje już nut: nuty przychodzą z MIDI, kartka je tylko pokazuje */
   function wnElementy() { const E = []; let t = 0;
     NUTY.forEach((n, i) => { const s2 = Math.round(n.t / .125), k = (n.t + n.d) / .125, p = Math.ceil(k / 2 - 1e-6) * 2;
       let e = n.b ? s2 + 16 : (p - k < .25 * (k - s2) ? p : Math.round(k)); e = Math.max(s2 + 1, e);
@@ -3658,7 +3695,7 @@ const NE = (() => {
     return E; }
   const wnPrzesun = (od, d16) => NUTY.forEach(n => { if (Math.round(n.t / .125) >= od) n.t = +(n.t + d16 * .125).toFixed(4); });
   function wnWpisz(n, Tov) {
-    if (!gotowa()) return;
+    if (!gotowaE()) return;
     const w = WNW.rzad ? WN_P[WNW.p] : WN_N[WNW.n], brevis = !WNW.rzad && !!w.b;
     if (brevis && !S.psalm) return;
     const d16 = brevis ? 16 : (WNW.kropka && w.d > 1 ? w.d * 1.5 : w.d), T = Tov != null ? Tov : (WN.kur || 0);
@@ -3762,14 +3799,14 @@ const NE = (() => {
     if (zaDuzo() && COF.length) { NUTY = JSON.parse(COF.pop()); WN.edyt = null; }
     const E = wnElementy(), kon = E.length ? E[E.length - 1].e : 0, maxK = Math.max(kon, WN.zakresy.length ? WN.zakresy[WN.zakresy.length - 1][1] : 0);
     if (WN.kur == null) WN.kur = kon; else if (WN.kur > maxK) WN.kur = maxK;
-    const R = widok(S.linie, WN.akt, null); WN.punkty = R.punkty; WN.zakresy = R.zakresy; WN.takty = R.takty;
+    const R = widok(S.linie, EDYCJA_NUT ? WN.akt : -1, null); WN.punkty = R.punkty; WN.zakresy = R.zakresy; WN.takty = R.takty;
     if (!R.psalm) S.linie = R.linie; WN.psalm = R.psalm; WN.akt = Math.min(WN.akt, (R.psalm ? R.zakresy.length : S.linie.length) - 1);
     $('nutyKartka').innerHTML = R.svg; WN.uklad = { linie: R.geo, H: R.H };
-    wnZolta(R); lukPokaz(); if (window.taktyPokaz) taktyPokaz();
+    if (EDYCJA_NUT) wnZolta(R); lukPokaz(); if (window.taktyPokaz) taktyPokaz();
   }
   // klawisze (gdy nuty są otwarte i nie piszesz w polu): przed klawiaturą organów — W, E, S, D… nie grają
   addEventListener('keydown', e => {
-    if (!gotowa() || /TEXTAREA|INPUT|SELECT/.test(document.activeElement.tagName) || e.altKey) return;
+    if (!gotowaE() || /TEXTAREA|INPUT|SELECT/.test(document.activeElement.tagName) || e.altKey) return;
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') { e.preventDefault(); e.stopImmediatePropagation(); cofnij(); return; }
     if (e.ctrlKey || e.metaKey) return;
     const k = e.key.toLowerCase();
@@ -3785,6 +3822,7 @@ const NE = (() => {
   $('nutyKartka').addEventListener('pointerdown', e => { const sv = $('nutyKartka').querySelector('svg'); if (!sv || !WN.uklad || !gotowa()) return;
     const pt = sv.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q0 = pt.matrixTransform(sv.getScreenCTM().inverse()), y = q0.y, xs = q0.x, i = WN.uklad.linie.findIndex(q => y >= q.gora && y < q.dol);
     if (i < 0) return;
+    if (!EDYCJA_NUT) return;   /* bez edycji: klik w kartkę nic nie robi */
     if (gumka) { const L = WN.uklad.linie[i], pts = (WN.punkty || []).filter(p => p.y0 >= L.gora && p.y0 < L.dol); if (!pts.length) return;
       const p = pts.reduce((a, b) => Math.abs(b.x - xs) < Math.abs(a.x - xs) ? b : a), el = wnElementy().find(q => p.t >= q.s && p.t < q.e);
       if (!el || el.typ !== 'n') return; zapamietaj(); NUTY.splice(el.i, 1); WN.edyt = null; rysuj(); return; }
@@ -3798,11 +3836,11 @@ const NE = (() => {
   const KARTKI = { pion: [2480, 3508], poziom: [3508, 2480], a5pion: [1748, 2480], a5poziom: [2480, 1748] };
   function jednostkiTaktowe(P, T) {
     const ciag = []; let t = 0;
-    P.nuty.forEach(x => { if (x.s > t) ciag.push({ n: null, d: x.s - t }); ciag.push({ n: x.n, d: x.e - x.s, syl: x.syl, l: x.l }); t = x.s + (x.e - x.s); });
+    P.nuty.forEach(x => { if (x.s > t) ciag.push({ n: null, d: x.s - t }); ciag.push({ n: x.n, d: x.e - x.s, syl: x.syl, l: x.l, ak: x.ak }); t = x.s + (x.e - x.s); });
     if (P.koniec > t) ciag.push({ n: null, d: P.koniec - t });
     const tk0 = takty(ciag, T); ciag.forEach((e, i) => { if (!e.l) return; let ost = null; tk0.forEach(m => m.forEach(z => { if (z.src === i) ost = z; })); if (ost) ost.luk = true; });
     return tk0.map(m => { let pos = 0;
-      m.forEach(z => { z.pos = pos; pos += z.d; if (z.typ === 'n' && !z.ciag && ciag[z.src]) z.syl = ciag[z.src].syl; });
+      m.forEach(z => { z.pos = pos; pos += z.d; if (z.typ === 'n' && !z.ciag && ciag[z.src]) { z.syl = ciag[z.src].syl; z.ak = ciag[z.src].ak; } });
       return { typ: 'takt', sym: m }; });
   }
   function druk(strony, o) {
@@ -3850,6 +3888,7 @@ const NE = (() => {
         let lo = 0, hi = 8; L.jedn.forEach(j => j.sym.forEach(z => { if (z.typ !== 'p') { const p = pisownia(z.n, ust.k).poz; lo = Math.min(lo, p); hi = Math.max(hi, p); } }));
         const zSlowami = L.jedn.some(j => j.sym.some(z => z.syl));
         L.gora = Math.max(L.pierwsza ? 3.9 * G : 1.4 * G, (L.pierwsza ? 5.2 : 3.6) * G * f) + Math.max(0, hi - 10) * G / 2;
+        L.hi = hi; L.gora += nadAk(L, hi);
         L.dol = (zSlowami ? 4.7 * G : 1.5 * G) + Math.max(0, -2 - lo) * G / 2 + 5.3 * G * f;
         if (k0.linie.length && y + L.gora + 4 * G + L.dol > H - M) nowa();
         L.y0 = y + L.gora; y = L.y0 + 4 * G + L.dol; k0.linie.push(L); });
@@ -3867,17 +3906,18 @@ const NE = (() => {
   return {
     // otwarcie nut pieśni (albo czystej kartki)
     zaladuj(N) { NUTY = N && Array.isArray(N.nuty) ? JSON.parse(JSON.stringify(N.nuty)) : []; S.linie = N && N.linie ? JSON.parse(JSON.stringify(N.linie)).slice(0, 4) : null;
-      S.psalm = !!(N && N.psalm); S.slowa = [0, 1, 2, 3].map(i => N && N.slowa && N.slowa[i] || ''); COF.length = 0; WN.akt = 0; WN.kur = null; WN.edyt = null; WN.zakresy = []; WNW.rzad = 0; WNW.n = 3; WNW.kropka = false; WNW.luk = false; wnWartosci(); },
+      S.psalm = !!(N && N.psalm); S.slowa = [0, 1, 2, 3].map(i => N && N.slowa && N.slowa[i] || ''); S.poz = N && N.poz || null;   /* położenie nut na ekraniku (z Edytora pieśni): 'g' góra, 'd' dół, brak = środek */ COF.length = 0; WN.akt = 0; WN.kur = null; WN.edyt = null; WN.zakresy = []; WNW.rzad = 0; WNW.n = 3; WNW.kropka = false; WNW.luk = false; wnWartosci(); },
     klucz(k) { S.klucz = k; WN.pn = k === 'f' ? 50 : 71; rysuj(); },
     // metrum: „0” = psalm (bez metrum, brevis); zmiana psalm ⇄ metrum tylko na pustej kartce
     metrum(m) { const psalm = m === '0'; if (NUTY.length && psalm !== S.psalm) return false;
       S.psalm = psalm; if (psalm) { S.linie = null; WNW.n = 0; WNW.rzad = 0; }
-      else { const [a, b] = m.split('/').map(Number); S.linie = S.linie && S.linie.length ? S.linie.map(l => ({ ...l, gora: a, dol: b })) : [0, 1, 2, 3].map(() => ({ gora: a, dol: b, takty: 4 })); if (WNW.n === 0) WNW.n = 3; }
+      else { const [a, b] = m.split('/').map(Number); S.linie = S.linie && S.linie.length ? S.linie.map(l => ({ ...l, gora: l.gora || a, dol: l.dol || b })) :   /* każda linijka trzyma swoje metrum (z Edytora pieśni może być własne, np. 5/4) */
+        [0, 1, 2, 3].map(() => ({ gora: a, dol: b, takty: 4 })); if (WNW.n === 0) WNW.n = 3; }
       WN.zakresy = []; wnWartosci(); rysuj(); return true; },
     tonacja(k) { ust.k = k; rysuj(); },
     taktOd(n) { S.taktOd = n; }, dalej(b) { S.dalej = !!b; },
     svgPodglad() { return widok(S.linie, -1, null).svg; }, druk,
-    luk() { if (gotowa()) wnIntelKlawisz({ key: 'e' }, 'e'); lukPokaz(); }, transpozycja(t) { TR = t; rysuj(); },
+    luk() { if (gotowaE()) wnIntelKlawisz({ key: 'e' }, 'e'); lukPokaz(); }, transpozycja(t) { TR = t; rysuj(); },
     // ▶ odtwarzanie nut Gedaktem w tempie z panelu (wcisnij / pusc jak klawisze)
     graj(bpm) { this.stop(); const k = 120 / bpm, T0 = [];
       NUTY.forEach(n => { const w = n.n + TR; T0.push(setTimeout(() => wcisnij(w, 'nutyGra'), n.t * k * 1000), setTimeout(() => pusc(w, 'nutyGra'), (n.t + n.d) * k * 1000)); });
@@ -3886,12 +3926,12 @@ const NE = (() => {
     stop() { const g = this._gra; if (!g) return; g.T0.forEach(clearTimeout); new Set(g.nuty).forEach(w => { try { pusc(w, 'nutyGra'); } catch (e) {} }); this._gra = null; $('nutyPlay').classList.remove('gra'); },
     // takty w zaznaczonej pięciolinii (1–8); nuty zostają w swoim czasie, więc same przechodzą na pięciolinię niżej albo wyżej;
     // gdy po zmniejszeniu nie zmieściłyby się na 4 pięcioliniach — zmiany nie ma
-    takty(kier) { if (!gotowa() || S.psalm || !S.linie) return false; const l = S.linie[WN.akt]; if (!l) return false;
+    takty(kier) { if (!gotowaE() || S.psalm || !S.linie) return false; const l = S.linie[WN.akt]; if (!l) return false;
       const n = l.takty + kier; if (n < 1 || n > 8) return false;
       l.takty = n; if (zaDuzo()) { l.takty -= kier; return false; } WN.zakresy = []; rysuj(); return true; },
-    taktyInfo: () => gotowa() && !S.psalm && S.linie && S.linie[WN.akt] ? { linia: WN.akt, takty: S.linie[WN.akt].takty } : null,
+    taktyInfo: () => gotowaE() && !S.psalm && S.linie && S.linie[WN.akt] ? { linia: WN.akt, takty: S.linie[WN.akt].takty } : null,
     rysuj, ile: () => NUTY.length, cofnij, gumka: () => ustawGumke(!gumka), gumkaWyl: () => ustawGumke(false),
-    midi(n) { if (!gotowa()) return; WN.edyt = null; wnWpisz(n - TR); },   // klawiatura bez transpozycji: wciśnięte C → na kartce C (zapis cofa transpozycję)
+    midi(n) { if (!gotowaE()) return; WN.edyt = null; wnWpisz(n - TR); },   // klawiatura bez transpozycji: wciśnięte C → na kartce C (zapis cofa transpozycję)
     stan: () => ({ nuty: JSON.parse(JSON.stringify(NUTY)), linie: S.linie ? JSON.parse(JSON.stringify(S.linie)) : null, psalm: S.psalm, slowa: [...S.slowa] }),
     slowa(i, t) { S.slowa[i] = t; rysuj(); }, tekst: i => S.slowa[i] || '', linia(i) { WN.akt = i; rysuj(); }, aktLinia: () => WN.akt,
     // melodia do organów: zdarzenia jak w nagraniu pieśni (typ 1 = wciśnij, 0 = puść), czas w sekundach przy tempie z panelu
@@ -3901,7 +3941,9 @@ const NE = (() => {
     // strona z nutami do śpiewnika: obrazek PNG (bez żółtego kursora i podświetlenia)
     async obrazek() { const R = widok(S.linie, -1, null), sk = 2, W = SZER * sk, H = R.H * sk;
       const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(R.svg); await img.decode();
-      const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.drawImage(img, 0, 0, W, H);
+      /* nuty u góry albo na dole ekranika: obrazek dostaje proporcje całego ekranika (518 × 343), a nuty stoją w nim tam, gdzie mają stać — organy pokazują obrazek w całości */
+      const HP = S.poz ? Math.max(H, Math.round(W * 343 / 518)) : H, dy = S.poz === 'd' ? HP - H : 0;
+      const c = document.createElement('canvas'); c.width = W; c.height = HP; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, W, HP); x.drawImage(img, 0, dy, W, H);
       return c.toDataURL('image/png'); }
   };
 })();
@@ -3993,11 +4035,12 @@ function idzDoStrony(i, wejscie) {
   if (toStronaNut(i)) { if (nuty.wl) otworzNutyPiesni(); else wlaczNuty(); }
   else { if (nuty.wl) wylaczNuty(); else pokazStrone(); }
 }
+const EDYCJA_STRON_NUT = false;   /* bez pisania nut i słów: za ostatnią stroną zawsze nowa strona tekstu */
 function strzalka(kier) {
   if (document.body.classList.contains('nutyWl')) zbierzStrone();
   const i = wpis.i + kier; if (i < 0) return;
   if (i >= wpis.strony.length) {                                   // za ostatnią stroną: nowa strona tego rodzaju, w którym jesteś
-    if (nuty.wl) { const st = wpis.nutyStrony[wpis.i]; if (!st || !st.nuty || !st.nuty.length) return;   // pusta kartka — nie ma czego powtarzać
+    if (nuty.wl && EDYCJA_STRON_NUT) { const st = wpis.nutyStrony[wpis.i]; if (!st || !st.nuty || !st.nuty.length) return;   // pusta kartka — nie ma czego powtarzać
       wpis.strony.push(''); wpis.nutyStrony[i] = { ...JSON.parse(JSON.stringify(st)), slowa: ['', '', '', ''] }; }   // następna zwrotka: ta sama melodia, puste słowa
     else wpis.strony.push('');
   }
@@ -4044,13 +4087,13 @@ $('slowaPole').addEventListener('keydown', e => { if (e.key === 'Enter') { e.pre
 
 // ===== TRYBY EDYTORA: Edytor tekstu · Dograj melodię · Dopisz nuty — klikasz, w który chcesz przejść (złoty = ten, w którym jesteś) =====
 function odswiezTryb() {
-  $('tekstBtn').classList.toggle('wlaczona', !edycjaMidi && !nuty.wl);
-  $('edycjaBtn').classList.toggle('wlaczona', edycjaMidi); $('nutyBtn').classList.toggle('wlaczona', nuty.wl);
+  $('tekstBtn').classList.toggle('wlaczona', !edycjaMidi);
+  $('edycjaBtn').classList.toggle('wlaczona', edycjaMidi); $('nutyBtn').classList.remove('wlaczona');
 }
 { const we = wlaczEdycje, wy = wylaczEdycje, wn = wlaczNuty, wyn = wylaczNuty;
   wlaczEdycje = () => { we(); odswiezTryb(); }; wylaczEdycje = () => { wy(); odswiezTryb(); };
   wlaczNuty = () => { wn(); odswiezTryb(); }; wylaczNuty = () => { wyn(); odswiezTryb(); }; }
-$('tekstBtn').onclick = () => { if (edycjaMidi) { wylaczEdycje(); if (toStronaNut(wpis.i)) wlaczNuty(); return; } if (nuty.wl) naTekst(); };
+$('tekstBtn').onclick = () => { if (edycjaMidi) { wylaczEdycje(); if (toStronaNut(wpis.i)) wlaczNuty(); return; } };
 $('edycjaBtn').onclick = () => { if (edycjaMidi) return; if (nuty.wl) { zbierzStrone(); wylaczNuty(); } wlaczEdycje(); };
 $('nutyBtn').onclick = () => { if (nuty.wl) return; if (edycjaMidi) wylaczEdycje(); if (toStronaNut(wpis.i)) wlaczNuty(); else naNuty(); };
 
@@ -4063,7 +4106,9 @@ function czytajMidiN(dane) {
   const dlNag = dv.getUint32(4), ileSciezek = dv.getUint16(10), tpq = dv.getUint16(12);
   if (tpq & 0x8000) throw new Error('Ten plik MIDI liczy czas w klatkach filmu (SMPTE) — tego nie obsługuję.');
   const dekoder = new TextDecoder('windows-1250');
-  const wynik = { tpq, nuty: [], funkcje: [], metrum: null, metra: [], tonacja: null, tempo: null, teksty: {} };
+  const wynik = { tpq, nuty: [], funkcje: [], metrum: null, metra: [], tonacja: null, tempo: null, teksty: {}, sylaby: [], linijki: [], frazy: [], luki: [] };
+  /* słowa z Edytora pieśni są w UTF-8; starsze pliki karaoke — w kodowaniu Windows */
+  const tekstMidi = d => { try { return new TextDecoder('utf-8', { fatal: true }).decode(d); } catch (e) { return dekoder.decode(d); } };
   let o = 8 + dlNag;
   for (let s = 0; s < ileSciezek && o + 8 <= u8.length; s++) {
     if (txt(o, 4) !== 'MTrk') break;
@@ -4077,6 +4122,10 @@ function czytajMidiN(dane) {
       const typ = status & 0xf0, kanal = status & 0x0f;
       if (status === 0xff) {
         const meta = u8[p++], n = vlq(), d = u8.slice(p, p + n);
+        if (meta === 0x05) wynik.sylaby.push({ tick, tekst: tekstMidi(d).replace(/\0/g, '') });               /* sylaba pod nutą (karaoke) */
+        if (meta === 0x07) { const zn = tekstMidi(d).match(/^linijka:(\d+):(\d+)\/(\d+)$/); if (zn) wynik.linijki.push({ tick, takty: +zn[1], gora: +zn[2], dol: +zn[3] });
+          if (tekstMidi(d) === 'luk') wynik.luki.push(tick);   /* nuta pod łukiem: ciągnie sylabę poprzedniej */
+          const ps = tekstMidi(d).match(/^psalm:(\d+):(.*)$/); if (ps) wynik.frazy.push({ tick, ile: +ps[1], tekst: ps[2].replace(/\0/g, '').trim() }); }   /* początek frazy psalmu z Edytora pieśni */   /* początek linijki z Edytora pieśni */
         if (meta === 0x58) { const m = { gora: d[0], dol: 2 ** d[1], tick }; wynik.metra.push(m); if (!wynik.metrum) wynik.metrum = m; }
         else if (meta === 0x59 && wynik.tonacja == null) wynik.tonacja = (d[0] << 24) >> 24;     // liczba krzyżyków (+) albo bemoli (−)
         else if (meta === 0x51 && !wynik.tempo) wynik.tempo = Math.round(60000000 / ((d[0] << 16) | (d[1] << 8) | d[2]));
@@ -4120,7 +4169,89 @@ function wstawStrone(i) {
   wpis.strony.splice(i, 0, ''); wpis.obrazy.splice(i, 0, null);
   const ns = {}; for (const k in (wpis.nutyStrony || {})) ns[+k >= i ? +k + 1 : +k] = wpis.nutyStrony[k]; wpis.nutyStrony = ns;
 }
+/* MIDI z Edytora pieśni: linijki takie jak tam (znaczniki „linijka:takty:metrum”), po 4 na stronę, słowa każdej linijki z sylab pliku */
+const slowaZSylab = (M, a16, b16, przes) => { const s16 = M.tpq / 4; return (M.sylaby || []).filter(q => { const x = Math.round(q.tick / s16) + (przes || 0); return x >= a16 && x < b16; }).map(q => q.tekst.replace(/^[\/\\]/, '')).join('').replace(/\s+/g, ' ').trim(); };
+function stronyZLinijek(M) {
+  const s16 = M.tpq / 4, ciag = ciagZMidiN(M), el = []; let t = 0; for (const e of ciag) { if (e.n != null) el.push({ n: e.n, s: t, d: e.d }); t += e.d; }
+  const luki16 = new Set((M.luki || []).map(x => Math.round(x / s16)));
+  const lin = M.linijki.slice().sort((a, b) => a.tick - b.tick).filter(l => [2, 4, 8].includes(l.dol) && l.gora > 0 && l.takty > 0)
+    .map(l => { const a = Math.round(l.tick / s16), dl = l.takty * l.gora * 16 / l.dol; return { gora: l.gora, dol: l.dol, takty: l.takty, a, b: a + dl, dl }; })
+    .filter(l => el.some(e => e.s < l.b && e.s + e.d > l.a));
+  if (!el.length || !lin.length) return null;
+  const sr = el.reduce((a, e) => a + e.n, 0) / el.length, klucz = sr < 60 ? 'f' : 'g';
+  const k = M.tonacja != null && Math.abs(M.tonacja) <= 7 ? M.tonacja : 0, tempo = Math.max(30, Math.min(240, M.tempo || metro.bpm)), strony = [];
+  for (let p = 0; p < lin.length; p += 4) { const grp = lin.slice(p, p + 4), nut = [], slowa = ['', '', '', '']; let baza = 0;
+    grp.forEach((l, li) => { el.forEach(e => { const s0 = Math.max(e.s, l.a), s1 = Math.min(e.s + e.d, l.b); if (s1 > s0) { if (s0 === e.s && luki16.has(e.s) && nut.length) nut[nut.length - 1].l = true; nut.push({ n: e.n, t: +((baza + s0 - l.a) * .125).toFixed(4), d: +((s1 - s0) * .125 - .02).toFixed(4) }); } });
+      slowa[li] = slowaZSylab(M, l.a, l.b, 0); baza += l.dl; });
+    const mm = grp[0].gora + '/' + grp[0].dol, linie = [0, 1, 2, 3].map(i => { const l = grp[i] || grp[grp.length - 1]; return { gora: l.gora, dol: l.dol, takty: l.takty }; });
+    strony.push({ klucz, metrum: ['2/4', '3/4', '4/4', '6/8'].includes(mm) ? mm : '4/4', tempo, tonacja: k, trans: 0, nuty: nut, linie, psalm: false, slowa }); }
+  return strony;
+}
+/* PSALM z Edytora pieśni (znaczniki „psalm:liczba nut:słowa”): fraza = pięciolinia — nuta recytacyjna + kadencja, słowa frazy pod nią; po 4 frazy na stronę */
+function stronyZPsalmu(M) {
+  const fr = M.frazy.slice().sort((a, b) => a.tick - b.tick), nu = M.nuty.slice().sort((a, b) => a.a - b.a || b.n - a.n), s16 = M.tpq / 4, luki = new Set(M.luki || []);
+  const F = fr.map((f, fi) => { const kon = fi + 1 < fr.length ? fr[fi + 1].tick : Infinity, N = nu.filter(x => x.a >= f.tick && x.a < kon);
+    const tekst = f.tekst || (M.sylaby || []).filter(q => q.tick >= f.tick && q.tick < kon).map(q => q.tekst.replace(/^[\/\\]/, '')).join('').replace(/\s+/g, ' ').trim();
+    return { N, tekst }; }).filter(f => f.N.length);
+  if (!F.length) return null;
+  const wszystkie = F.flatMap(f => f.N), sr = wszystkie.reduce((a, x) => a + x.n, 0) / wszystkie.length, klucz = sr < 60 ? 'f' : 'g';
+  const k = M.tonacja != null && Math.abs(M.tonacja) <= 7 ? M.tonacja : 0, tempo = Math.max(30, Math.min(240, M.tempo || metro.bpm)), strony = [];
+  for (let p = 0; p < F.length; p += 4) { const grp = F.slice(p, p + 4), nut = [], slowa = ['', '', '', '']; let t = 0;
+    grp.forEach((f, li) => { slowa[li] = f.tekst;
+      f.N.forEach((x, j) => { const d16 = j === 0 ? 32 : Math.max(1, Math.round((x.b - x.a) / s16)), m = { n: x.n, t: +(t * .125).toFixed(4), d: +(d16 * .125 - .02).toFixed(4) }; if (j === 0) m.b = true; else if (luki.has(x.a) && nut.length) nut[nut.length - 1].l = true; nut.push(m); t += d16; }); });
+    strony.push({ klucz, metrum: '0', tempo, tonacja: k, trans: 0, nuty: nut, linie: null, psalm: true, slowa }); }
+  return strony;
+}
+/* ===== PIEŚŃ Z EDYTORA (plik .piesn — ten sam, który Edytor pieśni zapisuje przez „Zapisz projekt”) =====
+   Każda część po kolei: linijki, słowa każdej linijki, łuki, psalm, tonacja i transpozycja — dokładnie jak w edytorze; po 4 pięciolinie na stronę. */
+/* AKORDY NAD NUTAMI (z Edytora pieśni) — zapis polski: dur wielką literą, moll małą; H to h, B to obniżone h.
+   Akord leży przy nucie (n.ak) i idzie za transpozycją; dopiski (7, sus4…) zostają, bas po kresce przesuwa się razem z akordem. */
+const AK_PC = { c: 0, his: 0, cis: 1, des: 1, d: 2, dis: 3, es: 3, e: 4, fes: 4, eis: 5, f: 5, fis: 6, ges: 6, g: 7, gis: 8, as: 8, a: 9, ais: 10, b: 10, h: 11, ces: 11 };
+const AK_RE = /^([CDFGcdfg](?:is|es)?|[Ee](?:is|s(?!us))?|[Aa](?:is|s(?!us))?|[Hh](?:is)?|[Bb])/;
+function akNazwa(pc, dur, k) {
+  const D = k < 0 ? ['C', 'Des', 'D', 'Es', 'E', 'F', 'Ges', 'G', 'As', 'A', 'B', 'H'] : k >= 3 ? ['C', 'Cis', 'D', 'Dis', 'E', 'F', 'Fis', 'G', 'Gis', 'A', 'Ais', 'H'] : ['C', 'Cis', 'D', 'Es', 'E', 'F', 'Fis', 'G', 'As', 'A', 'B', 'H'];
+  const M = k >= 3 ? ['c', 'cis', 'd', 'dis', 'e', 'f', 'fis', 'g', 'gis', 'a', 'ais', 'h'] : ['c', 'cis', 'd', 'es', 'e', 'f', 'fis', 'g', k <= -5 ? 'as' : 'gis', 'a', 'b', 'h'];
+  return (dur ? D : M)[pc]; }
+function akTr(s, d, k) { if (!s || !d) return s || '';
+  return String(s).split('/').map(cz => { const m = AK_RE.exec(cz); if (!m) return cz;
+    return akNazwa((((AK_PC[m[1].toLowerCase()] + d) % 12) + 12) % 12, m[1][0] === m[1][0].toUpperCase(), k) + cz.slice(m[1].length); }).join('/'); }
+function piesnNaStrony(P) {
+  const akZ = (m, n, ton, k) => { if (n.ak) m.ak = akTr(n.ak, ton - (n.akT || 0), k); return m; };
+  if (!P || P.format !== 'piesn-alicji' || !Array.isArray(P.czesci)) return null;
+  const ton = +P.ton || 0, k = P.kZapisu != null && Math.abs(P.kZapisu) <= 7 ? P.kZapisu : 0, tempo = Math.max(30, Math.min(240, Math.round(120 * (+P.tempo || 100) / 100))), strony = [];
+  const s16 = t => Math.round(t / .125), sklej = A => { const W = []; let ost; A.forEach(S => { if (!S || S.pusta || !S.t) return; if (!W.length || S.w !== ost) { W.push([]); ost = S.w; } W[W.length - 1].push(S); });
+    return W.map(w => w.reduce((a, S, i) => S.przedl ? a + '-' : a + (i ? '-' : '') + S.t, '')).join(' '); };
+  P.czesci.forEach(C => { const N = (C.nuty || []).slice().sort((a, b) => a.t - b.t), ciag = C.ciag && C.ciag.length === N.length ? C.ciag : N.map(() => false); if (!N.length) return;
+    const sr = N.reduce((a, n) => a + n.n + ton, 0) / N.length, klucz = sr < 60 ? 'f' : 'g', pierwsza = strony.length;
+    if (C.psalm || N.some(n => n.b)) {                                    // psalm: fraza = nuta recytacyjna + kadencja
+      const G = []; N.forEach((n, i) => { if (i === 0 || n.b) G.push(i); });
+      const stare = G.some(i => N[i].tx != null) ? null : (C.tekst || '').split('\n').map(t => t.trim()).filter(t => /[a-ząćęłńóśźż]/i.test(t));
+      const F = G.map((i, fi) => ({ od: i, do: (fi + 1 < G.length ? G[fi + 1] : N.length) - 1, tekst: stare ? stare[fi] || '' : N[i].tx || '' }));
+      for (let p = 0; p < F.length; p += 4) { const nut = [], slowa = ['', '', '', '']; let t = 0;
+        F.slice(p, p + 4).forEach((f, li) => { slowa[li] = f.tekst;
+          for (let i = f.od; i <= f.do; i++) { const d16 = i === f.od ? 32 : Math.max(1, s16(N[i].t + N[i].d) - s16(N[i].t)), m = { n: N[i].n + ton, t: +(t * .125).toFixed(4), d: +(d16 * .125 - .02).toFixed(4) };
+            if (i === f.od) m.b = true; else if (ciag[i] && nut.length) nut[nut.length - 1].l = true; akZ(m, N[i], ton, k); nut.push(m); t += d16; } });
+        strony.push({ klucz, metrum: '0', tempo, tonacja: k, trans: 0, nuty: nut, linie: null, psalm: true, slowa, ciag: strony.length > pierwsza, poz: C.poz === 'g' || C.poz === 'd' ? C.poz : undefined }); }
+      return; }
+    const LN = C.linie && C.linie.length ? C.linie : [{ gora: 4, dol: 4, takty: 4 }], kon = Math.max(...N.map(n => Math.max(s16(n.t) + 1, s16(n.t + n.d)))), lin = []; let a = 0;
+    for (let li = 0; li < 400 && a < kon; li++) { const l = LN[Math.min(li, LN.length - 1)], g = l.gora || 4, d = l.dol || 4, dl = l.takty * g * 16 / d; lin.push({ gora: g, dol: d, takty: l.takty, a, b: a + dl, dl, tx: li < LN.length ? ((l.tx || [])[0] || '') : '' }); a += dl; }
+    if (!LN.some(l => l.tx) && (C.sylaby || []).some(S => S && S.t)) {   // stary zapis bez słów przy linijkach: sylaby po kolei pod nuty
+      const per = lin.map(() => []), syl = C.sylaby.filter(S => S && !S.pusta); let q = 0;
+      N.forEach((n, i) => { if (i && ciag[i]) return; const li = lin.findIndex(l => s16(n.t) >= l.a && s16(n.t) < l.b); if (syl[q] && li >= 0) per[li].push(syl[q]); q++; });
+      lin.forEach((l, li) => l.tx = sklej(per[li])); }
+    for (let p = 0; p < lin.length; p += 4) { const grp = lin.slice(p, p + 4), nut = [], slowa = ['', '', '', '']; let baza = 0;
+      grp.forEach((l, li) => { N.forEach((n, i) => { const e0 = s16(n.t), e1 = Math.max(e0 + 1, s16(n.t + n.d)), s0 = Math.max(e0, l.a), s1 = Math.min(e1, l.b); if (s1 <= s0) return;
+          if (s0 === e0 && i && ciag[i] && nut.length) nut[nut.length - 1].l = true;
+          const m = { n: n.n + ton, t: +((baza + s0 - l.a) * .125).toFixed(4), d: +((s1 - s0) * .125 - .02).toFixed(4) }; if (s0 === e0) akZ(m, n, ton, k); nut.push(m); });
+        slowa[li] = l.tx; baza += l.dl; });
+      const mm = grp[0].gora + '/' + grp[0].dol;
+      strony.push({ klucz, metrum: ['2/4', '3/4', '4/4', '6/8'].includes(mm) ? mm : '4/4', tempo, tonacja: k, trans: 0, nuty: nut, linie: grp.map(l => ({ gora: l.gora, dol: l.dol, takty: l.takty })), psalm: false, slowa, ciag: strony.length > pierwsza, poz: C.poz === 'g' || C.poz === 'd' ? C.poz : undefined }); } });
+  return strony;
+}
 function midiNaStrony(M) {
+  if (M.gotowe) return M.gotowe;
+  if (M.frazy && M.frazy.length) { const Z = stronyZPsalmu(M); if (Z) return Z; }
+  if (M.linijki && M.linijki.length) { const Z = stronyZLinijek(M); if (Z) return Z; }
   let mt = M.metrum && [2, 4, 8].includes(M.metrum.dol) ? M.metrum : { gora: 4, dol: 4 }, dopelnij = 0;
   const m2 = M.metra.filter(m => m.tick > 0)[0];                    // przedtakt (jak w „Nutach z MIDI”)
   if (m2 && [2, 4, 8].includes(m2.dol) && M.metra[0].tick === 0) { const T2 = m2.gora * 16 / m2.dol, przed16 = Math.round(m2.tick / (M.tpq / 4)); if (przed16 > 0 && przed16 < T2) { mt = m2; dopelnij = T2 - przed16; } }
@@ -4133,26 +4264,35 @@ function midiNaStrony(M) {
   const ile = Math.max(1, Math.ceil(t / NA_STRONE)), strony = [];
   for (let p = 0; p < ile; p++) { const a = p * NA_STRONE, b = a + NA_STRONE, nut = [];
     el.forEach(e => { const s0 = Math.max(e.s, a), s1 = Math.min(e.s + e.d, b); if (s1 > s0) nut.push({ n: e.n, t: +((s0 - a) * .125).toFixed(4), d: +((s1 - s0) * .125 - .02).toFixed(4) }); });
-    strony.push({ klucz, metrum, tempo, tonacja: k, trans: 0, nuty: nut, linie: [0, 1, 2, 3].map(() => ({ gora: g, dol: d, takty: 4 })), psalm: false, slowa: ['', '', '', ''] }); }
+    strony.push({ klucz, metrum, tempo, tonacja: k, trans: 0, nuty: nut, linie: [0, 1, 2, 3].map(() => ({ gora: g, dol: d, takty: 4 })), psalm: false,
+      slowa: [0, 1, 2, 3].map(li => slowaZSylab(M, a + li * 4 * T, a + (li + 1) * 4 * T, dopelnij)) }); }   /* plik bez znaczników linijek: po 4 takty, słowa z sylab pliku */
   return strony;
 }
 function wstawMidi(M) {
-  const i = wpis.i, S = midiNaStrony(M);
+  cofZapamietaj(); const i = wpis.i, S = midiNaStrony(M);
   if (document.body.classList.contains('nutyWl')) nuty.str = null;              // ta strona zaraz dostanie nuty z pliku
   wpis.nutyStrony = wpis.nutyStrony || {}; wpis.strony[i] = ''; wpis.obrazy[i] = null; wpis.nutyStrony[i] = S[0];
-  for (let j = 1; j < S.length; j++) { wstawStrone(i + j); wpis.nutyStrony[i + j] = { ...S[j], ciag: true }; }   // ciąg dalszy tej samej melodii
+  for (let j = 1; j < S.length; j++) { wstawStrone(i + j); wpis.nutyStrony[i + j] = { ...S[j], ciag: S[j].ciag !== undefined ? S[j].ciag : true }; }   // ciąg dalszy tej samej melodii
   idzDoStrony(i, true);
 }
 addEventListener('drop', async e => {
   const f = [...(e.dataTransfer && e.dataTransfer.files || [])][0];
-  if (!f || !/\.(mid|midi|kar)$/i.test(f.name) || !document.body.classList.contains('trybPulpit') || edycjaMidi) return;
+  if (!f || !/\.(mid|midi|kar|piesn)$/i.test(f.name) || !document.body.classList.contains('trybPulpit') || edycjaMidi) return;
   e.preventDefault(); e.stopImmediatePropagation(); document.body.classList.remove('upusc');
-  let M; try { M = czytajMidiN(await f.arrayBuffer()); } catch (er) { blysk($('wpisPrawo'), '✖'); return; }
+  await wczytajPlikMidi(f);
+}, true);
+/* plik MIDI na stronę pieśni: upuszczony na ekran albo wybrany przyciskiem „MIDI z edytora” */
+async function wczytajPlikMidi(f) {
+  let M; try { if (/\.piesn$/i.test(f.name)) { const Z = piesnNaStrony(JSON.parse(await f.text())); if (!Z || !Z.length) throw new Error('pusta'); M = { gotowe: Z }; }   /* projekt z Edytora pieśni: strony prosto z niego */
+    else M = czytajMidiN(await f.arrayBuffer()); } catch (er) { blysk($('wpisPrawo'), '✖'); return; }
+  if (podglad) { wylaczPodglad(); odswiezTryb(); }   /* MIDI upuszczone w Podglądzie: najpierw wyjście z podglądu, żeby tryby się nie nakładały */
   if (document.body.classList.contains('nutyWl')) zbierzStrone();
   const i = wpis.i, st = toStronaNut(i) ? wpis.nutyStrony[i] : null;
   const pusta = toStronaNut(i) ? !st || ((!st.nuty || !st.nuty.length) && !(st.slowa || []).some(x => x && x.trim())) : !(wpis.strony[i] || '').trim() && !wpis.obrazy[i];
   if (pusta) wstawMidi(M); else pytajKartke(() => wstawMidi(M));
-}, true);
+}
+$('midiZEdytora').onclick = e => { e.currentTarget.blur(); if (trybStron()) $('midiZEdytoraPlik').click(); };
+$('midiZEdytoraPlik').onchange = async () => { const f = $('midiZEdytoraPlik').files[0]; $('midiZEdytoraPlik').value = ''; if (f) await wczytajPlikMidi(f); };
 
 // ===== PODGLĄD PIEŚNI: strzałki po całej pieśni bez żadnej edycji; klawiatura gra organami, nic się nie wpisuje =====
 let podglad = false;
@@ -4178,10 +4318,17 @@ function wylaczPodglad() {
 $('podgladBtn').onclick = e => { e.currentTarget.blur(); wlaczPodglad(); };
 // wyjście z podglądu innym przyciskiem: najpierw tryb strony, potem ten, który kliknięto (z pytaniem, gdy strona ma treść)
 { const t = $('tekstBtn').onclick, n = $('nutyBtn').onclick, m = $('edycjaBtn').onclick;
-  $('tekstBtn').onclick = () => { if (podglad) { wylaczPodglad(); if (nuty.wl) naTekst(); odswiezTryb(); return; } t(); };
-  $('nutyBtn').onclick = () => { if (podglad) { wylaczPodglad(); if (!nuty.wl) naNuty(); odswiezTryb(); return; } n(); };
+  $('tekstBtn').onclick = () => { if (podglad) { wylaczPodglad(); odswiezTryb(); return; } t(); };   /* z Podglądu do edytora: strona zostaje taka, jaka jest — bez pytań */
+  $('nutyBtn').onclick = () => { window.open('https://mini-klik.pl/edytor-piesni/', '_blank', 'noopener'); };   /* Edytor pieśni: nuty pisze się tam (kafelek na mini-klik.pl); otwiera się w nowej karcie, śpiewnik zostaje otwarty */
   $('edycjaBtn').onclick = () => { if (podglad) { podglad = false; document.body.classList.remove('podgladWl'); $('wpisPole').readOnly = false; $('wpisPrawo').disabled = false; $('nutyKartka').hidden = true; $('wpisStrona').classList.remove('nutyOtwarte'); $('wpisPola').hidden = false; } m(); }; }
 { const o = odswiezTryb; odswiezTryb = () => { o(); $('podgladBtn').classList.toggle('wlaczona', podglad); if (podglad) $('tekstBtn').classList.remove('wlaczona'); }; }
+/* Dograj melodię: strona z nutami pokazuje nuty prosto z pieśni (jak w Podglądzie) — także zanim pieśń zostanie zapisana */
+{ const ps = pokazStrone, we = wylaczEdycje;
+  pokazStrone = () => { ps(); if (!edycjaMidi) return; const i = wpis.i;
+    if (toStronaNut(i) && wpis.nutyStrony[i]) { const b = metro.bpm; otworzStroneNut(wpis.nutyStrony[i], i); ustawBpm(b); if (nuty.metrum) $('nutyKartka').innerHTML = NE.svgPodglad();
+      $('nutyKartka').hidden = false; $('wpisStrona').classList.add('nutyOtwarte'); }
+    else { $('nutyKartka').hidden = true; $('wpisStrona').classList.remove('nutyOtwarte'); } };
+  wylaczEdycje = () => { const byl = edycjaMidi; we(); if (byl && !nuty.wl) { $('nutyKartka').hidden = true; $('wpisStrona').classList.remove('nutyOtwarte'); } }; }
 // w podglądzie: strzałki tylko przeglądają (bez nowych stron); upuszczone pliki nic nie zmieniają
 { const s0 = strzalka; strzalka = kier => { if (!podglad) return s0(kier); const i = wpis.i + kier; if (i < 0 || i >= wpis.strony.length) return; wpis.i = i; pokazPodglad(); }; }
 addEventListener('drop', e => { if (podglad && !maObraz(e.dataTransfer && e.dataTransfer.files)) { e.preventDefault(); e.stopImmediatePropagation(); document.body.classList.remove('upusc'); } }, true);
@@ -4213,15 +4360,31 @@ pokazProspekt = () => {};
 let komCzas = 0;
 function komunikat(t) { const k = $('komunikat'); k.textContent = t; k.hidden = false; clearTimeout(komCzas); komCzas = setTimeout(() => k.hidden = true, 2600); }
 const trybTekstu = () => !nuty.wl && !edycjaMidi && !podglad;
+const trybStron = () => !edycjaMidi && !podglad;   /* Edytor tekstu/png: każda strona pieśni, także z nutami */
+/* „Wyczyść stronę”: bieżąca strona (tekst, obrazek albo nuty) wraca do czystej kartki */
+var cofStos = [];
+function cofZapamietaj() { if (nuty.wl) zbierzStrone();
+  cofStos.push({ wpis, i: wpis.i, strony: [...wpis.strony], obrazy: [...wpis.obrazy], nutyStrony: JSON.parse(JSON.stringify(wpis.nutyStrony || {})) });
+  if (cofStos.length > 20) cofStos.shift(); cofPrzycisk(); }
+function cofPrzycisk() { if (!cofStos) return; while (cofStos.length && cofStos[cofStos.length - 1].wpis !== wpis) cofStos.pop(); $('cofnijStroneBtn').disabled = !cofStos.length; }
+function cofnijStrone() { cofPrzycisk(); const z = cofStos.pop(); if (!z) return;
+  nuty.str = null; wpis.strony = z.strony; wpis.obrazy = z.obrazy; wpis.nutyStrony = z.nutyStrony; kadrCofnij = null;
+  idzDoStrony(Math.min(z.i, wpis.strony.length - 1), true); cofPrzycisk(); }
+$('cofnijStroneBtn').onclick = e => { e.currentTarget.blur(); if (!trybStron()) return; $('pytanieKartka').hidden = true; pytKartkaTak = null; cofnijStrone(); };
+function czyscStrone() { const i = wpis.i; cofZapamietaj();
+  if (toStronaNut(i)) { delete wpis.nutyStrony[i]; nuty.str = null; }
+  wpis.strony[i] = ''; wpis.obrazy[i] = null; if (kadrCofnij && kadrCofnij.i === i) kadrCofnij = null;
+  if (nuty.wl) wylaczNuty(); else pokazStrone(); }
+$('czyscStroneBtn').onclick = e => { e.currentTarget.blur(); if (!trybStron()) return; $('pytanieKartka').hidden = true; pytKartkaTak = null; czyscStrone(); $('wpisPole').focus(); };
 const maObraz = l => [...(l || [])].some(f => /^image\//.test(f.type));
 addEventListener('drop', e => {
-  if (trybTekstu() || !document.body.classList.contains('trybPulpit') || !maObraz(e.dataTransfer && e.dataTransfer.files)) return;
+  if (trybStron() || !document.body.classList.contains('trybPulpit') || !maObraz(e.dataTransfer && e.dataTransfer.files)) return;
   e.preventDefault(); e.stopImmediatePropagation(); document.body.classList.remove('upusc'); strefa.classList.remove('upuszczanie');
-  komunikat('Dodawanie obrazu tylko w trybie Edytor tekstu/png');
+  komunikat('Dodawanie obrazu tylko w trybie Edytor tekstu/zdjęcia');
 }, true);
 document.addEventListener('paste', e => {
-  if (trybTekstu() || !maObraz(e.clipboardData && e.clipboardData.files)) return;
-  e.preventDefault(); e.stopImmediatePropagation(); komunikat('Dodawanie obrazu tylko w trybie Edytor tekstu/png');
+  if (trybStron() || !maObraz(e.clipboardData && e.clipboardData.files)) return;
+  e.preventDefault(); e.stopImmediatePropagation(); komunikat('Dodawanie obrazu tylko w trybie Edytor tekstu/zdjęcia');
 }, true);
 
 // ===== KLIK W OBRAZEK STRONY (Edytor tekstu/png): kadrowanie od nowa — Zatwierdź · Anuluj · Usuń =====
@@ -4232,7 +4395,7 @@ $('wpisObraz').querySelector('img').addEventListener('click', () => {
 $('kadrUsun').onclick = () => { wpis.obrazy[wpis.i] = null; if (kadrCofnij && kadrCofnij.i === wpis.i) kadrCofnij = null; zamknijKadr(); $('wpisPole').focus(); };   // strona wraca do tekstu
 
 // ===== DODAJ PNG (Edytor tekstu/png): obrazek z dysku na bieżącą stronę — dalej jak po przeciągnięciu (kadrowanie, Zatwierdź) =====
-$('dodajPng').onclick = e => { e.currentTarget.blur(); if (trybTekstu()) $('dodajPngPlik').click(); };
+$('dodajPng').onclick = e => { e.currentTarget.blur(); if (trybStron()) $('dodajPngPlik').click(); };
 $('dodajPngPlik').onchange = async () => { const f = [...$('dodajPngPlik').files]; $('dodajPngPlik').value = ''; if (f.length) await ustawObrazStrony(f); };
 
 // ===== TAKTY zaznaczonej pięciolinii (pokazują się po wyborze metrum; w psalmie ich nie ma) =====
